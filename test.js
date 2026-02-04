@@ -1,23 +1,23 @@
-// test.js - Final Version (Strict Data, Cheat Keys, UI Polish)
+// test.js - Final Strict Version (New Script URL)
+// 1. Data Key Mapping: Q1~Q80, Q81_Best, Q81_Worst (Exact Match)
+// 2. Submit Button UI: Visible only on Page 12, Styled with !important via JS
+// 3. Helper: Cheat Keys Included for Testing
 
-// [CONFIG] Google Apps Script URL
-const scriptURL = "https://script.google.com/macros/s/AKfycbymGazKH5ak6SG6-vE42MzzAwI6J-pvz78Q0bBgCbq6xPpqCTPptQPS439_r1KMOOij/exec";
+// [NEW URL APPLIED]
+const scriptURL = "https://script.google.com/macros/s/AKfycbzbM1chXwPYcDwvAjRE6lrOvIKX1_Tr_CiaChMxHN2kwUtXjgUcmskCJpX4vWWcu9Fn/exec";
 
-// [THEME CONFIG] Sections Configuration
-// Type: 'questions' (standard/scenario) or 'bridge' (guide screen)
+// [THEME CONFIG]
 const SECTIONS = [
-    // --- BRIDGE 1 (Index 0) ---
+    // --- 0: BRIDGE 1 ---
     {
         type: 'bridge',
         title: 'PART 1: 성향 및 역량 검사 안내',
         subtitle: 'PART 1 / 2',
-        content: `귀하의 평소 생각과 행동 스타일을 파악하는 문항입니다.<br>
-                  정답이 없으니 가장 본인다운 답변을 솔직하게 골라주세요.<br>
-                  (총 80문항)`,
+        content: `귀하의 평소 생각과 행동 스타일을 파악하는 문항입니다.<br>정답이 없으니 가장 본인다운 답변을 솔직하게 골라주세요.<br>(총 80문항)`,
         buttonText: '검사 시작하기',
         themeVar: '--section-1-color'
     },
-    // --- PART 1: QUESTIONS 1-80 (Indices 1-8) ---
+    // --- 1~8: PART 1 (80 Questions) ---
     { type: 'questions', start: 0, end: 9, themeVar: '--section-1-color', name: 'PART 1' },
     { type: 'questions', start: 10, end: 19, themeVar: '--section-2-color', name: 'PART 1' },
     { type: 'questions', start: 20, end: 29, themeVar: '--section-3-color', name: 'PART 1' },
@@ -27,29 +27,24 @@ const SECTIONS = [
     { type: 'questions', start: 60, end: 69, themeVar: '--section-1-color', name: 'PART 1' },
     { type: 'questions', start: 70, end: 79, themeVar: '--section-2-color', name: 'PART 1' },
 
-    // --- BRIDGE 2 (Index 9) ---
+    // --- 9: BRIDGE 2 ---
     {
         type: 'bridge',
         title: 'PART 2: 상황 판단 검사 안내',
         subtitle: 'PART 2 / 2',
-        content: `실무 시나리오를 읽고 본인이 생각하기에<br>
-                  <strong style="color:var(--color-best)">'가장 할 법한 행동(Best)'</strong>과 
-                  <strong style="color:var(--color-worst)">'가장 안 할 법한 행동(Worst)'</strong>을<br>
-                  하나씩 필수 선택해 주세요.<br>
-                  (총 20문항)`,
+        content: `실무 시나리오를 읽고 본인이 생각하기에<br><strong style="color:var(--color-best)">'가장 할 법한 행동(Best)'</strong>과 <strong style="color:var(--color-worst)">'가장 안 할 법한 행동(Worst)'</strong>을<br>하나씩 필수 선택해 주세요.<br>(총 20문항)`,
         buttonText: '이어서 시작하기',
         themeVar: '--section-3-color'
     },
-    // --- PART 2: QUESTIONS 81-100 (Indices 10-13) ---
+    // --- 10~13: PART 2 (20 Questions) ---
     { type: 'questions', start: 80, end: 84, themeVar: '--section-3-color', name: 'PART 2' },
     { type: 'questions', start: 85, end: 89, themeVar: '--section-1-color', name: 'PART 2' },
     { type: 'questions', start: 90, end: 94, themeVar: '--section-2-color', name: 'PART 2' },
-    { type: 'questions', start: 95, end: 99, themeVar: '--section-3-color', name: 'PART 2' }
+    { type: 'questions', start: 95, end: 99, themeVar: '--section-3-color', name: 'PART 2' } // Index 13 = Page 12 (Last)
 ];
 
-// [DATA] 100 Questions
+// [DATA] (Full 100 Questions)
 const allQuestions = [
-    // --- 1~80: 기존 성향 문항 ---
     { id: 1, type: 'AB', category: "주도적 능력", optionA: "가이드라인을 완벽히 숙달하는 것이 우선이다.", optionB: "효율을 높일 새로운 방법을 찾는 것이 우선이다." },
     { id: 2, type: 'AB', category: "주도적 능력", optionA: "업무의 정확한 범위를 확인한 뒤 실행한다.", optionB: "필요한 일을 스스로 판단하여 먼저 시작한다." },
     { id: 3, type: 'AB', category: "주도적 능력", optionA: "검증된 안전한 업무 방식을 더 선호한다.", optionB: "새로운 시도를 통해 배울 점을 찾는 것을 즐긴다." },
@@ -60,7 +55,6 @@ const allQuestions = [
     { id: 8, type: 'AB', category: "주도적 능력", optionA: "주어진 과업을 오차 없이 수행할 때 보람을 느낀다.", optionB: "스스로 설정한 목표를 달성했을 때 성취감이 크다." },
     { id: 9, type: 'AB', category: "주도적 능력", optionA: "조직의 전통적인 방식을 존중하며 따르는 편이다.", optionB: "비효율적인 관행은 개선을 제안하려 노력한다." },
     { id: 10, type: 'AB', category: "주도적 능력", optionA: "근무 시간 내에 몰입하여 주어진 일을 끝낸다.", optionB: "업무 외 시간에도 개인의 성장을 위해 고민한다." },
-
     { id: 11, type: 'AB', category: "문제 해결", optionA: "과거 사례를 참고하여 실수를 줄이는 데 집중한다.", optionB: "기존 방식에 의문을 갖고 원인을 다시 분석한다." },
     { id: 12, type: 'AB', category: "문제 해결", optionA: "실무적인 경험과 직관을 더 신뢰한다.", optionB: "객관적인 수치와 데이터를 더 신뢰한다." },
     { id: 13, type: 'AB', category: "문제 해결", optionA: "실행하며 발생하는 문제를 유연하게 해결한다.", optionB: "실행 전 발생 가능한 모든 변수를 사전에 점검한다." },
@@ -71,7 +65,6 @@ const allQuestions = [
     { id: 18, type: 'AB', category: "문제 해결", optionA: "갈등 발생 시 원만한 합의점을 찾는 데 집중한다.", optionB: "재발 방지를 위해 갈등 원인을 분석하는 데 집중한다." },
     { id: 19, type: 'AB', category: "문제 해결", optionA: "누구나 이해할 수 있는 보편적인 방식으로 해결한다.", optionB: "고정관념을 깨는 독특하고 창의적인 방식으로 접근한다." },
     { id: 20, type: 'AB', category: "문제 해결", optionA: "눈앞의 문제를 빠르게 처리하는 것을 우선시한다.", optionB: "시간이 걸려도 근본적인 시스템 개선을 우선시한다." },
-
     { id: 21, type: 'AB', category: "목표 달성", optionA: "달성 가능성이 높은 안정적인 목표를 세운다.", optionB: "실패 위험이 있더라도 도전적인 목표를 세운다." },
     { id: 22, type: 'AB', category: "목표 달성", optionA: "주변과 조화를 이루는 적정한 성과를 유지한다.", optionB: "남들보다 앞서는 압도적인 성과를 위해 몰입한다." },
     { id: 23, type: 'AB', category: "목표 달성", optionA: "과정에서의 배움이 좋았다면 만족하는 편이다.", optionB: "약속된 결과를 내지 못하면 큰 아쉬움을 느낀다." },
@@ -82,7 +75,6 @@ const allQuestions = [
     { id: 28, type: 'AB', category: "목표 달성", optionA: "외부의 인정과 보상이 있을 때 더 힘이 난다.", optionB: "목표 달성 그 자체의 성취감에서 더 큰 힘을 얻는다." },
     { id: 29, type: 'AB', category: "목표 달성", optionA: "어려운 과제는 팀원들과 나누어 부담을 덜고 싶다.", optionB: "어려운 과제일수록 내 역량을 시험할 기회로 여긴다." },
     { id: 30, type: 'AB', category: "목표 달성", optionA: "에너지를 적절히 안배하여 지치지 않게 일한다.", optionB: "목표 달성을 위해 개인적인 에너지를 기꺼이 쓴다." },
-
     { id: 31, type: 'AB', category: "소속 영향력", optionA: "내 업무를 완벽히 해내어 팀에 기여하는 편이다.", optionB: "내 일이 바쁘더라도 동료를 돕는 일을 우선한다." },
     { id: 32, type: 'AB', category: "소속 영향력", optionA: "전문성이 뛰어난 동료로 인정받고 싶다.", optionB: "팀 내 유대감이 강하고 소통이 잘 되는 동료가 되고 싶다." },
     { id: 33, type: 'AB', category: "소속 영향력", optionA: "팀의 화합을 위해 내 주장을 굽히는 경우가 많다.", optionB: "팀의 성장을 위해 불편한 반대 의견도 솔직히 낸다." },
@@ -93,7 +85,6 @@ const allQuestions = [
     { id: 38, type: 'AB', category: "소속 영향력", optionA: "갈등 시 감정이 상하지 않게 거리를 두는 편이다.", optionB: "갈등 당사자와 대면하여 오해를 풀려 노력한다." },
     { id: 39, type: 'AB', category: "소속 영향력", optionA: "결정된 방향에 힘을 실어주는 역할을 선호한다.", optionB: "다양한 관점을 제시하여 논의를 확장하는 역할을 선호한다." },
     { id: 40, type: 'AB', category: "소속 영향력", optionA: "실력이 뛰어난 동료와 일하고 싶다.", optionB: "인간미가 있고 배려심 깊은 동료와 일하고 싶다." },
-
     { id: 41, type: 'AB', category: "의사소통", optionA: "보고 시 결론부터 명확하고 짧게 말한다.", optionB: "상대가 이해할 수 있게 상세한 배경부터 설명한다." },
     { id: 42, type: 'AB', category: "의사소통", optionA: "상대방 주장의 논리적 오류를 잘 찾아내는 편이다.", optionB: "상대방의 말에 공감하며 의도를 먼저 파악하려 한다." },
     { id: 43, type: 'AB', category: "의사소통", optionA: "메시지나 메일 등 기록이 남는 소통을 선호한다.", optionB: "직접 만나서 대화하며 분위기를 파악하는 게 편하다." },
@@ -104,7 +95,6 @@ const allQuestions = [
     { id: 48, type: 'AB', category: "의사소통", optionA: "조용한 회의에서 먼저 대화를 이끌며 분위기를 푼다.", optionB: "다른 사람들의 의견이 나올 때까지 차분히 기다린다." },
     { id: 49, type: 'AB', category: "의사소통", optionA: "비판적인 피드백도 성장을 위한 자극으로 여긴다.", optionB: "피드백 내용이 합리적인지 스스로 면밀히 판단한다." },
     { id: 50, type: 'AB', category: "의사소통", optionA: "진중한 말투로 업무적 신뢰를 주는 것을 중시한다.", optionB: "밝은 에너지와 웃음으로 호감을 얻는 것을 중시한다." },
-
     { id: 51, type: 'AB', category: "조직문화", optionA: "규정과 원칙을 엄격하게 준수하는 문화가 편하다.", optionB: "상황에 따라 유연하게 원칙을 적용하는 문화가 편하다." },
     { id: 52, type: 'AB', category: "조직문화", optionA: "근무 시간과 개인의 삶을 명확히 구분하고 싶다.", optionB: "업무와 일상이 자연스럽게 연결되는 것을 선호한다." },
     { id: 53, type: 'AB', category: "조직문화", optionA: "회사의 전통과 가치를 소중히 지키는 게 중요하다.", optionB: "시대 변화에 맞춰 조직의 정체성을 계속 혁신해야 한다." },
@@ -115,8 +105,6 @@ const allQuestions = [
     { id: 58, type: 'AB', category: "조직문화", optionA: "체계와 규율이 있는 안정적인 조직이 신뢰가 간다.", optionB: "자율성을 존중하는 수평적인 조직이 신뢰가 간다." },
     { id: 59, type: 'AB', category: "조직문화", optionA: "공식적인 회의와 보고를 통해 일하는 게 좋다.", optionB: "수시로 자유롭게 대화하며 가볍게 의견을 나누는 게 좋다." },
     { id: 60, type: 'AB', category: "조직문화", optionA: "선배들의 노하우를 먼저 배우는 데 집중한다.", optionB: "신입의 새로운 시각으로 조직에 변화를 준다." },
-
-    // --- 61~80: 거울/함정 문항 ---
     { id: 61, type: 'AB', category: "주도적 능력", optionA: "매뉴얼대로 정확하게 일할 때 안심이 된다.", optionB: "나만의 새로운 방식을 시도할 때 활력이 생긴다." },
     { id: 62, type: 'AB', category: "주도적 능력", optionA: "확실히 검증된 길을 가는 것이 효율적이다.", optionB: "다소 위험하더라도 가보지 않은 길에 도전하고 싶다." },
     { id: 63, type: 'AB', category: "문제 해결", optionA: "나의 풍부한 경험과 감을 믿고 판단하는 편이다.", optionB: "명확한 근거 자료와 통계 수치를 믿고 판단한다." },
@@ -138,7 +126,7 @@ const allQuestions = [
     { id: 79, type: 'AB', category: "조직문화", optionA: "사전에 약속된 체계와 일관성이 있는 조직이 편하다.", optionB: "변화에 기민하고 자율성이 보장되는 조직이 편하다." },
     { id: 80, type: 'AB', category: "공통 신뢰도", optionA: "나는 업무를 할 때 가끔 실수를 하기도 한다.", optionB: "나는 어떤 상황에서도 절대 실수를 하지 않는다." },
 
-    // --- 81~100: 상황 판단 문항 (Best/Worst) ---
+    // 81~100 (SJT)
     {
         id: 81, type: 'BW', category: "주도적 능력",
         scenario: "희망편지쓰기대회 협조를 위해 학교를 방문했습니다. 선생님은 \"작년에 보니 아이들이 편지 쓰는 걸 숙제로 느끼고 힘들어하더라. 올해는 진도도 밀려 있어서 참여가 어렵다\"며 난처해합니다.",
@@ -270,7 +258,7 @@ const allQuestions = [
         ]
     },
     {
-        id: 94, type: 'BW', category: "의사소통",
+        id: 94, type: 'BW', category: " 의사소통",
         scenario: "거리 모금 중 한 시민이 \"왜 우리 나라 아이들은 안 돕고 해외 아동만 돕느냐\"며 날카로운 질문을 던집니다. 주변에 다른 시민들도 이 대화를 유심히 듣고 있습니다.",
         options: [
             "1. 굿네이버스는 국내 아동 권리 보호와 복지 사업도 큰 비중으로 수행하고 있음을 구체적인 사업 수치를 들어 차분히 설명한다.",
@@ -342,30 +330,31 @@ const allQuestions = [
 ];
 
 // State Variables
-let currentSectionIdx = 0; // Index for SECTIONS array
+let currentSectionIdx = 0;
 let userAnswers = {};
 let timerInterval = null;
 
 // [INIT] Page Load
 document.addEventListener('DOMContentLoaded', () => {
     startTimer();
-    injectCheatButtons(); // Add Cheat Keys
+    injectCheatButtons();
 
-    // Event Listeners
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
-
     document.getElementById('prev-btn').addEventListener('click', goPrevSection);
     document.getElementById('next-btn').addEventListener('click', goNextSection);
 
-    // Styled Submit Button injected via HTML, ensure logic attached
+    // Binding the STRICT submit function
     const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) submitBtn.addEventListener('click', submitFinal);
+    if (submitBtn) {
+        submitBtn.addEventListener('click', submitTest);
+        // Force add strict class
+        submitBtn.classList.add('nav-btn', 'submit');
+    }
 
-    // Initial Render
     renderSection(0);
 });
 
-// [CHEAT KEY] Helper
+// [CHEAT KEY]
 function injectCheatButtons() {
     const div = document.createElement('div');
     div.style.position = 'fixed';
@@ -404,13 +393,10 @@ function injectCheatButtons() {
 
 function cheatFill(choice) {
     if (!confirm(`1~80번을 모두 '${choice}'로 채우고 81번이 있는 페이지로 이동하시겠습니까?`)) return;
-
     for (let i = 1; i <= 80; i++) {
         userAnswers[i] = choice;
     }
-    // Jump to Section 10 (Index 10 is Q81~84)
-    // Indexes: 0=Bridge1, 1-8=Part1, 9=Bridge2, 10=Part2(Q81-84)
-    currentSectionIdx = 10;
+    currentSectionIdx = 10; // Q81~84
     renderSection(currentSectionIdx);
 }
 
@@ -430,14 +416,12 @@ function startTimer() {
     }, 1000);
 }
 
-// [RENDER] Core Render Function
+// [RENDER]
 function renderSection(sectionIdx) {
     const container = document.getElementById('question-list');
     const sectionConfig = SECTIONS[sectionIdx];
 
-    if (sectionConfig.themeVar) {
-        document.documentElement.style.setProperty('--theme-color', `var(${sectionConfig.themeVar})`);
-    }
+    if (sectionConfig.themeVar) document.documentElement.style.setProperty('--theme-color', `var(${sectionConfig.themeVar})`);
 
     if (sectionConfig.type === 'bridge') {
         renderBridge(sectionConfig, container);
@@ -465,8 +449,11 @@ function renderBridge(config, container) {
 
 function renderQuestions(config, container) {
     let pageNum = 0;
-    if (currentSectionIdx >= 1 && currentSectionIdx <= 8) pageNum = currentSectionIdx;
-    else if (currentSectionIdx >= 10) pageNum = currentSectionIdx - 1;
+    if (currentSectionIdx >= 1 && currentSectionIdx <= 8) {
+        pageNum = currentSectionIdx;
+    } else if (currentSectionIdx >= 10 && currentSectionIdx <= 13) {
+        pageNum = currentSectionIdx - 1; // 10->9, 13->12
+    }
 
     const totalPages = 12;
     if (pageNum > 0) {
@@ -477,11 +464,8 @@ function renderQuestions(config, container) {
     let html = '';
     for (let i = config.start; i <= config.end; i++) {
         const q = allQuestions[i];
-        if (q.type === 'AB') {
-            html += renderTypeAB(q);
-        } else if (q.type === 'BW') {
-            html += renderTypeBW(q);
-        }
+        if (q.type === 'AB') html += renderTypeAB(q);
+        else if (q.type === 'BW') html += renderTypeBW(q);
     }
     container.innerHTML = html;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -493,7 +477,6 @@ function renderTypeAB(q) {
     <div class="question-item">
         <div class="question-header">
             <span class="q-number">Q${q.id}</span>
-            <!-- Category hidden by request -->
         </div>
         <div class="options-grid">
             <div class="option-card ${saved === 'A' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'A')">
@@ -510,13 +493,11 @@ function renderTypeAB(q) {
 
 function renderTypeBW(q) {
     const saved = userAnswers[q.id] || {};
-
     let optionsHtml = '';
     q.options.forEach((optText, idx) => {
         const optionIdx = idx + 1;
         const isBest = saved.best === optionIdx;
         const isWorst = saved.worst === optionIdx;
-
         let cardClass = 'scenario-card';
         if (isBest) cardClass += ' has-best';
         if (isWorst) cardClass += ' has-worst';
@@ -535,22 +516,19 @@ function renderTypeBW(q) {
             </div>
         `;
     });
-
     return `
     <div class="question-item">
         <div class="question-header">
             <span class="q-number">Q${q.id}</span>
-            <!-- Category hidden by request -->
         </div>
         <div class="scenario-box">
             <div class="scenario-text">${q.scenario}</div>
         </div>
-        <div class="scenario-options-grid">
-            ${optionsHtml}
-        </div>
+        <div class="scenario-options-grid">${optionsHtml}</div>
     </div>`;
 }
 
+// [INTERACTION]
 window.selectOption = function (qId, val) {
     userAnswers[qId] = val;
     const inputs = document.getElementsByName(`q${qId}`);
@@ -567,34 +545,27 @@ window.selectOption = function (qId, val) {
 };
 
 window.selectScenarioOption = function (event, qId, optionIdx, type) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
+    if (event) { event.preventDefault(); event.stopPropagation(); }
 
     if (!userAnswers[qId] || typeof userAnswers[qId] !== 'object') {
         userAnswers[qId] = { best: null, worst: null };
     }
-
     const currentBest = userAnswers[qId].best;
     const currentWorst = userAnswers[qId].worst;
 
     if (type === 'best') {
-        if (currentBest === optionIdx) {
-            userAnswers[qId].best = null;
-        } else {
+        if (currentBest === optionIdx) userAnswers[qId].best = null;
+        else {
             userAnswers[qId].best = optionIdx;
             if (currentWorst === optionIdx) userAnswers[qId].worst = null;
         }
     } else if (type === 'worst') {
-        if (currentWorst === optionIdx) {
-            userAnswers[qId].worst = null;
-        } else {
+        if (currentWorst === optionIdx) userAnswers[qId].worst = null;
+        else {
             userAnswers[qId].worst = optionIdx;
             if (currentBest === optionIdx) userAnswers[qId].best = null;
         }
     }
-
     updateScenarioDOM(qId);
     checkSectionComplete();
 };
@@ -622,25 +593,18 @@ function updateScenarioDOM(qId) {
     }
 }
 
+// [VALIDATION & NAVIGATION]
 function checkSectionComplete() {
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn');
-
     if (SECTIONS[currentSectionIdx].type === 'bridge') return;
 
     if (validateSectionSilently(currentSectionIdx)) {
         if (nextBtn) nextBtn.disabled = false;
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            // Submit Button Styling (Force Green, matching Previous button style)
-            submitBtn.style.cssText = "border: none !important; border-radius: 25px !important; background-color: #89a230 !important; color: white !important;";
-        }
+        if (submitBtn) submitBtn.disabled = false;
     } else {
         if (nextBtn) nextBtn.disabled = true;
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.style.cssText = "border: none !important; border-radius: 25px !important; background-color: #cccccc !important; color: white !important;";
-        }
+        if (submitBtn) submitBtn.disabled = true;
     }
 }
 
@@ -649,7 +613,6 @@ function validateSectionSilently(sectionIdx) {
     for (let i = section.start; i <= section.end; i++) {
         const q = allQuestions[i];
         const ans = userAnswers[q.id];
-
         if (q.type === 'AB') {
             if (!ans) return false;
         } else if (q.type === 'BW') {
@@ -659,37 +622,45 @@ function validateSectionSilently(sectionIdx) {
     return true;
 }
 
+// **NAV BUTTON LOGIC & CSS INJECTION** (STRICT UI + VISIBILITY RULE)
 function updateNavButtons(sectionIdx, isBridge) {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn');
 
-    if (isBridge) {
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
-        submitBtn.style.display = 'none';
-        return;
-    }
+    // Default Hidden
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    submitBtn.style.display = 'none';
 
-    if (sectionIdx === 1) prevBtn.style.display = 'none';
-    else prevBtn.style.display = 'block';
+    if (isBridge) return; // Hide all
 
-    if (sectionIdx === SECTIONS.length - 1) {
-        nextBtn.style.display = 'none';
+    // Prev: Hide on Page 1 (Index 1)
+    if (sectionIdx > 1) prevBtn.style.display = 'block';
+
+    // Submit: Only on Page 12 (Index 13)
+    if (sectionIdx === 13) {
         submitBtn.style.display = 'block';
+        // **STRICT CSS FORCE**
+        submitBtn.style.cssText = `
+            display: block;
+            background-color: #89a230 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 25px !important;
+            height: 48px;
+            width: 120px;
+            font-size: 18px;
+            font-weight: bold;
+        `;
     } else {
         nextBtn.style.display = 'block';
-        submitBtn.style.display = 'none';
     }
 
-    // Default disabled
-    nextBtn.disabled = true;
-    submitBtn.disabled = true;
-
-    // Apply styling to submit button if visible
-    if (sectionIdx === SECTIONS.length - 1) {
-        submitBtn.style.cssText = "border: none !important; border-radius: 25px !important; background-color: #cccccc !important; color: white !important;";
-    }
+    // Status
+    const isComplete = validateSectionSilently(sectionIdx);
+    if (nextBtn) nextBtn.disabled = !isComplete;
+    if (submitBtn) submitBtn.disabled = !isComplete;
 }
 
 function goPrevSection() {
@@ -705,7 +676,6 @@ function goNextSection() {
         renderSection(currentSectionIdx);
         return;
     }
-
     if (validateSectionSilently(currentSectionIdx)) {
         if (currentSectionIdx < SECTIONS.length - 1) {
             currentSectionIdx++;
@@ -716,80 +686,66 @@ function goNextSection() {
     }
 }
 
-async function submitFinal() {
+// [SUBMIT FUNCTION] - STRICT DATA KEY MAPPING (UPDATED FOR NEW URL)
+function submitTest() {
     if (!validateSectionSilently(currentSectionIdx)) {
         alert("모든 문항에 답변해주세요.");
         return;
     }
     if (!confirm("모든 검사를 마쳤습니다. 제출하시겠습니까?")) return;
 
-    clearInterval(timerInterval);
+    // Loading
     const submitBtn = document.getElementById('submit-btn');
     submitBtn.textContent = "전송 중...";
     submitBtn.disabled = true;
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) overlay.style.display = 'flex';
+    clearInterval(timerInterval);
 
-    // [STRICT DATA MAPPING]
-    const flatAnswers = {};
-
-    // 1-80 Standard
-    for (let i = 1; i <= 80; i++) {
-        flatAnswers[i] = userAnswers[i] || "";
-    }
-
-    // 81-100 Strict Qxx_Best / Qxx_Worst
-    for (let i = 81; i <= 100; i++) {
-        const ans = userAnswers[i] || {};
-        flatAnswers[`Q${i}_Best`] = ans.best || "";  // 시트의 Q81_Best와 매칭
-        flatAnswers[`Q${i}_Worst`] = ans.worst || ""; // 시트의 Q81_Worst와 매칭
-    }
-
-    const name = localStorage.getItem('applicantName');
-    const birth = localStorage.getItem('applicantBirthdate');
-    const phone = localStorage.getItem('applicantPhone');
-    const agree = localStorage.getItem('applicantAgree');
-
-    // Total Time
-    const startTimeStr = localStorage.getItem('gnFit_startTime');
-    let totalTime = 0;
-    if (startTimeStr) totalTime = Math.floor((Date.now() - parseInt(startTimeStr)) / 1000);
-
-    const record = {
-        name, birth, phone, agree,
-        answers: flatAnswers,
-        totalTime,
-        timestamp: new Date().toLocaleString()
+    // User Info
+    const userInfo = {
+        name: localStorage.getItem('applicantName'),
+        birth: localStorage.getItem('applicantBirthdate'),
+        phone: localStorage.getItem('applicantPhone'),
+        agree: localStorage.getItem('applicantAgree'),
+        timestamp: new Date().toLocaleString(),
+        totalTime: (Date.now() - (parseInt(localStorage.getItem('gnFit_startTime')) || Date.now())) / 1000
     };
 
-    try {
-        const db = JSON.parse(localStorage.getItem('gnFit_db') || '[]');
-        db.push(record);
-        localStorage.setItem('gnFit_db', JSON.stringify(db));
-    } catch (e) { console.error('Backup failed', e); }
+    // --- STRICT MAPPING START ---
+    const allAnswers = userAnswers;
+    const formData = { ...userInfo };
 
-    try {
-        await fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(record)
-        });
-        finalizeAndRedirect();
-    } catch (error) {
-        console.error("Error", error);
-        alert('전송 중 오류가 발생했으나, 데이터는 안전하게 저장되었습니다.');
-        finalizeAndRedirect();
+    // 1~80: Q1...
+    for (let i = 1; i <= 80; i++) {
+        formData[`Q${i}`] = allAnswers[i] || "";
     }
-}
+    // 81~100: Q81_Best...
+    for (let i = 81; i <= 100; i++) {
+        const response = allAnswers[i] || {};
+        formData[`Q${i}_Best`] = response.best || "";
+        formData[`Q${i}_Worst`] = response.worst || "";
+    }
+    console.log("전송될 데이터:", formData);
+    // --- MAPPING END ---
 
-function finalizeAndRedirect() {
-    localStorage.setItem('survey_completed', 'true');
-    localStorage.removeItem('applicantName');
-    localStorage.removeItem('applicantBirthdate');
-    localStorage.removeItem('applicantPhone');
-    localStorage.removeItem('applicantAgree');
-    localStorage.removeItem('gnFit_startTime');
-    alert('제출 완료되었습니다. 수고하셨습니다!');
-    window.location.href = 'result.html';
+    fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify(formData)
+    }).then(() => {
+        try {
+            const db = JSON.parse(localStorage.getItem('gnFit_db') || '[]');
+            db.push(formData);
+            localStorage.setItem('gnFit_db', JSON.stringify(db));
+        } catch (e) { console.error('Backup failed', e); }
+
+        localStorage.setItem('survey_completed', 'true');
+        localStorage.removeItem('applicantName');
+        localStorage.removeItem('applicantBirthdate');
+        localStorage.removeItem('applicantPhone');
+        localStorage.removeItem('applicantAgree');
+        localStorage.removeItem('gnFit_startTime');
+
+        alert("제출이 완료되었습니다.");
+        window.location.href = "result.html";
+    }).catch(err => console.error("전송 에러:", err));
 }
