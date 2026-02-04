@@ -1,4 +1,4 @@
-// test.js - 100 Questions (Real-time Validation Fixed)
+// test.js - 100 Questions (Critical Fix: Button Type & State Persistence)
 
 // [CONFIG] Google Apps Script URL
 const scriptURL = "https://script.google.com/macros/s/AKfycbymGazKH5ak6SG6-vE42MzzAwI6J-pvz78Q0bBgCbq6xPpqCTPptQPS439_r1KMOOij/exec";
@@ -350,6 +350,9 @@ document.addEventListener('DOMContentLoaded', () => {
     startTimer();
 
     // Event Listeners
+    // Prevent standard form submission if buttons are clicked wildly
+    document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
+
     document.getElementById('prev-btn').addEventListener('click', goPrevSection);
     document.getElementById('next-btn').addEventListener('click', goNextSection);
     document.getElementById('submit-btn').addEventListener('click', submitFinal);
@@ -394,19 +397,20 @@ function renderSection(sectionIdx) {
     // 2. Handle Question Screen
     renderQuestions(sectionConfig, container);
 
-    // 3. Initial check for button state (in case needed)
+    // 3. Initial check for button state
     updateNavButtons(sectionIdx, false);
-    checkSectionComplete(); // Validate immediately to set button state
+    checkSectionComplete();
 }
 
 function renderBridge(config, container) {
     document.getElementById('progress-text').textContent = config.subtitle || '';
 
+    // NOTE: Button here is just a standard button triggering JS. 
     const html = `
         <div class="bridge-container">
             <h2 class="bridge-title">${config.title}</h2>
             <div class="bridge-content bridge-desc">${config.content}</div>
-            <button class="btn-bridge" onclick="goNextSection()">${config.buttonText}</button>
+            <button type="button" class="btn-bridge" onclick="goNextSection()">${config.buttonText}</button>
         </div>
     `;
     container.innerHTML = html;
@@ -472,16 +476,17 @@ function renderTypeBW(q) {
         if (isBest) cardClass += ' has-best';
         if (isWorst) cardClass += ' has-worst';
 
+        // CRITICAL FIX: type="button" and event passing
         optionsHtml += `
             <div class="${cardClass}" id="q${q.id}_opt${optionIdx}">
                 <div class="scenario-content">${optText}</div>
                 <div class="selection-label label-best">Best</div>
                 <div class="selection-label label-worst">Worst</div>
                 <div class="scenario-actions">
-                    <button class="btn-select best ${isBest ? 'active' : ''}" 
-                        onclick="selectScenarioOption(${q.id}, ${optionIdx}, 'best')">Best</button>
-                    <button class="btn-select worst ${isWorst ? 'active' : ''}" 
-                        onclick="selectScenarioOption(${q.id}, ${optionIdx}, 'worst')">Worst</button>
+                    <button type="button" class="btn-select best ${isBest ? 'active' : ''}" 
+                        onclick="selectScenarioOption(event, ${q.id}, ${optionIdx}, 'best')">Best</button>
+                    <button type="button" class="btn-select worst ${isWorst ? 'active' : ''}" 
+                        onclick="selectScenarioOption(event, ${q.id}, ${optionIdx}, 'worst')">Worst</button>
                 </div>
             </div>
         `;
@@ -516,13 +521,17 @@ window.selectOption = function (qId, val) {
             card.classList.remove('selected');
         }
     });
-
-    // Real-time Validation Check
     checkSectionComplete();
 };
 
 // [ACTION] Type BW Selection (Best/Worst)
-window.selectScenarioOption = function (qId, optionIdx, type) {
+// CRITICAL FIX: Accepts 'event' to stop propagation
+window.selectScenarioOption = function (event, qId, optionIdx, type) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     // Init answer obj if missing
     if (!userAnswers[qId] || typeof userAnswers[qId] !== 'object') {
         userAnswers[qId] = { best: null, worst: null };
@@ -548,6 +557,7 @@ window.selectScenarioOption = function (qId, optionIdx, type) {
         }
     }
 
+    // Optimization: Do NOT re-render section. Just update DOM classes.
     updateScenarioDOM(qId);
 
     // Real-time Validation Check
@@ -559,6 +569,8 @@ function updateScenarioDOM(qId) {
     // Loop 1 to 4
     for (let i = 1; i <= 4; i++) {
         const card = document.getElementById(`q${qId}_opt${i}`);
+        if (!card) continue; // Safety check
+
         const btnBest = card.querySelector('.btn-select.best');
         const btnWorst = card.querySelector('.btn-select.worst');
 
@@ -567,11 +579,11 @@ function updateScenarioDOM(qId) {
         btnBest.classList.remove('active');
         btnWorst.classList.remove('active');
 
-        if (ans.best === i) {
+        if (ans && ans.best === i) {
             card.classList.add('has-best');
             btnBest.classList.add('active');
         }
-        if (ans.worst === i) {
+        if (ans && ans.worst === i) {
             card.classList.add('has-worst');
             btnWorst.classList.add('active');
         }
@@ -583,7 +595,6 @@ function checkSectionComplete() {
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn');
 
-    // If bridge, buttons handle themselves (no "Next" button in main nav)
     if (SECTIONS[currentSectionIdx].type === 'bridge') return;
 
     if (validateSectionSilently(currentSectionIdx)) {
@@ -636,27 +647,25 @@ function updateNavButtons(sectionIdx, isBridge) {
         submitBtn.style.display = 'none';
     }
 
-    // Disable by default, will be enabled by checkSectionComplete
     nextBtn.disabled = true;
     submitBtn.disabled = true;
 }
 
 function goPrevSection() {
     if (currentSectionIdx > 0) {
+        // Validation: No need to validate when going back
         currentSectionIdx--;
         renderSection(currentSectionIdx);
     }
 }
 
 function goNextSection() {
-    // If current is bridge, just proceed
     if (SECTIONS[currentSectionIdx].type === 'bridge') {
         currentSectionIdx++;
         renderSection(currentSectionIdx);
         return;
     }
 
-    // Double check roughly, but button should be enabled only if valid
     if (validateSectionSilently(currentSectionIdx)) {
         if (currentSectionIdx < SECTIONS.length - 1) {
             currentSectionIdx++;
