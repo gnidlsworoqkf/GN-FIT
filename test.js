@@ -1,4 +1,8 @@
-// test.js - 100 Questions (Critical Fix: Button Type & State Persistence)
+// test.js - Final Version 
+// Updates: 
+// 1. Strict Key Mapping for Q81-100 (Qxx_Best, Qxx_Worst)
+// 2. UI: Hidden Category Text
+// 3. UI: Styled Submit Button
 
 // [CONFIG] Google Apps Script URL
 const scriptURL = "https://script.google.com/macros/s/AKfycbymGazKH5ak6SG6-vE42MzzAwI6J-pvz78Q0bBgCbq6xPpqCTPptQPS439_r1KMOOij/exec";
@@ -350,12 +354,14 @@ document.addEventListener('DOMContentLoaded', () => {
     startTimer();
 
     // Event Listeners
-    // Prevent standard form submission if buttons are clicked wildly
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
 
     document.getElementById('prev-btn').addEventListener('click', goPrevSection);
     document.getElementById('next-btn').addEventListener('click', goNextSection);
-    document.getElementById('submit-btn').addEventListener('click', submitFinal);
+
+    // Styled Submit Button injected via HTML, ensure logic attached
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) submitBtn.addEventListener('click', submitFinal);
 
     // Initial Render
     renderSection(0);
@@ -382,30 +388,23 @@ function renderSection(sectionIdx) {
     const container = document.getElementById('question-list');
     const sectionConfig = SECTIONS[sectionIdx];
 
-    // Theme Update
     if (sectionConfig.themeVar) {
         document.documentElement.style.setProperty('--theme-color', `var(${sectionConfig.themeVar})`);
     }
 
-    // 1. Handle Bridge Screen
     if (sectionConfig.type === 'bridge') {
         renderBridge(sectionConfig, container);
-        updateNavButtons(sectionIdx, true); // Hide standard nav
+        updateNavButtons(sectionIdx, true);
         return;
     }
 
-    // 2. Handle Question Screen
     renderQuestions(sectionConfig, container);
-
-    // 3. Initial check for button state
     updateNavButtons(sectionIdx, false);
     checkSectionComplete();
 }
 
 function renderBridge(config, container) {
     document.getElementById('progress-text').textContent = config.subtitle || '';
-
-    // NOTE: Button here is just a standard button triggering JS. 
     const html = `
         <div class="bridge-container">
             <h2 class="bridge-title">${config.title}</h2>
@@ -418,7 +417,6 @@ function renderBridge(config, container) {
 }
 
 function renderQuestions(config, container) {
-    // Progress Calculation
     let pageNum = 0;
     if (currentSectionIdx >= 1 && currentSectionIdx <= 8) pageNum = currentSectionIdx;
     else if (currentSectionIdx >= 10) pageNum = currentSectionIdx - 1;
@@ -431,7 +429,7 @@ function renderQuestions(config, container) {
 
     let html = '';
     for (let i = config.start; i <= config.end; i++) {
-        const q = allQuestions[i]; // Access by index
+        const q = allQuestions[i];
         if (q.type === 'AB') {
             html += renderTypeAB(q);
         } else if (q.type === 'BW') {
@@ -443,11 +441,12 @@ function renderQuestions(config, container) {
 }
 
 function renderTypeAB(q) {
-    const saved = userAnswers[q.id]; // 'A' or 'B'
+    const saved = userAnswers[q.id];
     return `
     <div class="question-item">
         <div class="question-header">
             <span class="q-number">Q${q.id}</span>
+            <!-- Category hidden by request -->
         </div>
         <div class="options-grid">
             <div class="option-card ${saved === 'A' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'A')">
@@ -463,12 +462,11 @@ function renderTypeAB(q) {
 }
 
 function renderTypeBW(q) {
-    const saved = userAnswers[q.id] || {}; // { best: idx, worst: idx }
+    const saved = userAnswers[q.id] || {};
 
-    // Generate Options HTML
     let optionsHtml = '';
     q.options.forEach((optText, idx) => {
-        const optionIdx = idx + 1; // 1-based index
+        const optionIdx = idx + 1;
         const isBest = saved.best === optionIdx;
         const isWorst = saved.worst === optionIdx;
 
@@ -476,7 +474,6 @@ function renderTypeBW(q) {
         if (isBest) cardClass += ' has-best';
         if (isWorst) cardClass += ' has-worst';
 
-        // CRITICAL FIX: type="button" and event passing
         optionsHtml += `
             <div class="${cardClass}" id="q${q.id}_opt${optionIdx}">
                 <div class="scenario-content">${optText}</div>
@@ -496,7 +493,7 @@ function renderTypeBW(q) {
     <div class="question-item">
         <div class="question-header">
             <span class="q-number">Q${q.id}</span>
-            <span class="q-text" style="margin-left:auto; font-size:14px; color:#999;">${q.category}</span>
+            <!-- Category hidden by request -->
         </div>
         <div class="scenario-box">
             <div class="scenario-text">${q.scenario}</div>
@@ -507,10 +504,8 @@ function renderTypeBW(q) {
     </div>`;
 }
 
-// [ACTION] Type AB Selection
 window.selectOption = function (qId, val) {
     userAnswers[qId] = val;
-    // UI Update
     const inputs = document.getElementsByName(`q${qId}`);
     inputs.forEach(input => {
         const card = input.closest('.option-card');
@@ -524,15 +519,12 @@ window.selectOption = function (qId, val) {
     checkSectionComplete();
 };
 
-// [ACTION] Type BW Selection (Best/Worst)
-// CRITICAL FIX: Accepts 'event' to stop propagation
 window.selectScenarioOption = function (event, qId, optionIdx, type) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
 
-    // Init answer obj if missing
     if (!userAnswers[qId] || typeof userAnswers[qId] !== 'object') {
         userAnswers[qId] = { best: null, worst: null };
     }
@@ -540,41 +532,34 @@ window.selectScenarioOption = function (event, qId, optionIdx, type) {
     const currentBest = userAnswers[qId].best;
     const currentWorst = userAnswers[qId].worst;
 
-    // Logic: 
     if (type === 'best') {
         if (currentBest === optionIdx) {
-            userAnswers[qId].best = null; // Toggle off
+            userAnswers[qId].best = null;
         } else {
             userAnswers[qId].best = optionIdx;
-            if (currentWorst === optionIdx) userAnswers[qId].worst = null; // Conflict resolve
+            if (currentWorst === optionIdx) userAnswers[qId].worst = null;
         }
     } else if (type === 'worst') {
         if (currentWorst === optionIdx) {
-            userAnswers[qId].worst = null; // Toggle off
+            userAnswers[qId].worst = null;
         } else {
             userAnswers[qId].worst = optionIdx;
-            if (currentBest === optionIdx) userAnswers[qId].best = null; // Conflict resolve
+            if (currentBest === optionIdx) userAnswers[qId].best = null;
         }
     }
 
-    // Optimization: Do NOT re-render section. Just update DOM classes.
     updateScenarioDOM(qId);
-
-    // Real-time Validation Check
     checkSectionComplete();
 };
 
 function updateScenarioDOM(qId) {
     const ans = userAnswers[qId];
-    // Loop 1 to 4
     for (let i = 1; i <= 4; i++) {
         const card = document.getElementById(`q${qId}_opt${i}`);
-        if (!card) continue; // Safety check
-
+        if (!card) continue;
         const btnBest = card.querySelector('.btn-select.best');
         const btnWorst = card.querySelector('.btn-select.worst');
 
-        // Reset classes
         card.classList.remove('has-best', 'has-worst');
         btnBest.classList.remove('active');
         btnWorst.classList.remove('active');
@@ -590,7 +575,6 @@ function updateScenarioDOM(qId) {
     }
 }
 
-// [NAV] Real-time Validation
 function checkSectionComplete() {
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn');
@@ -599,10 +583,18 @@ function checkSectionComplete() {
 
     if (validateSectionSilently(currentSectionIdx)) {
         if (nextBtn) nextBtn.disabled = false;
-        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            // Apply Submit Button Styling (Green)
+            submitBtn.style.backgroundColor = '#89a230';
+            submitBtn.style.color = '#ffffff';
+        }
     } else {
         if (nextBtn) nextBtn.disabled = true;
-        if (submitBtn) submitBtn.disabled = true;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.backgroundColor = '#cccccc'; // Disabled gray
+        }
     }
 }
 
@@ -621,7 +613,6 @@ function validateSectionSilently(sectionIdx) {
     return true;
 }
 
-// [NAV] Buttons Logic
 function updateNavButtons(sectionIdx, isBridge) {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
@@ -634,11 +625,9 @@ function updateNavButtons(sectionIdx, isBridge) {
         return;
     }
 
-    // Prev Button
     if (sectionIdx === 1) prevBtn.style.display = 'none';
     else prevBtn.style.display = 'block';
 
-    // Submit Button
     if (sectionIdx === SECTIONS.length - 1) {
         nextBtn.style.display = 'none';
         submitBtn.style.display = 'block';
@@ -653,7 +642,6 @@ function updateNavButtons(sectionIdx, isBridge) {
 
 function goPrevSection() {
     if (currentSectionIdx > 0) {
-        // Validation: No need to validate when going back
         currentSectionIdx--;
         renderSection(currentSectionIdx);
     }
@@ -676,7 +664,6 @@ function goNextSection() {
     }
 }
 
-// [SUBMIT]
 async function submitFinal() {
     if (!validateSectionSilently(currentSectionIdx)) {
         alert("모든 문항에 답변해주세요.");
@@ -684,10 +671,10 @@ async function submitFinal() {
     }
     if (!confirm("모든 검사를 마쳤습니다. 제출하시겠습니까?")) return;
 
-    // UI Loading
     clearInterval(timerInterval);
-    document.getElementById('submit-btn').textContent = "전송 중...";
-    document.getElementById('submit-btn').disabled = true;
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.textContent = "전송 중...";
+    submitBtn.disabled = true;
     const overlay = document.getElementById('loading-overlay');
     if (overlay) overlay.style.display = 'flex';
 
@@ -696,11 +683,11 @@ async function submitFinal() {
     for (const key in userAnswers) {
         const val = userAnswers[key];
         if (typeof val === 'object') {
-            // BW Type
+            // STRICT KEY MAPPING for SJT: Qxx_Best, Qxx_Worst
             flatAnswers[`Q${key}_Best`] = val.best;
             flatAnswers[`Q${key}_Worst`] = val.worst;
         } else {
-            // AB Type
+            // Standard A/B
             flatAnswers[key] = val;
         }
     }
@@ -722,14 +709,12 @@ async function submitFinal() {
         timestamp: new Date().toLocaleString()
     };
 
-    // Backup
     try {
         const db = JSON.parse(localStorage.getItem('gnFit_db') || '[]');
         db.push(record);
         localStorage.setItem('gnFit_db', JSON.stringify(db));
     } catch (e) { console.error('Backup failed', e); }
 
-    // Send
     try {
         await fetch(scriptURL, {
             method: 'POST',
