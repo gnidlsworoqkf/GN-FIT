@@ -25,6 +25,10 @@
 
     --radius-md: 8px;
     --radius-lg: 20px;
+
+    /* Best/Worst Colors */
+    --color-best: #89a230;
+    --color-worst: #e74c3c;
 }
 
 body {
@@ -275,6 +279,10 @@ body {
         min-height: 90px;
         padding: 20px;
     }
+
+    .scenario-options-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* Loading Overlay for Data Submission */
@@ -320,4 +328,181 @@ body {
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* ========================================= */
+/* NEW STYLES FOR BRIDGE & SCENARIO QUESTIONS */
+/* ========================================= */
+
+/* Bridge Screen */
+.bridge-container {
+    max-width: 600px;
+    margin: 60px auto;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.8s ease;
+}
+
+.bridge-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-best);
+    /* 굿네이버스 그린 */
+    margin-bottom: 24px;
+}
+
+.bridge-desc {
+    font-size: 18px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 50px;
+    word-break: keep-all;
+}
+
+.btn-bridge {
+    background-color: var(--color-best);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 18px 60px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(137, 162, 48, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-bridge:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(137, 162, 48, 0.4);
+}
+
+/* Scenario Question Styles */
+.scenario-box {
+    background-color: #f8f9fa;
+    border-left: 5px solid var(--color-best);
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.scenario-text {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #333;
+    font-weight: 500;
+}
+
+.scenario-options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Full width for text heavy options */
+    gap: 16px;
+}
+
+.scenario-card {
+    background-color: #fff;
+    border: 2px solid #EEE;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    /* Mobile first stack */
+    gap: 15px;
+    transition: all 0.2s ease;
+}
+
+/* Flex row for desktop if needed, but text is long so column or row with wrap is better. 
+   Let's keep text and buttons separate. */
+.scenario-content {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #444;
+}
+
+.scenario-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 12px;
+}
+
+.btn-select {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #888;
+    transition: all 0.2s;
+}
+
+.btn-select.best:hover {
+    border-color: var(--color-best);
+    color: var(--color-best);
+    background-color: #f7fbf0;
+}
+
+.btn-select.best.active {
+    background-color: var(--color-best);
+    color: white;
+    border-color: var(--color-best);
+    box-shadow: 0 2px 8px rgba(137, 162, 48, 0.3);
+}
+
+.btn-select.worst:hover {
+    border-color: var(--color-worst);
+    color: var(--color-worst);
+    background-color: #fdf2f1;
+}
+
+.btn-select.worst.active {
+    background-color: var(--color-worst);
+    color: white;
+    border-color: var(--color-worst);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+/* Card States */
+.scenario-card.has-best {
+    border-color: var(--color-best);
+    background-color: #f9fcf5;
+}
+
+.scenario-card.has-worst {
+    border-color: var(--color-worst);
+    background-color: #fff5f5;
+}
+
+/* Label badges */
+.selection-label {
+    display: none;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-right: auto;
+    /* Push to left */
+}
+
+.scenario-card.has-best .selection-label.label-best {
+    display: inline-block;
+    background-color: var(--color-best);
+    color: white;
+}
+
+.scenario-card.has-worst .selection-label.label-worst {
+    display: inline-block;
+    background-color: var(--color-worst);
+    color: white;
 }
