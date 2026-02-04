@@ -4,155 +4,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GN-Fit 관리자 대시보드</title>
+    <title>GN-Fit 관리자 시스템</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #89a230;
-            --secondary: #2c3e50;
-            --bg-body: #F8F9FA;
-            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-            --radius-main: 24px;
-            --radius-sm: 12px;
-            --text-main: #343a40;
-            --text-sub: #868e96;
-            --color-mint: #E2ECE9;
-            --color-yellow: #FFF9DB;
+            --text: #343a40;
+            --bg: #f8f9fa;
+            --card-bg: #fff;
+            --radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            background: var(--bg);
             margin: 0;
             padding: 40px;
+            color: var(--text);
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 28px;
+        h1 {
+            font-size: 24px;
             font-weight: 700;
-            color: var(--secondary);
-            letter-spacing: -0.5px;
+            color: #2c3e50;
         }
 
-        .refresh-btn {
+        button {
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-refresh {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
+            padding: 10px 20px;
+            border-radius: 30px;
             font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(137, 162, 48, 0.3);
-            transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(137, 162, 48, 0.3);
         }
 
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .dash-grid {
+        /* Stats */
+        .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .dash-card {
-            background: white;
-            padding: 30px;
-            border-radius: var(--radius-main);
-            box-shadow: var(--card-shadow);
-            display: flex;
-            align-items: center;
             gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .dash-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 20px;
-            background: var(--bg-body);
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .s-icon {
+            width: 50px;
+            height: 50px;
+            background: #f1f3f5;
+            border-radius: 12px;
+            display: flex;
+            center;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            font-size: 20px;
         }
 
-        .dash-info h3 {
+        .s-info h3 {
             margin: 0 0 5px 0;
-            font-size: 14px;
-            color: var(--text-sub);
-            font-weight: 500;
+            font-size: 13px;
+            color: #868e96;
         }
 
-        .dash-info .value {
-            margin: 0;
-            font-size: 28px;
+        .s-info .val {
+            font-size: 24px;
             font-weight: 800;
-            color: var(--secondary);
+            color: var(--text);
         }
 
-        .table-panel {
-            background: white;
-            border-radius: var(--radius-main);
-            box-shadow: var(--card-shadow);
+        /* Table */
+        .table-container {
+            background: var(--card-bg);
             padding: 30px;
-            position: relative;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
 
-        .panel-header {
+        .action-bar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
-        .panel-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--secondary);
-        }
-
-        .bulk-actions {
-            display: flex;
-            gap: 10px;
+        .btn-bulk {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
             opacity: 0.5;
             pointer-events: none;
             transition: 0.3s;
         }
 
-        .bulk-actions.active {
+        .btn-bulk.active {
             opacity: 1;
             pointer-events: all;
-        }
-
-        .btn-bulk {
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .btn-black {
-            background: var(--secondary);
-            color: white;
         }
 
         table {
@@ -162,21 +134,16 @@
 
         th {
             text-align: left;
-            color: var(--text-sub);
-            font-size: 13px;
-            font-weight: 600;
             padding: 15px 10px;
-            border-bottom: 2px solid #f1f3f5;
+            font-size: 13px;
+            color: #adb5bd;
+            border-bottom: 2px solid #eee;
         }
 
         td {
             padding: 15px 10px;
-            border-bottom: 1px solid #f8f9fa;
             font-size: 14px;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
+            border-bottom: 1px solid #f8f9fa;
         }
 
         input[type="checkbox"] {
@@ -186,41 +153,20 @@
             cursor: pointer;
         }
 
-        .score-pill {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 700;
-            background: var(--color-mint);
-            color: #0b7285;
-        }
-
-        .btn-view {
-            background: #fff;
-            border: 1px solid #dee2e6;
-            padding: 6px 12px;
-            border-radius: 8px;
-            color: #495057;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .btn-view:hover {
-            background: #f8f9fa;
-        }
-
-        #pdf-factory {
-            position: fixed;
-            top: -9999px;
-            left: -9999px;
-            width: 794px;
+        .btn-small {
             background: white;
-            z-index: -1;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
         }
 
-        #progress-modal {
+        .btn-small:hover {
+            background: #f1f3f5;
+        }
+
+        /* Progress Modal */
+        #modal {
             display: none;
             position: fixed;
             top: 0;
@@ -228,286 +174,237 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
+            z-index: 999;
             justify-content: center;
             align-items: center;
         }
 
-        .progress-box {
+        .modal-box {
             background: white;
-            padding: 40px;
+            width: 300px;
+            padding: 30px;
             border-radius: 20px;
             text-align: center;
-            width: 300px;
         }
 
-        .p-bar-bg {
+        .p-bar {
             width: 100%;
-            height: 10px;
+            height: 8px;
             background: #eee;
-            border-radius: 5px;
-            margin: 20px 0;
+            border-radius: 4px;
+            margin: 15px 0;
             overflow: hidden;
         }
 
-        .p-bar-fill {
+        .p-fill {
             height: 100%;
             background: var(--primary);
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.2s;
         }
     </style>
 </head>
 
 <body>
     <header>
-        <h1>GN-Fit Admin</h1>
-        <button class="refresh-btn" onclick="fetchData()">🔄 데이터 새로고침</button>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <img src="gn_logo.jpg" alt="Logo" style="height: 40px;">
+            <h1>GN-Fit Admin</h1>
+        </div>
+        <button class="btn-refresh" onclick="loadData()">🔄 Refresh</button>
     </header>
 
-    <div class="dash-grid">
-        <div class="dash-card">
-            <div class="dash-icon" style="color: #4dabf7; background: #e7f5ff;">👥</div>
-            <div class="dash-info">
-                <h3>총 지원자</h3>
-                <div class="value" id="total-count">-</div>
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="s-icon">👥</div>
+            <div class="s-info">
+                <h3>Total</h3>
+                <div class="val" id="cnt-total">-</div>
             </div>
         </div>
-        <div class="dash-card">
-            <div class="dash-icon" style="color: #69db7c; background: #ebfbee;">📅</div>
-            <div class="dash-info">
-                <h3>오늘 응시</h3>
-                <div class="value" id="today-count">-</div>
+        <div class="stat-card">
+            <div class="s-icon">📅</div>
+            <div class="s-info">
+                <h3>Today</h3>
+                <div class="val" id="cnt-today">-</div>
             </div>
         </div>
-        <div class="dash-card">
-            <div class="dash-icon" style="color: #ffd43b; background: #fff9db;">🏆</div>
-            <div class="dash-info">
-                <h3>평균 점수</h3>
-                <div class="value" id="avg-score">-</div>
+        <div class="stat-card">
+            <div class="s-icon">�</div>
+            <div class="s-info">
+                <h3>Avg Score</h3>
+                <div class="val" id="avg-score">-</div>
             </div>
         </div>
     </div>
 
-    <div class="table-panel">
-        <div class="panel-header">
-            <div class="panel-title">지원자 리스트</div>
-            <div class="bulk-actions" id="bulk-actions">
-                <button class="btn-bulk btn-black" onclick="downloadSelectedPDFs()">
-                    📄 선택 항목 PDF 일괄 다운로드
-                </button>
-            </div>
+    <div class="table-container">
+        <div class="action-bar">
+            <strong>Applicant List</strong>
+            <button class="btn-bulk" id="btn-bulk" onclick="bulkDownload()">📄 Download Selected PDF</button>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th width="50"><input type="checkbox" id="check-all" onclick="toggleAll(this)"></th>
-                    <th>이름</th>
-                    <th>연락처</th>
-                    <th>응시 일시</th>
-                    <th>점수</th>
-                    <th>상태</th>
-                    <th>관리</th>
+                    <th width="40"><input type="checkbox" onchange="toggleAll(this)"></th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Date</th>
+                    <th>Score</th>
+                    <th>Action</th>
                 </tr>
             </thead>
-            <tbody id="table-body">
-                <tr>
-                    <td colspan="7" style="text-align:center; padding: 30px; color:#aaa;">데이터를 불러오는 중...</td>
-                </tr>
-            </tbody>
+            <tbody id="tbody"></tbody>
         </table>
     </div>
 
-    <iframe id="pdf-frame" style="position:fixed; top:-10000px; width:794px; height:1123px; border:none;"></iframe>
+    <!-- Hidden Iframe -->
+    <iframe id="report-frame" src="report.html"
+        style="position:fixed; top:-9999px; width:794px; height:1123px; border:none;"></iframe>
 
-    <div id="progress-modal">
-        <div class="progress-box">
-            <h3 style="margin:0; color:#333;">PDF 생성 중...</h3>
-            <p id="progress-text" style="color:#888; font-size:13px; margin-top:5px;">0 / 0</p>
-            <div class="p-bar-bg">
-                <div class="p-bar-fill" id="p-fill"></div>
+    <div id="modal">
+        <div class="modal-box">
+            <h4>Generating PDF...</h4>
+            <div id="p-status" style="font-size:12px; color:#888;">Starting...</div>
+            <div class="p-bar">
+                <div class="p-fill" id="p-fill"></div>
             </div>
-            <button onclick="cancelBulk()"
-                style="background:#eee; border:none; padding:8px 20px; border-radius:5px; cursor:pointer;">중단</button>
+            <button class="btn-small" onclick="stopCalc()">Cancel</button>
         </div>
     </div>
 
     <script>
-        const DATA_URL = "https://script.google.com/macros/s/AKfycbw4K1Jyx5FedXDf5yAmSsFL3eEg_1qwHgRAJNx9YKxlZ3DE5sKnzudc9fENzZBp4UVL/exec";
-        let allData = [];
-        let isCanceling = false;
+        const URL = "https://script.google.com/macros/s/AKfycbxWJqjwMgbsySFDu2toUnDaoqZb5AVLdtMB0FUjoO1lLpliA3KuoZfGEdUtlUPR4QnI/exec";
+        let db = [];
+        let stop = false;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const frame = document.getElementById('pdf-frame');
-            frame.src = "report.html";
-            fetchData();
-        });
+        // --- STRICT MAPPING ---
+        function mapUser(raw) {
+            // Find keys dynamically
+            return {
+                name: getVal(raw, ['성명', '이름', 'name']),
+                phone: getVal(raw, ['휴대폰번호', '연락처', '번호', 'phone']),
+                birth: getVal(raw, ['생년월일', '생년', 'birth']),
+                date: getVal(raw, ['타임스탬프', '응시일시', '일시', 'timestamp']),
+                raw: raw // keep raw for scoring
+            };
+        }
 
-        // Helper for Key Fallback
         function getVal(obj, keys) {
-            for (let k of keys) {
-                if (obj[k] !== undefined && obj[k] !== "") return obj[k];
-            }
+            for (let k of keys) if (obj[k] != null && obj[k] !== "") return obj[k];
             return "-";
         }
 
-        async function fetchData() {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">로딩 중...</td></tr>';
+        // --- SIMPLE SCORE ESTIMATOR FOR ADMIN VIEW --- 
+        // Note: Exact complex logic is in report.html. This is approximate for dashboard speed.
+        function estScore(raw) {
+            let s = 0;
+            // Simple Part 1
+            for (let i = 1; i <= 80; i++) if (raw['Q' + i] === 'A') s += 10; else s += 5;
+            // Simple Part 2 (Just add raw presence)
+            // Just return normalized approx index 0-100 for display
+            return Math.min(100, Math.round(s / 10)); // Rough estimate
+        }
 
+        async function loadData() {
             try {
-                const res = await fetch(DATA_URL);
+                const res = await fetch(URL);
                 const json = await res.json();
-                allData = json.reverse();
-
-                // DEBUG LOG for User/Dev
-                if (allData.length > 0) console.log("First Row Keys:", Object.keys(allData[0]));
-
-                updateDashboard(allData);
-                renderTable(allData);
-            } catch (e) {
-                console.error(e);
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">데이터 로드 실패</td></tr>';
-            }
+                db = json.reverse();
+                render();
+            } catch (e) { alert("Error loading data"); }
         }
 
-        function updateDashboard(data) {
-            document.getElementById('total-count').innerText = data.length;
+        function render() {
+            document.getElementById('cnt-total').innerText = db.length;
 
-            const now = new Date();
-            let realToday = 0;
-            data.forEach(d => {
-                const ts = getVal(d, ['timestamp', 'time', '일시']);
-                if (ts !== '-') {
-                    const dDate = new Date(ts);
-                    if (dDate.getDate() === now.getDate() && dDate.getMonth() === now.getMonth()) realToday++;
-                }
-            });
-            document.getElementById('today-count').innerText = realToday;
+            // Today
+            const now = new Date().toISOString().split('T')[0];
+            let today = 0;
 
-            let totalScoreSum = 0;
-            data.forEach(d => totalScoreSum += getScore(d));
-            const avg = data.length ? Math.round(totalScoreSum / data.length) : 0;
-            document.getElementById('avg-score').innerText = avg + "점";
-        }
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = "";
 
-        function getScore(user) {
-            let p1 = 0;
-            for (let i = 1; i <= 80; i++) if (user['Q' + i] === 'A') p1 += 1.25;
-            let p2 = 0;
-            for (let i = 81; i <= 100; i++) {
-                const b = user['Q' + i + '_Best'] || user['Q' + i + '_Best '];
-                const w = user['Q' + i + '_Worst'] || user['Q' + i + '_Worst '];
-                if (parseInt(b) == 1 && parseInt(w) == 2) p2 += 5;
-            }
-            return Math.round((p1 + p2) / 2);
-        }
+            db.forEach((item, idx) => {
+                const u = mapUser(item);
+                if (u.date.includes(now)) today++;
 
-        function renderTable(data) {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
-
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터가 없습니다.</td></tr>';
-                return;
-            }
-
-            data.forEach((row, idx) => {
                 const tr = document.createElement('tr');
-                const score = getScore(row);
-
-                // Robust Data Fetch
-                const name = getVal(row, ['name', '이름', '성명', '지원자']);
-                const phone = getVal(row, ['phone', 'contact', '연락처', '휴대폰', '전화번호']);
-                const ts = getVal(row, ['timestamp', 'time', '일시', '응시일시']);
-                const tsDisplay = ts !== '-' ? ts.split('T')[0] : '-';
-
                 tr.innerHTML = `
-                    <td><input type="checkbox" class="row-check" value="${idx}" onclick="checkBulkState()"></td>
-                    <td><b>${name}</b></td>
-                    <td style="color:#868e96">${phone}</td>
-                    <td>${tsDisplay}</td>
-                    <td><span class="score-pill">${score}점</span></td>
-                    <td><span style="font-size:12px; color:#adb5bd;">완료</span></td>
-                    <td>
-                        <button class="btn-view" onclick="openReport('${name}', '${phone}')">보기</button>
-                    </td>
+                    <td><input type="checkbox" class="chk" value="${idx}" onchange="chk()"></td>
+                    <td><b>${u.name}</b></td>
+                    <td>${u.phone}</td>
+                    <td>${u.date.split('T')[0]}</td>
+                    <td><span style="background:#e6fcf5; color:#0ca678; padding:3px 8px; border-radius:10px; font-size:12px; font-weight:700;">Completed</span></td>
+                    <td><button class="btn-small" onclick="view('${u.name}','${u.phone}')">View</button></td>
                 `;
                 tbody.appendChild(tr);
             });
+            document.getElementById('cnt-today').innerText = today;
+            document.getElementById('avg-score').innerText = "Analyzing"; // Placeholder
         }
 
-        function toggleAll(source) {
-            document.querySelectorAll('.row-check').forEach(c => c.checked = source.checked);
-            checkBulkState();
+        function toggleAll(el) {
+            document.querySelectorAll('.chk').forEach(c => c.checked = el.checked);
+            chk();
         }
 
-        function checkBulkState() {
-            const checked = document.querySelectorAll('.row-check:checked');
-            const bulkDiv = document.getElementById('bulk-actions');
-            if (checked.length > 0) bulkDiv.classList.add('active');
-            else bulkDiv.classList.remove('active');
+        function chk() {
+            const n = document.querySelectorAll('.chk:checked').length;
+            const btn = document.getElementById('btn-bulk');
+            if (n > 0) btn.classList.add('active'); else btn.classList.remove('active');
         }
 
-        function openReport(name, phone) {
-            window.location.href = `report.html?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
+        function view(n, p) {
+            window.location.href = `report.html?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}`;
         }
 
-        async function downloadSelectedPDFs() {
-            const checked = document.querySelectorAll('.row-check:checked');
-            if (checked.length === 0) return;
-            if (!confirm(`${checked.length}명의 보고서를 다운로드합니다.`)) return;
+        function stopCalc() { stop = true; document.getElementById('modal').style.display = 'none'; }
 
-            const modal = document.getElementById('progress-modal');
-            const pText = document.getElementById('progress-text');
-            const pFill = document.getElementById('p-fill');
-            modal.style.display = 'flex';
-            isCanceling = false;
+        async function bulkDownload() {
+            const list = document.querySelectorAll('.chk:checked');
+            if (list.length === 0) return;
+            if (!confirm(`Download ${list.length} files?`)) return;
 
-            const frameWin = document.getElementById('pdf-frame').contentWindow;
+            stop = false;
+            document.getElementById('modal').style.display = 'flex';
+            const frame = document.getElementById('report-frame').contentWindow;
 
-            if (!frameWin.loadForPrint) {
-                alert("템플릿 로딩 중... 잠시 후 다시 시도해주세요.");
-                modal.style.display = 'none';
-                return;
-            }
+            for (let i = 0; i < list.length; i++) {
+                if (stop) break;
+                const idx = list[i].value;
+                const raw = db[idx];
+                const u = mapUser(raw);
 
-            for (let i = 0; i < checked.length; i++) {
-                if (isCanceling) break;
+                // Update UI
+                document.getElementById('p-status').innerText = `Proccessing: ${u.name} (${i + 1}/${list.length})`;
+                document.getElementById('p-fill').style.width = `${((i + 1) / list.length) * 100}%`;
 
-                const idx = checked[i].value;
-                const user = allData[idx];
-                const cleanName = getVal(user, ['name', '이름', '성명']);
+                // 1. Inject Raw Data (Report handles logic)
+                frame.loadForPrint(raw); // Pass RAW object
 
-                pText.innerText = `${i + 1} / ${checked.length} (${cleanName})`;
-                pFill.style.width = `${((i + 1) / checked.length) * 100}%`;
+                // 2. Wait for Visuals (0.8s)
+                await new Promise(r => setTimeout(r, 800));
 
-                frameWin.loadForPrint(user); // Inject Data
-                await new Promise(r => setTimeout(r, 800)); // Wait for Anim
-
-                const element = frameWin.document.getElementById('report-content');
-                const birth = getVal(user, ['birth', '생년월일']);
-
+                // 3. Save
+                const el = frame.document.getElementById('report-content');
                 const opt = {
                     margin: 0,
-                    filename: `${cleanName}_${birth}_분석보고서.pdf`,
+                    filename: `${u.name}_${u.birth}_GNFit_보고서.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2 },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
+                await html2pdf().set(opt).from(el).save();
 
-                await html2pdf().set(opt).from(element).save();
+                // 4. Cool down (0.5s)
                 await new Promise(r => setTimeout(r, 500));
             }
-
-            modal.style.display = 'none';
-            if (!isCanceling) alert("완료되었습니다.");
+            document.getElementById('modal').style.display = 'none';
+            if (!stop) alert("Completed!");
         }
 
-        function cancelBulk() {
-            isCanceling = true;
-            document.getElementById('progress-modal').style.display = 'none';
-        }
+        window.onload = loadData;
     </script>
 </body>
 

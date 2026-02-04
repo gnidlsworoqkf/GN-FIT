@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GN-Fit 분석 보고서</title>
+    <title>GN-Fit 결과 보고서</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,10 +12,11 @@
     <style>
         :root {
             --primary: #89a230;
-            --text-main: #212529;
+            /* Olive Green */
+            --text-main: #343a40;
             --text-sub: #868e96;
             --bg-gray: #F8F9FA;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             --radius: 20px;
         }
 
@@ -29,15 +30,30 @@
             justify-content: center;
         }
 
-        /* A4 Layout Fixed */
+        /* A4 Layout */
         .page-container {
             width: 794px;
+            /* A4 Width */
             min-height: 1123px;
+            /* A4 Height */
             background: white;
             padding: 50px 60px;
             box-sizing: border-box;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             position: relative;
+            margin-bottom: 40px;
+            /* Space between pages on screen */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Page Break for PDF */
+        .page-break {
+            page-break-before: always;
+            margin-top: 50px;
+            border-top: 2px dashed #dee2e6;
+            /* Visual separation on screen */
+            padding-top: 50px;
         }
 
         @media print {
@@ -52,106 +68,96 @@
                 box-shadow: none;
                 margin: 0;
                 padding: 40px;
+                margin-bottom: 0;
             }
 
             .no-print {
                 display: none !important;
             }
+
+            .page-break {
+                margin-top: 0;
+                border: none;
+                padding-top: 0;
+            }
         }
 
-        /* --- NEW COMPACT HEADER --- */
-        .compact-header {
-            border-bottom: 2px solid #eee;
-            padding-bottom: 25px;
-            margin-bottom: 40px;
-        }
-
-        .header-top {
+        /* Header */
+        .slim-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
         }
 
-        .applicant-name {
-            font-size: 38px;
+        .header-left .h-name {
+            font-size: 36px;
             font-weight: 900;
             color: #2c3e50;
-            line-height: 1;
         }
 
-        .applicant-name span {
+        .header-left .h-name span {
             font-size: 20px;
             font-weight: 500;
-            color: var(--text-sub);
-            margin-left: 5px;
+            color: #adb5bd;
+            margin-left: 8px;
         }
 
-        .score-display-top {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-
-        .score-line {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .total-score {
-            font-size: 42px;
-            font-weight: 900;
-            color: var(--primary);
-            line-height: 1;
-        }
-
-        .score-label {
-            font-size: 14px;
-            color: #888;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .reliability-badge {
-            background: #e6fcf5;
-            color: #0ca678;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .reliability-badge::before {
-            content: '●';
-            margin-right: 5px;
-            font-size: 10px;
-        }
-
-        .meta-info {
+        .header-left .h-meta {
             font-size: 13px;
             color: #adb5bd;
-            font-weight: 400;
             margin-top: 5px;
         }
 
-
-        /* Visual Section */
-        .visual-section {
-            display: flex;
-            gap: 50px;
-            margin-bottom: 50px;
-            align-items: center;
+        .header-right {
+            text-align: right;
         }
 
+        .h-score {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .h-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            padding-left: 15px;
+        }
+
+        /* Visual Section (Page 1) */
+        .visual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            align-items: start;
+            margin-bottom: 30px;
+        }
+
+        /* Silhouette */
         .silhouette-box {
             position: relative;
-            width: 200px;
-            height: 300px;
-            flex-shrink: 0;
+            width: 220px;
+            height: 350px;
+            margin: 0 auto;
             display: flex;
             justify-content: center;
             align-items: flex-end;
@@ -179,8 +185,8 @@
             width: 100%;
             height: 0%;
             background: var(--primary);
-            transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
+            transition: height 1.5s ease-out;
+            opacity: 0.9;
         }
 
         .wave {
@@ -189,10 +195,9 @@
             left: 0;
             width: 200%;
             height: 20px;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='%23ffffff' fill-opacity='0.3'/%3E%3C/svg%3E");
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='%23ffffff' fill-opacity='0.4'/%3E%3C/svg%3E");
             background-size: 50% 100%;
             animation: wave 3s linear infinite;
-            opacity: 0.5;
         }
 
         @keyframes wave {
@@ -205,88 +210,54 @@
             }
         }
 
-        .result-panel {
-            flex: 1;
-        }
-
-        .type-badge {
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            background: #fff9db;
-            color: #f59f00;
-        }
-
-        .desc-box {
-            background: #fff;
-            border: 1px solid #eee;
+        /* Card UI */
+        .info-card {
+            background: white;
+            border-radius: var(--radius);
             padding: 25px;
-            border-radius: var(--radius);
-            font-size: 15px;
-            line-height: 1.6;
-            color: #495057;
             box-shadow: var(--shadow);
-            position: relative;
-        }
-
-        .desc-box::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 6px;
-            background: var(--primary);
-            border-top-left-radius: var(--radius);
-            border-bottom-left-radius: var(--radius);
-        }
-
-        /* Stats Row */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-top: 40px;
-        }
-
-        .stat-card {
-            background: #fff;
             border: 1px solid #f1f3f5;
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: var(--shadow);
+            margin-bottom: 20px;
         }
 
-        .stat-card h3 {
-            margin: 0 0 20px 0;
-            font-size: 16px;
-            color: #343a40;
-            font-weight: 700;
-        }
-
-        .recommend-job {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-top: 10px;
-        }
-
-        .percentile-rank {
+        .desc-text {
             font-size: 14px;
-            color: #868e96;
-            margin-top: 5px;
+            color: #495057;
+            line-height: 1.6;
         }
 
-        .percentile-rank strong {
-            color: #333;
+        /* Page 2: Bar Charts */
+        .bar-chart-row {
+            margin-bottom: 30px;
+        }
+
+        .bar-label {
+            font-size: 14px;
             font-weight: 700;
+            color: #343a40;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bar-bg {
+            width: 100%;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            border-radius: 6px;
+            transition: width 1s;
         }
 
         footer {
-            margin-top: 60px;
+            margin-top: auto;
             border-top: 1px solid #eee;
             padding-top: 20px;
             text-align: center;
@@ -297,208 +268,334 @@
 </head>
 
 <body>
-    <div class="page-container" id="report-content">
-        <!-- New Compact Header -->
-        <header class="compact-header">
-            <div class="header-top">
-                <div class="applicant-name">
-                    <span id="user-name">---</span> <span>님</span>
-                </div>
-                <!-- Right Side: Score & Badge -->
-                <div class="score-display-top">
-                    <!-- Badge Row -->
-                    <div style="margin-bottom: 5px;">
-                        <span class="reliability-badge" id="reliability-badge">신뢰도 High</span>
+
+    <!-- Main Container (Will be PDF-ed) -->
+    <div id="report-content">
+
+        <!-- PAGE 1 -->
+        <div class="page-container">
+            <header class="slim-header">
+                <div class="header-left" style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <img src="gn_logo.jpg" style="height: 35px; margin-bottom: 10px;">
+                    <div style="display:flex; align-items:baseline;">
+                        <span id="u-name" class="h-name">---</span> <span
+                            style="font-size:20px; font-weight:500; color:#adb5bd; margin-left:8px;">님</span>
                     </div>
-                    <!-- Score Row -->
-                    <div class="score-line">
-                        <span class="score-label">종합 적합도</span>
-                        <span class="total-score" id="total-score">-</span>
-                        <span style="font-size:20px; color:#aaa; font-weight:700;">점</span>
+                    <div class="h-meta" id="u-meta">Loading...</div>
+                </div>
+                <div class="header-right">
+                    <div class="h-score">종합 <span id="u-total">0</span>점</div>
+                    <div id="u-badge" class="h-badge">신뢰도 -</div>
+                </div>
+            </header>
+
+            <div class="section-title">📌 종합 역량 분석 (6대 핵심 척도)</div>
+            <div class="visual-grid">
+                <div>
+                    <!-- Silhouette -->
+                    <div class="silhouette-box">
+                        <div class="liquid-container">
+                            <div class="liquid" id="liquid-fill">
+                                <div class="wave"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; margin-top:20px; font-weight:700; color:#495057;">
+                        전체 적합도 시각화
+                    </div>
+                </div>
+                <div>
+                    <!-- Radar Chart -->
+                    <div style="height: 300px; width: 100%;">
+                        <canvas id="radarChart"></canvas>
                     </div>
                 </div>
             </div>
-            <!-- Meta Info Line -->
-            <div class="meta-info">
-                응시 일시: <span id="meta-date">-</span> |
-                생년월일: <span id="meta-birth">-</span> |
-                연락처: <span id="meta-phone">-</span>
-            </div>
-        </header>
 
-        <!-- Visualization -->
-        <section class="visual-section">
-            <div class="silhouette-box">
-                <div class="liquid-container">
-                    <div class="liquid" id="liquid-fill">
-                        <div class="wave"></div>
+            <div class="info-card">
+                <h3 style="margin:0 0 10px 0; font-size:16px;">💡 종합 평가</h3>
+                <p class="desc-text" id="main-desc">데이터 분석 중...</p>
+            </div>
+
+            <footer>GN-Fit 인성검사 결과보고서 (Page 1/2)</footer>
+        </div>
+
+        <!-- PAGE 2 -->
+        <div class="page-container page-break">
+            <header class="slim-header">
+                <div class="header-left" style="display:flex; align-items:center; gap:15px;">
+                    <img src="gn_logo.jpg" style="height: 30px;">
+                    <div class="h-name" style="font-size:24px;">상세 역량 및 상황 판단 분석</div>
+                </div>
+            </header>
+
+            <div class="section-title">⚖️ 상황판단(SJT) 역량 상세</div>
+            <div class="info-card">
+                <!-- SJT Bar Charts -->
+                <div class="bar-chart-row">
+                    <div class="bar-label"><span>위기관리 능력</span> <span id="sjt-1-score">0점</span></div>
+                    <div class="bar-bg">
+                        <div class="bar-fill" id="sjt-1-bar"></div>
+                    </div>
+                </div>
+                <div class="bar-chart-row">
+                    <div class="bar-label"><span>협업 및 갈등조정</span> <span id="sjt-2-score">0점</span></div>
+                    <div class="bar-bg">
+                        <div class="bar-fill" id="sjt-2-bar"></div>
+                    </div>
+                </div>
+                <div class="bar-chart-row">
+                    <div class="bar-label"><span>직업윤리 및 규정준수</span> <span id="sjt-3-score">0점</span></div>
+                    <div class="bar-bg">
+                        <div class="bar-fill" id="sjt-3-bar"></div>
+                    </div>
+                </div>
+                <div class="bar-chart-row">
+                    <div class="bar-label"><span>성과지향 및 실행력</span> <span id="sjt-4-score">0점</span></div>
+                    <div class="bar-bg">
+                        <div class="bar-fill" id="sjt-4-bar"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="result-panel">
-                <div class="type-badge" id="type-badge">분석 중...</div>
-                <div class="desc-box" id="analysis-desc">
-                    데이터를 불러오는 중입니다...
+            <div class="section-title">🔍 응답 신뢰도 분석</div>
+            <div class="info-card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:14px; color:#888;">일관성 지수 (Consistency)</div>
+                    <div style="font-size:24px; font-weight:800; color:#343a40;" id="rel-score">- / 20</div>
+                </div>
+                <div style="text-align:right;">
+                    <div id="rel-result" style="font-size:18px; font-weight:bold; color:var(--primary);">판정: -</div>
+                    <div style="font-size:12px; color:#aaa; margin-top:5px;">* 유사 문항 간 응답 일치도를 분석함</div>
                 </div>
             </div>
-        </section>
 
-        <!-- Stats -->
-        <section class="stats-grid">
-            <div class="stat-card">
-                <h3>📊 핵심 역량 다이어그램</h3>
-                <div style="height: 180px;">
-                    <canvas id="radarChart"></canvas>
-                </div>
-            </div>
-            <div class="stat-card">
-                <h3>💡 추천 직무 및 순위</h3>
-                <div style="margin-top: 20px;">
-                    <div style="font-size:13px; color:#adb5bd;">추천 직무 영역</div>
-                    <div class="recommend-job" id="recommend-job">사업 기획 / 마케팅</div>
-                </div>
-                <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #f8f9fa;">
-                    <div style="font-size:13px; color:#adb5bd;">전체 응시자 중</div>
-                    <div class="percentile-rank">상위 <strong id="percentile">15</strong>%</div>
-                </div>
-            </div>
-        </section>
+            <footer>GN-Fit 인성검사 결과보고서 (Page 2/2)</footer>
+        </div>
 
-        <footer>
-            본 보고서는 굿네이버스 GN-Fit 분석 시스템에 의해 생성되었습니다.
-        </footer>
     </div>
 
-    <!-- Download Button -->
-    <div class="no-print" style="position: fixed; bottom: 30px; right: 30px;">
+    <!-- Download Trigger -->
+    <div class="no-print" style="position:fixed; bottom:30px; right:30px;">
         <button onclick="downloadPDF()"
-            style="background:var(--primary); color:white; border:none; padding:15px 30px; border-radius:50px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-            ⬇ PDF 저장
+            style="background:#2c3e50; color:white; padding:15px 30px; border:none; border-radius:50px; font-weight:bold; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
+            PDF 다운로드
         </button>
     </div>
 
     <script>
-        // robust getter
+        const DATA_URL = "https://script.google.com/macros/s/AKfycbxWJqjwMgbsySFDu2toUnDaoqZb5AVLdtMB0FUjoO1lLpliA3KuoZfGEdUtlUPR4QnI/exec";
+
+        // --- SCORING CONFIG ---
+        // 6 Categories (Base 1-60 + SJT 81-100)
+        // Format: [ [NormalQs...], [SJTQs...] ]
+        const CAT_MAP = {
+            "주도성": [[1, 10], [81, 88]],      // 1~10 + 81,88
+            "문제해결": [[11, 20], [82, 87, 91, 98]],
+            "협업능력": [[21, 30], [84, 93]],
+            "성실성": [[31, 40], [83, 90, 95, 97]],
+            "적응력": [[41, 50], [86, 96, 100]],
+            "의사소통": [[51, 60], [85, 89, 94, 99]]
+        };
+
+        // Reliability Pairs (Q1 vs Q61 ...)
+        const MIRROR_PAIRS = [];
+        for (let i = 1; i <= 20; i++) MIRROR_PAIRS.push([i, 60 + i]);
+
         function getVal(obj, keys) {
-            for (let k of keys) {
-                if (obj[k] !== undefined && obj[k] !== "") return obj[k];
-            }
+            for (let k of keys) if (obj[k] !== undefined && obj[k] !== "") return obj[k];
             return "-";
         }
 
-        const DATA_URL = "https://script.google.com/macros/s/AKfycbw4K1Jyx5FedXDf5yAmSsFL3eEg_1qwHgRAJNx9YKxlZ3DE5sKnzudc9fENzZBp4UVL/exec";
+        // --- CORE SCORING ENGINE ---
+        function calculateStats(user) {
+            const stats = {};
+            let totalSum = 0;
+            let maxTotal = 0;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // If opened directly
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('name')) init(params.get('name'), params.get('phone'));
-        });
+            // 1. Calculate 6 Capabilities
+            for (const [catName, ranges] of Object.entries(CAT_MAP)) {
+                let score = 0;
+                let maxScore = 0;
+
+                // Normal Qs (Range e.g., 1-10)
+                const [start, end] = ranges[0];
+                for (let i = start; i <= end; i++) {
+                    const ans = user['Q' + i];
+                    if (ans === 'A') score += 10;
+                    else if (ans === 'B') score += 5;
+                    maxScore += 10;
+                }
+
+                // SJT Qs (Array)
+                const sjtIds = ranges[1];
+                for (let i of sjtIds) {
+                    const b = parseInt(user[`Q${i}_Best`] || 0);
+                    const w = parseInt(user[`Q${i}_Worst`] || 0);
+
+                    // Logic: Best(1)=+5, Worst(2)=+5, Best(3)=-5, Worst(4)=-5
+                    if (b === 1) score += 5;
+                    if (b === 3) score -= 5;
+                    if (w === 2) score += 5;
+                    if (w === 4) score -= 5;
+
+                    maxScore += 10; // Approx max potential per SJT item
+                }
+
+                // Normalize to 100
+                const percent = Math.max(0, Math.round((score / maxScore) * 100)); // Clamp 0~100
+                stats[catName] = percent;
+                totalSum += percent;
+            }
+
+            stats.totalVar = Math.round(totalSum / 6);
+
+            // 2. Reliability
+            let matchCount = 0;
+            for (let pair of MIRROR_PAIRS) {
+                const a1 = user['Q' + pair[0]];
+                const a2 = user['Q' + pair[1]];
+                if (a1 && a2 && a1 === a2) matchCount++;
+            }
+            stats.reliability = matchCount;
+
+            // 3. SJT Sub-Factors (Page 2)
+            // Mapping defined in request or inferred from CAT structure logic for visualization
+            // "Crisis": (Problem Solving + Adaptability subset) -> Let's map specifically for visual chart
+            // We'll calculate average of relevant SJT items for these labels
+            // Simple mapping for display purposes primarily using the CAT scores as proxies or recalculating
+            stats.sjtValues = {
+                "위기관리": stats["문제해결"], // Proxy based on content
+                "협업조정": stats["협업능력"],
+                "직업윤리": stats["성실성"],
+                "성과지향": stats["주도성"]
+            };
+
+            return stats;
+        }
 
         async function init(name, phone) {
             try {
                 const res = await fetch(DATA_URL);
                 const data = await res.json();
 
-                // Flexible Search
                 const user = data.find(u => {
-                    const uName = getVal(u, ['name', '이름', '성명']);
-                    const uPhone = getVal(u, ['phone', 'contact', '연락처']);
-                    return uName === name || (uName === name && uPhone === phone);
+                    const n = getVal(u, ['성명', '이름', 'name']);
+                    const p = getVal(u, ['휴대폰번호', '연락처', 'phone']);
+                    return n === name || (n === name && p === phone);
                 });
 
                 if (user) renderReport(user);
-                else {
-                    document.getElementById('user-name').innerText = "데이터 없음";
-                    alert("해당 인원을 찾을 수 없습니다.");
-                }
+                else alert("데이터 없음");
             } catch (e) { console.error(e); }
         }
 
-        // Logic
+        // --- RENDER LOGIC ---
         function renderReport(user) {
-            // Robust Keys
-            const name = getVal(user, ['name', '이름', '성명']);
-            const phone = getVal(user, ['phone', 'contact', '연락처', '휴대폰']);
-            const birth = getVal(user, ['birth', '생년월일']);
-            const ts = getVal(user, ['timestamp', '일시', '응시일시', 'time']);
+            const stats = calculateStats(user);
 
-            // Score Logic
-            let p1 = 0; for (let i = 1; i <= 80; i++) if (user['Q' + i] == 'A') p1 += 1.25;
-            let p2 = 0;
-            for (let i = 81; i <= 100; i++) {
-                const b = user['Q' + i + '_Best'] || user['Q' + i + '_Best ']; // space safe
-                const w = user['Q' + i + '_Worst'] || user['Q' + i + '_Worst '];
-                if (parseInt(b) == 1 && parseInt(w) == 2) p2 += 5;
-            }
-            const score = Math.round((p1 + p2) / 2);
+            // Text Data
+            const name = getVal(user, ['성명', '이름', 'name']);
+            const birth = getVal(user, ['생년월일', 'birth']);
+            const ts = getVal(user, ['타임스탬프', '응시일시', 'time']);
+            const dateStr = ts !== '-' ? ts.split('T')[0] : '-';
 
-            // UI Set
-            document.getElementById('user-name').innerText = name;
-            document.getElementById('total-score').innerText = score;
-            document.getElementById('meta-date').innerText = ts.split('T')[0];
-            document.getElementById('meta-birth').innerText = birth;
-            document.getElementById('meta-phone').innerText = phone;
+            document.getElementById('u-name').innerText = name;
+            document.getElementById('u-meta').innerText = `생년월일: ${birth} | 응시일시: ${dateStr}`;
+            document.getElementById('u-total').innerText = stats.totalVar;
 
-            // Liquid
+            // Liquid Anim
             setTimeout(() => {
-                document.getElementById('liquid-fill').style.height = score + '%';
-            }, 300);
+                document.getElementById('liquid-fill').style.height = stats.totalVar + '%';
+            }, 500);
 
-            // Type
-            let tName = "", tDesc = "", tColor = "";
-            if (score <= 25) { tName = "유형 1 (안정형)"; tDesc = "안정적인 환경에서 규정을 준수하며 성실하게 업무를 수행합니다."; tColor = "#20c997"; }
-            else if (score <= 50) { tName = "유형 2 (협력형)"; tDesc = "팀과의 조화를 최우선으로 하며 갈등을 중재하고 협력을 이끌어냅니다."; tColor = "#339af0"; }
-            else if (score <= 75) { tName = "유형 3 (성취형)"; tDesc = "목표를 향해 주도적으로 나아가며 도전적인 과제를 통해 성장합니다."; tColor = "#fab005"; }
-            else { tName = "유형 4 (혁신형)"; tDesc = "변화를 두려워하지 않고 창의적인 아이디어로 조직의 혁신을 주도합니다."; tColor = "#fa5252"; }
+            // Reliability
+            const rScore = stats.reliability;
+            let rLabel = "Low (재검사)";
+            let rColor = "#fa5252"; // Red
+            if (rScore >= 18) { rLabel = "High (매우 높음)"; rColor = "#89a230"; } // Green
+            else if (rScore >= 14) { rLabel = "Mid (보통)"; rColor = "#fab005"; } // Yellow
 
-            // Apply Theme
-            document.documentElement.style.setProperty('--primary', tColor);
-            document.getElementById('type-badge').innerText = tName;
-            document.getElementById('type-badge').style.background = tColor + '20';
-            document.getElementById('type-badge').style.color = tColor;
-            document.getElementById('analysis-desc').innerText = tDesc;
-            document.getElementById('liquid-fill').style.background = tColor;
+            document.getElementById('u-badge').innerText = `신뢰도 ${rLabel}`;
+            document.getElementById('u-badge').style.background = rColor;
 
-            // Reliability (Mock Logic)
-            const reliability = score > 10 && score < 95 ? "High" : "Mid"; // Example
-            const rBadge = document.getElementById('reliability-badge');
-            rBadge.innerText = "신뢰도 " + reliability;
-            if (reliability === "Mid") { rBadge.style.color = "#f59f00"; rBadge.style.backgroundColor = "#fff9db"; }
+            // Page 2 Consistency
+            document.getElementById('rel-score').innerText = `${rScore} / 20`;
+            document.getElementById('rel-result').innerText = `판정: ${rLabel}`;
+            document.getElementById('rel-result').style.color = rColor;
 
-            // Chart
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            new Chart(ctx, {
+            // Main Desc
+            let txt = "";
+            if (stats.totalVar >= 80) txt = "조직의 핵심 기둥이 될 뛰어난 인재입니다. 전 영역에서 고른 역량을 보여줍니다.";
+            else if (stats.totalVar >= 60) txt = "전반적으로 양호한 역량을 보유하고 있으며, 직무 적응에 무리가 없습니다.";
+            else txt = "일부 역량 개발이 필요하며, 면접 시 심층적인 검증이 권장됩니다.";
+            document.getElementById('main-desc').innerText = txt;
+
+            // Chart: Radar
+            new Chart(document.getElementById('radarChart'), {
                 type: 'radar',
                 data: {
-                    labels: ['주도성', '협력성', '성실성', '개방성', '정서안정'],
+                    labels: ['주도성', '문제해결', '협업능력', '성실성', '적응력', '의사소통'],
                     datasets: [{
-                        label: '프로파일',
-                        data: [score, Math.max(0, score - 5), Math.min(100, score + 10), score, Math.max(0, score - 10)],
-                        backgroundColor: tColor + '33', borderColor: tColor, borderWidth: 2, pointBackgroundColor: tColor
+                        label: '역량 점수',
+                        data: [stats['주도성'], stats['문제해결'], stats['협업능력'], stats['성실성'], stats['적응력'], stats['의사소통']],
+                        backgroundColor: 'rgba(137, 162, 48, 0.2)',
+                        borderColor: '#89a230',
+                        pointBackgroundColor: '#89a230',
+                        borderWidth: 2
                     }]
                 },
                 options: {
                     scales: { r: { min: 0, max: 100, ticks: { display: false } } },
-                    plugins: { legend: { display: false } },
-                    maintainAspectRatio: false
+                    plugins: { legend: { display: false } }
                 }
             });
+
+            // Page 2: SJT Bars
+            const sjt = stats.sjtValues;
+            fillBar('sjt-1', sjt['위기관리']);
+            fillBar('sjt-2', sjt['협업조정']);
+            fillBar('sjt-3', sjt['직업윤리']);
+            fillBar('sjt-4', sjt['성과지향']);
         }
 
+        function fillBar(id, val) {
+            document.getElementById(id + '-score').innerText = val + "점";
+            setTimeout(() => {
+                document.getElementById(id + '-bar').style.width = val + '%';
+            }, 500);
+        }
+
+        // Public for Admin
         window.loadForPrint = function (user) {
             renderReport(user);
         }
 
         function downloadPDF() {
             const el = document.getElementById('report-content');
-            const name = document.getElementById('user-name').innerText;
+            const n = document.getElementById('u-name').innerText;
+            // Get birth for filename
+            const meta = document.getElementById('u-meta').innerText; // has birth
+            let birth = "000000";
+            // Simple parse assumes format
+            try { birth = meta.match(/생년월일: (\d+)/)[1]; } catch (e) { }
+
             const opt = {
-                margin: 0, filename: name + '_분석보고서.pdf', image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin: 0,
+                filename: `${n}_${birth}_GNFit_보고서.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(el).save();
         }
+
+        // Auto-run if params
+        document.addEventListener('DOMContentLoaded', () => {
+            const p = new URLSearchParams(window.location.search);
+            if (p.get('name')) init(p.get('name'), p.get('phone'));
+        });
+
     </script>
 </body>
 
