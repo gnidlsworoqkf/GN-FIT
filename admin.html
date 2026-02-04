@@ -209,30 +209,30 @@
     <header>
         <div style="display:flex; align-items:center; gap:15px;">
             <img src="gn_logo.jpg" alt="Logo" style="height: 40px;">
-            <h1>GN-Fit Admin</h1>
+            <h1>GN-Fit 관리자 시스템</h1>
         </div>
-        <button class="btn-refresh" onclick="loadData()">🔄 Refresh</button>
+        <button class="btn-refresh" onclick="loadData()">🔄 데이터 새로고침</button>
     </header>
 
     <div class="stats-row">
         <div class="stat-card">
             <div class="s-icon">👥</div>
             <div class="s-info">
-                <h3>Total</h3>
+                <h3>총 응시자</h3>
                 <div class="val" id="cnt-total">-</div>
             </div>
         </div>
         <div class="stat-card">
             <div class="s-icon">📅</div>
             <div class="s-info">
-                <h3>Today</h3>
+                <h3>오늘 응시</h3>
                 <div class="val" id="cnt-today">-</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="s-icon">�</div>
+            <div class="s-icon">📊</div>
             <div class="s-info">
-                <h3>Avg Score</h3>
+                <h3>평균 점수</h3>
                 <div class="val" id="avg-score">-</div>
             </div>
         </div>
@@ -240,18 +240,18 @@
 
     <div class="table-container">
         <div class="action-bar">
-            <strong>Applicant List</strong>
-            <button class="btn-bulk" id="btn-bulk" onclick="bulkDownload()">📄 Download Selected PDF</button>
+            <strong>지원자 목록</strong>
+            <button class="btn-bulk" id="btn-bulk" onclick="bulkDownload()">📄 선택 항목 PDF 일괄 저장</button>
         </div>
         <table>
             <thead>
                 <tr>
                     <th width="40"><input type="checkbox" onchange="toggleAll(this)"></th>
-                    <th>Name</th>
-                    <th>Contact</th>
-                    <th>Date</th>
-                    <th>Score</th>
-                    <th>Action</th>
+                    <th>이름</th>
+                    <th>연락처</th>
+                    <th>응시일시</th>
+                    <th>상태</th>
+                    <th>관리</th>
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -264,12 +264,12 @@
 
     <div id="modal">
         <div class="modal-box">
-            <h4>Generating PDF...</h4>
-            <div id="p-status" style="font-size:12px; color:#888;">Starting...</div>
+            <h4>PDF 보고서 생성 중...</h4>
+            <div id="p-status" style="font-size:12px; color:#888;">준비 중...</div>
             <div class="p-bar">
                 <div class="p-fill" id="p-fill"></div>
             </div>
-            <button class="btn-small" onclick="stopCalc()">Cancel</button>
+            <button class="btn-small" onclick="stopCalc()">중단</button>
         </div>
     </div>
 
@@ -335,13 +335,13 @@
                     <td><b>${u.name}</b></td>
                     <td>${u.phone}</td>
                     <td>${u.date.split('T')[0]}</td>
-                    <td><span style="background:#e6fcf5; color:#0ca678; padding:3px 8px; border-radius:10px; font-size:12px; font-weight:700;">Completed</span></td>
-                    <td><button class="btn-small" onclick="view('${u.name}','${u.phone}')">View</button></td>
+                    <td><span style="background:#e6fcf5; color:#0ca678; padding:3px 8px; border-radius:10px; font-size:12px; font-weight:700;">검사 완료</span></td>
+                    <td><button class="btn-small" onclick="view('${u.name}','${u.phone}')">상세보기</button></td>
                 `;
                 tbody.appendChild(tr);
             });
             document.getElementById('cnt-today').innerText = today;
-            document.getElementById('avg-score').innerText = "Analyzing"; // Placeholder
+            document.getElementById('avg-score').innerText = "집계 중"; // Placeholder
         }
 
         function toggleAll(el) {
@@ -364,7 +364,7 @@
         async function bulkDownload() {
             const list = document.querySelectorAll('.chk:checked');
             if (list.length === 0) return;
-            if (!confirm(`Download ${list.length} files?`)) return;
+            if (!confirm(`선택한 ${list.length}명의 보고서를 다운로드하시겠습니까?`)) return;
 
             stop = false;
             document.getElementById('modal').style.display = 'flex';
@@ -377,7 +377,7 @@
                 const u = mapUser(raw);
 
                 // Update UI
-                document.getElementById('p-status').innerText = `Proccessing: ${u.name} (${i + 1}/${list.length})`;
+                document.getElementById('p-status').innerText = `생성 중: ${u.name} (${i + 1}/${list.length})`;
                 document.getElementById('p-fill').style.width = `${((i + 1) / list.length) * 100}%`;
 
                 // 1. Inject Raw Data (Report handles logic)
@@ -401,7 +401,7 @@
                 await new Promise(r => setTimeout(r, 500));
             }
             document.getElementById('modal').style.display = 'none';
-            if (!stop) alert("Completed!");
+            if (!stop) alert("일괄 다운로드가 완료되었습니다!");
         }
 
         window.onload = loadData;
