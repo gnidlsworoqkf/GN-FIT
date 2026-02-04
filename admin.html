@@ -4,216 +4,509 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리자 페이지 - 굿네이버스 GN-fit</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <title>GN-Fit 관리자 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            display: block;
-            padding: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: #f5f5f5;
+        :root {
+            --primary: #89a230;
+            --secondary: #2c3e50;
+            --bg-body: #F8F9FA;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            --radius-main: 24px;
+            --radius-sm: 12px;
+            --text-main: #343a40;
+            --text-sub: #868e96;
+            --color-mint: #E2ECE9;
+            --color-yellow: #FFF9DB;
         }
 
-        .admin-header {
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px;
+        }
+
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
-        .admin-title {
-            font-size: 24px;
-            color: #333;
+        header h1 {
+            margin: 0;
+            font-size: 28px;
             font-weight: 700;
+            color: var(--secondary);
+            letter-spacing: -0.5px;
         }
 
-        .admin-controls {
+        .refresh-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(137, 162, 48, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .dash-card {
+            background: white;
+            padding: 30px;
+            border-radius: var(--radius-main);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .dash-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            background: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        .dash-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        .dash-info .value {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+
+        .table-panel {
+            background: white;
+            border-radius: var(--radius-main);
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            position: relative;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .bulk-actions {
             display: flex;
             gap: 10px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
         }
 
-        .btn-excel {
-            background-color: #217346;
-            /* Excel Green */
-            color: white;
+        .bulk-actions.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .btn-bulk {
             padding: 10px 20px;
-            border-radius: 4px;
+            border-radius: 10px;
             border: none;
-            cursor: pointer;
             font-weight: 600;
-        }
-
-        .btn-clear {
-            background-color: #d9534f;
-            /* Danger Red */
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            border: none;
             cursor: pointer;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
         }
 
-        .btn-home {
-            background-color: #666;
+        .btn-black {
+            background: var(--secondary);
             color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        /* Table Styles */
-        .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
         }
 
         th {
-            background-color: #f8f9fa;
+            text-align: left;
+            color: var(--text-sub);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 15px 10px;
+            border-bottom: 2px solid #f1f3f5;
+        }
+
+        td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #f8f9fa;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .score-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
             font-weight: 700;
-            position: sticky;
+            background: var(--color-mint);
+            color: #0b7285;
+        }
+
+        .btn-view {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            padding: 6px 12px;
+            border-radius: 8px;
+            color: #495057;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .btn-view:hover {
+            background: #f8f9fa;
+        }
+
+        #pdf-factory {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 794px;
+            background: white;
+            z-index: -1;
+        }
+
+        #progress-modal {
+            display: none;
+            position: fixed;
             top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
         }
 
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .empty-msg {
-            text-align: center;
+        .progress-box {
+            background: white;
             padding: 40px;
-            color: #999;
+            border-radius: 20px;
+            text-align: center;
+            width: 300px;
+        }
+
+        .p-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .p-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
         }
     </style>
 </head>
 
 <body>
-    <div class="admin-header">
-        <h1 class="admin-title">응시자 데이터 관리</h1>
-        <div class="admin-controls">
-            <a href="index.html" class="btn-home">메인으로</a>
-            <button class="btn-clear" onclick="clearAllData()">전체 데이터 삭제</button>
-            <button class="btn-excel" onclick="exportToExcel()">엑셀 다운로드</button>
+    <header>
+        <h1>GN-Fit Admin</h1>
+        <button class="refresh-btn" onclick="fetchData()">🔄 데이터 새로고침</button>
+    </header>
+
+    <div class="dash-grid">
+        <div class="dash-card">
+            <div class="dash-icon" style="color: #4dabf7; background: #e7f5ff;">👥</div>
+            <div class="dash-info">
+                <h3>총 지원자</h3>
+                <div class="value" id="total-count">-</div>
+            </div>
+        </div>
+        <div class="dash-card">
+            <div class="dash-icon" style="color: #69db7c; background: #ebfbee;">📅</div>
+            <div class="dash-info">
+                <h3>오늘 응시</h3>
+                <div class="value" id="today-count">-</div>
+            </div>
+        </div>
+        <div class="dash-card">
+            <div class="dash-icon" style="color: #ffd43b; background: #fff9db;">🏆</div>
+            <div class="dash-info">
+                <h3>평균 점수</h3>
+                <div class="value" id="avg-score">-</div>
+            </div>
         </div>
     </div>
 
-    <div class="table-container">
-        <table id="data-table">
+    <div class="table-panel">
+        <div class="panel-header">
+            <div class="panel-title">지원자 리스트</div>
+            <div class="bulk-actions" id="bulk-actions">
+                <button class="btn-bulk btn-black" onclick="downloadSelectedPDFs()">
+                    📄 선택 항목 PDF 일괄 다운로드
+                </button>
+            </div>
+        </div>
+        <table>
             <thead>
                 <tr>
-                    <th>순번</th>
-                    <th>제출일시</th>
-                    <th>성명</th>
-                    <th>생년월일</th>
-                    <th>휴대폰 번호</th>
-                    <!-- Simply show count or basic stats, 60 columns is too wide for simple view, but will include in excel -->
-                    <th>응답 현황</th>
+                    <th width="50"><input type="checkbox" id="check-all" onclick="toggleAll(this)"></th>
+                    <th>이름</th>
+                    <th>연락처</th>
+                    <th>응시 일시</th>
+                    <th>점수</th>
+                    <th>상태</th>
+                    <th>관리</th>
                 </tr>
             </thead>
             <tbody id="table-body">
-                <!-- Data Injected Here -->
+                <tr>
+                    <td colspan="7" style="text-align:center; padding: 30px; color:#aaa;">데이터를 불러오는 중...</td>
+                </tr>
             </tbody>
         </table>
-        <div id="empty-msg" class="empty-msg" style="display: none;">저장된 데이터가 없습니다.</div>
+    </div>
+
+    <iframe id="pdf-frame" style="position:fixed; top:-10000px; width:794px; height:1123px; border:none;"></iframe>
+
+    <div id="progress-modal">
+        <div class="progress-box">
+            <h3 style="margin:0; color:#333;">PDF 생성 중...</h3>
+            <p id="progress-text" style="color:#888; font-size:13px; margin-top:5px;">0 / 0</p>
+            <div class="p-bar-bg">
+                <div class="p-bar-fill" id="p-fill"></div>
+            </div>
+            <button onclick="cancelBulk()"
+                style="background:#eee; border:none; padding:8px 20px; border-radius:5px; cursor:pointer;">중단</button>
+        </div>
     </div>
 
     <script>
-        const tableBody = document.getElementById('table-body');
-        const emptyMsg = document.getElementById('empty-msg');
-        let dbData = [];
+        const DATA_URL = "https://script.google.com/macros/s/AKfycbw4K1Jyx5FedXDf5yAmSsFL3eEg_1qwHgRAJNx9YKxlZ3DE5sKnzudc9fENzZBp4UVL/exec";
+        let allData = [];
+        let isCanceling = false;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Load Data
-            const storedData = localStorage.getItem('gnFit_db');
-            if (storedData) {
-                dbData = JSON.parse(storedData);
-            }
-
-            if (dbData.length === 0) {
-                emptyMsg.style.display = 'block';
-            } else {
-                renderTable();
-            }
+            const frame = document.getElementById('pdf-frame');
+            frame.src = "report.html";
+            fetchData();
         });
 
-        function renderTable() {
-            tableBody.innerHTML = dbData.map((item, index) => {
-                const answerCount = Object.keys(item.answers).length;
-                return `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${item.timestamp}</td>
-                        <td>${item.name}</td>
-                        <td>${item.birthdate}</td>
-                        <td>${item.phone}</td>
-                        <td>${answerCount} / 60 문항 완료</td>
-                    </tr>
-                `;
-            }).join('');
+        // Helper for Key Fallback
+        function getVal(obj, keys) {
+            for (let k of keys) {
+                if (obj[k] !== undefined && obj[k] !== "") return obj[k];
+            }
+            return "-";
         }
 
-        function exportToExcel() {
-            if (dbData.length === 0) {
-                alert("데이터가 없습니다.");
+        async function fetchData() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">로딩 중...</td></tr>';
+
+            try {
+                const res = await fetch(DATA_URL);
+                const json = await res.json();
+                allData = json.reverse();
+
+                // DEBUG LOG for User/Dev
+                if (allData.length > 0) console.log("First Row Keys:", Object.keys(allData[0]));
+
+                updateDashboard(allData);
+                renderTable(allData);
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">데이터 로드 실패</td></tr>';
+            }
+        }
+
+        function updateDashboard(data) {
+            document.getElementById('total-count').innerText = data.length;
+
+            const now = new Date();
+            let realToday = 0;
+            data.forEach(d => {
+                const ts = getVal(d, ['timestamp', 'time', '일시']);
+                if (ts !== '-') {
+                    const dDate = new Date(ts);
+                    if (dDate.getDate() === now.getDate() && dDate.getMonth() === now.getMonth()) realToday++;
+                }
+            });
+            document.getElementById('today-count').innerText = realToday;
+
+            let totalScoreSum = 0;
+            data.forEach(d => totalScoreSum += getScore(d));
+            const avg = data.length ? Math.round(totalScoreSum / data.length) : 0;
+            document.getElementById('avg-score').innerText = avg + "점";
+        }
+
+        function getScore(user) {
+            let p1 = 0;
+            for (let i = 1; i <= 80; i++) if (user['Q' + i] === 'A') p1 += 1.25;
+            let p2 = 0;
+            for (let i = 81; i <= 100; i++) {
+                const b = user['Q' + i + '_Best'] || user['Q' + i + '_Best '];
+                const w = user['Q' + i + '_Worst'] || user['Q' + i + '_Worst '];
+                if (parseInt(b) == 1 && parseInt(w) == 2) p2 += 5;
+            }
+            return Math.round((p1 + p2) / 2);
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터가 없습니다.</td></tr>';
                 return;
             }
 
-            // Flatten Data for Excel (Columns 1~60)
-            const excelData = dbData.map((item, idx) => {
-                const row = {
-                    '연번': idx + 1,
-                    '제출일시': item.timestamp,
-                    '성명': item.name,
-                    '생년월일': item.birthdate,
-                    '휴대폰번호': item.phone
-                };
+            data.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                const score = getScore(row);
 
-                // Add Q1~Q60
-                for (let i = 1; i <= 60; i++) {
-                    row[`Q${i}`] = item.answers[i] || '';
-                }
-                return row;
+                // Robust Data Fetch
+                const name = getVal(row, ['name', '이름', '성명', '지원자']);
+                const phone = getVal(row, ['phone', 'contact', '연락처', '휴대폰', '전화번호']);
+                const ts = getVal(row, ['timestamp', 'time', '일시', '응시일시']);
+                const tsDisplay = ts !== '-' ? ts.split('T')[0] : '-';
+
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="row-check" value="${idx}" onclick="checkBulkState()"></td>
+                    <td><b>${name}</b></td>
+                    <td style="color:#868e96">${phone}</td>
+                    <td>${tsDisplay}</td>
+                    <td><span class="score-pill">${score}점</span></td>
+                    <td><span style="font-size:12px; color:#adb5bd;">완료</span></td>
+                    <td>
+                        <button class="btn-view" onclick="openReport('${name}', '${phone}')">보기</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
-
-            // Create Workbook
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            XLSX.utils.book_append_sheet(wb, ws, "응시자데이터");
-
-            // Download
-            XLSX.writeFile(wb, `GN_fit_결과_${new Date().toISOString().slice(0, 10)}.xlsx`);
         }
 
-        function clearAllData() {
-            if (confirm("정말로 모든 응시자 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
-                localStorage.removeItem('gnFit_db');
-                dbData = [];
-                tableBody.innerHTML = '';
-                emptyMsg.style.display = 'block';
-                alert("삭제되었습니다.");
+        function toggleAll(source) {
+            document.querySelectorAll('.row-check').forEach(c => c.checked = source.checked);
+            checkBulkState();
+        }
+
+        function checkBulkState() {
+            const checked = document.querySelectorAll('.row-check:checked');
+            const bulkDiv = document.getElementById('bulk-actions');
+            if (checked.length > 0) bulkDiv.classList.add('active');
+            else bulkDiv.classList.remove('active');
+        }
+
+        function openReport(name, phone) {
+            window.location.href = `report.html?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
+        }
+
+        async function downloadSelectedPDFs() {
+            const checked = document.querySelectorAll('.row-check:checked');
+            if (checked.length === 0) return;
+            if (!confirm(`${checked.length}명의 보고서를 다운로드합니다.`)) return;
+
+            const modal = document.getElementById('progress-modal');
+            const pText = document.getElementById('progress-text');
+            const pFill = document.getElementById('p-fill');
+            modal.style.display = 'flex';
+            isCanceling = false;
+
+            const frameWin = document.getElementById('pdf-frame').contentWindow;
+
+            if (!frameWin.loadForPrint) {
+                alert("템플릿 로딩 중... 잠시 후 다시 시도해주세요.");
+                modal.style.display = 'none';
+                return;
             }
+
+            for (let i = 0; i < checked.length; i++) {
+                if (isCanceling) break;
+
+                const idx = checked[i].value;
+                const user = allData[idx];
+                const cleanName = getVal(user, ['name', '이름', '성명']);
+
+                pText.innerText = `${i + 1} / ${checked.length} (${cleanName})`;
+                pFill.style.width = `${((i + 1) / checked.length) * 100}%`;
+
+                frameWin.loadForPrint(user); // Inject Data
+                await new Promise(r => setTimeout(r, 800)); // Wait for Anim
+
+                const element = frameWin.document.getElementById('report-content');
+                const birth = getVal(user, ['birth', '생년월일']);
+
+                const opt = {
+                    margin: 0,
+                    filename: `${cleanName}_${birth}_분석보고서.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                await html2pdf().set(opt).from(element).save();
+                await new Promise(r => setTimeout(r, 500));
+            }
+
+            modal.style.display = 'none';
+            if (!isCanceling) alert("완료되었습니다.");
+        }
+
+        function cancelBulk() {
+            isCanceling = true;
+            document.getElementById('progress-modal').style.display = 'none';
         }
     </script>
 </body>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GN-Fit 분석 보고서</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #89a230;
+            --text-main: #212529;
+            --text-sub: #868e96;
+            --bg-gray: #F8F9FA;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            --radius: 20px;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            font-family: 'Noto Sans KR', sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* A4 Layout Fixed */
+        .page-container {
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 50px 60px;
+            box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+
+            .page-container {
+                width: 100%;
+                height: 100%;
+                box-shadow: none;
+                margin: 0;
+                padding: 40px;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* --- NEW COMPACT HEADER --- */
+        .compact-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 25px;
+            margin-bottom: 40px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .applicant-name {
+            font-size: 38px;
+            font-weight: 900;
+            color: #2c3e50;
+            line-height: 1;
+        }
+
+        .applicant-name span {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-sub);
+            margin-left: 5px;
+        }
+
+        .score-display-top {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .score-line {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .total-score {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .reliability-badge {
+            background: #e6fcf5;
+            color: #0ca678;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .reliability-badge::before {
+            content: '●';
+            margin-right: 5px;
+            font-size: 10px;
+        }
+
+        .meta-info {
+            font-size: 13px;
+            color: #adb5bd;
+            font-weight: 400;
+            margin-top: 5px;
+        }
+
+
+        /* Visual Section */
+        .visual-section {
+            display: flex;
+            gap: 50px;
+            margin-bottom: 50px;
+            align-items: center;
+        }
+
+        .silhouette-box {
+            position: relative;
+            width: 200px;
+            height: 300px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .liquid-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200'%3E%3Cpath d='M50,0 C30,0 20,20 20,30 C20,40 10,50 10,80 C10,120 25,120 25,150 L25,200 L45,200 L45,160 L55,160 L55,200 L75,200 L75,150 C75,120 90,120 90,80 C90,50 80,40 80,30 C80,20 70,0 50,0 Z'/%3E%3C/svg%3E");
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            mask-position: center;
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200'%3E%3Cpath d='M50,0 C30,0 20,20 20,30 C20,40 10,50 10,80 C10,120 25,120 25,150 L25,200 L45,200 L45,160 L55,160 L55,200 L75,200 L75,150 C75,120 90,120 90,80 C90,50 80,40 80,30 C80,20 70,0 50,0 Z'/%3E%3C/svg%3E");
+            -webkit-mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            background: #f1f3f5;
+        }
+
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--primary);
+            transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 200%;
+            height: 20px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='%23ffffff' fill-opacity='0.3'/%3E%3C/svg%3E");
+            background-size: 50% 100%;
+            animation: wave 3s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .result-panel {
+            flex: 1;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: #fff9db;
+            color: #f59f00;
+        }
+
+        .desc-box {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 25px;
+            border-radius: var(--radius);
+            font-size: 15px;
+            line-height: 1.6;
+            color: #495057;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .desc-box::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--primary);
+            border-top-left-radius: var(--radius);
+            border-bottom-left-radius: var(--radius);
+        }
+
+        /* Stats Row */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #f1f3f5;
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            color: #343a40;
+            font-weight: 700;
+        }
+
+        .recommend-job {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        .percentile-rank {
+            font-size: 14px;
+            color: #868e96;
+            margin-top: 5px;
+        }
+
+        .percentile-rank strong {
+            color: #333;
+            font-weight: 700;
+        }
+
+        footer {
+            margin-top: 60px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #ced4da;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-container" id="report-content">
+        <!-- New Compact Header -->
+        <header class="compact-header">
+            <div class="header-top">
+                <div class="applicant-name">
+                    <span id="user-name">---</span> <span>님</span>
+                </div>
+                <!-- Right Side: Score & Badge -->
+                <div class="score-display-top">
+                    <!-- Badge Row -->
+                    <div style="margin-bottom: 5px;">
+                        <span class="reliability-badge" id="reliability-badge">신뢰도 High</span>
+                    </div>
+                    <!-- Score Row -->
+                    <div class="score-line">
+                        <span class="score-label">종합 적합도</span>
+                        <span class="total-score" id="total-score">-</span>
+                        <span style="font-size:20px; color:#aaa; font-weight:700;">점</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Meta Info Line -->
+            <div class="meta-info">
+                응시 일시: <span id="meta-date">-</span> |
+                생년월일: <span id="meta-birth">-</span> |
+                연락처: <span id="meta-phone">-</span>
+            </div>
+        </header>
+
+        <!-- Visualization -->
+        <section class="visual-section">
+            <div class="silhouette-box">
+                <div class="liquid-container">
+                    <div class="liquid" id="liquid-fill">
+                        <div class="wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-panel">
+                <div class="type-badge" id="type-badge">분석 중...</div>
+                <div class="desc-box" id="analysis-desc">
+                    데이터를 불러오는 중입니다...
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>📊 핵심 역량 다이어그램</h3>
+                <div style="height: 180px;">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>💡 추천 직무 및 순위</h3>
+                <div style="margin-top: 20px;">
+                    <div style="font-size:13px; color:#adb5bd;">추천 직무 영역</div>
+                    <div class="recommend-job" id="recommend-job">사업 기획 / 마케팅</div>
+                </div>
+                <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #f8f9fa;">
+                    <div style="font-size:13px; color:#adb5bd;">전체 응시자 중</div>
+                    <div class="percentile-rank">상위 <strong id="percentile">15</strong>%</div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            본 보고서는 굿네이버스 GN-Fit 분석 시스템에 의해 생성되었습니다.
+        </footer>
+    </div>
+
+    <!-- Download Button -->
+    <div class="no-print" style="position: fixed; bottom: 30px; right: 30px;">
+        <button onclick="downloadPDF()"
+            style="background:var(--primary); color:white; border:none; padding:15px 30px; border-radius:50px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            ⬇ PDF 저장
+        </button>
+    </div>
+
+    <script>
+        // robust getter
+        function getVal(obj, keys) {
+            for (let k of keys) {
+                if (obj[k] !== undefined && obj[k] !== "") return obj[k];
+            }
+            return "-";
+        }
+
+        const DATA_URL = "https://script.google.com/macros/s/AKfycbw4K1Jyx5FedXDf5yAmSsFL3eEg_1qwHgRAJNx9YKxlZ3DE5sKnzudc9fENzZBp4UVL/exec";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // If opened directly
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('name')) init(params.get('name'), params.get('phone'));
+        });
+
+        async function init(name, phone) {
+            try {
+                const res = await fetch(DATA_URL);
+                const data = await res.json();
+
+                // Flexible Search
+                const user = data.find(u => {
+                    const uName = getVal(u, ['name', '이름', '성명']);
+                    const uPhone = getVal(u, ['phone', 'contact', '연락처']);
+                    return uName === name || (uName === name && uPhone === phone);
+                });
+
+                if (user) renderReport(user);
+                else {
+                    document.getElementById('user-name').innerText = "데이터 없음";
+                    alert("해당 인원을 찾을 수 없습니다.");
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Logic
+        function renderReport(user) {
+            // Robust Keys
+            const name = getVal(user, ['name', '이름', '성명']);
+            const phone = getVal(user, ['phone', 'contact', '연락처', '휴대폰']);
+            const birth = getVal(user, ['birth', '생년월일']);
+            const ts = getVal(user, ['timestamp', '일시', '응시일시', 'time']);
+
+            // Score Logic
+            let p1 = 0; for (let i = 1; i <= 80; i++) if (user['Q' + i] == 'A') p1 += 1.25;
+            let p2 = 0;
+            for (let i = 81; i <= 100; i++) {
+                const b = user['Q' + i + '_Best'] || user['Q' + i + '_Best ']; // space safe
+                const w = user['Q' + i + '_Worst'] || user['Q' + i + '_Worst '];
+                if (parseInt(b) == 1 && parseInt(w) == 2) p2 += 5;
+            }
+            const score = Math.round((p1 + p2) / 2);
+
+            // UI Set
+            document.getElementById('user-name').innerText = name;
+            document.getElementById('total-score').innerText = score;
+            document.getElementById('meta-date').innerText = ts.split('T')[0];
+            document.getElementById('meta-birth').innerText = birth;
+            document.getElementById('meta-phone').innerText = phone;
+
+            // Liquid
+            setTimeout(() => {
+                document.getElementById('liquid-fill').style.height = score + '%';
+            }, 300);
+
+            // Type
+            let tName = "", tDesc = "", tColor = "";
+            if (score <= 25) { tName = "유형 1 (안정형)"; tDesc = "안정적인 환경에서 규정을 준수하며 성실하게 업무를 수행합니다."; tColor = "#20c997"; }
+            else if (score <= 50) { tName = "유형 2 (협력형)"; tDesc = "팀과의 조화를 최우선으로 하며 갈등을 중재하고 협력을 이끌어냅니다."; tColor = "#339af0"; }
+            else if (score <= 75) { tName = "유형 3 (성취형)"; tDesc = "목표를 향해 주도적으로 나아가며 도전적인 과제를 통해 성장합니다."; tColor = "#fab005"; }
+            else { tName = "유형 4 (혁신형)"; tDesc = "변화를 두려워하지 않고 창의적인 아이디어로 조직의 혁신을 주도합니다."; tColor = "#fa5252"; }
+
+            // Apply Theme
+            document.documentElement.style.setProperty('--primary', tColor);
+            document.getElementById('type-badge').innerText = tName;
+            document.getElementById('type-badge').style.background = tColor + '20';
+            document.getElementById('type-badge').style.color = tColor;
+            document.getElementById('analysis-desc').innerText = tDesc;
+            document.getElementById('liquid-fill').style.background = tColor;
+
+            // Reliability (Mock Logic)
+            const reliability = score > 10 && score < 95 ? "High" : "Mid"; // Example
+            const rBadge = document.getElementById('reliability-badge');
+            rBadge.innerText = "신뢰도 " + reliability;
+            if (reliability === "Mid") { rBadge.style.color = "#f59f00"; rBadge.style.backgroundColor = "#fff9db"; }
+
+            // Chart
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['주도성', '협력성', '성실성', '개방성', '정서안정'],
+                    datasets: [{
+                        label: '프로파일',
+                        data: [score, Math.max(0, score - 5), Math.min(100, score + 10), score, Math.max(0, score - 10)],
+                        backgroundColor: tColor + '33', borderColor: tColor, borderWidth: 2, pointBackgroundColor: tColor
+                    }]
+                },
+                options: {
+                    scales: { r: { min: 0, max: 100, ticks: { display: false } } },
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        window.loadForPrint = function (user) {
+            renderReport(user);
+        }
+
+        function downloadPDF() {
+            const el = document.getElementById('report-content');
+            const name = document.getElementById('user-name').innerText;
+            const opt = {
+                margin: 0, filename: name + '_분석보고서.pdf', image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(el).save();
+        }
+    </script>
+</body>
+
+</html>
