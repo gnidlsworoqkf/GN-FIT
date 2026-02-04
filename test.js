@@ -1,15 +1,12 @@
-// test.js - Final Version 
-// Updates: 
-// 1. Strict Key Mapping for Q81-100 (Qxx_Best, Qxx_Worst)
-// 2. UI: Hidden Category Text
-// 3. UI: Styled Submit Button
+// test.js - Final Version (Strict Data, Cheat Keys, UI Polish)
 
 // [CONFIG] Google Apps Script URL
 const scriptURL = "https://script.google.com/macros/s/AKfycbymGazKH5ak6SG6-vE42MzzAwI6J-pvz78Q0bBgCbq6xPpqCTPptQPS439_r1KMOOij/exec";
 
 // [THEME CONFIG] Sections Configuration
+// Type: 'questions' (standard/scenario) or 'bridge' (guide screen)
 const SECTIONS = [
-    // --- BRIDGE 1 ---
+    // --- BRIDGE 1 (Index 0) ---
     {
         type: 'bridge',
         title: 'PART 1: 성향 및 역량 검사 안내',
@@ -20,7 +17,7 @@ const SECTIONS = [
         buttonText: '검사 시작하기',
         themeVar: '--section-1-color'
     },
-    // --- PART 1: QUESTIONS 1-80 (10 per page) ---
+    // --- PART 1: QUESTIONS 1-80 (Indices 1-8) ---
     { type: 'questions', start: 0, end: 9, themeVar: '--section-1-color', name: 'PART 1' },
     { type: 'questions', start: 10, end: 19, themeVar: '--section-2-color', name: 'PART 1' },
     { type: 'questions', start: 20, end: 29, themeVar: '--section-3-color', name: 'PART 1' },
@@ -30,7 +27,7 @@ const SECTIONS = [
     { type: 'questions', start: 60, end: 69, themeVar: '--section-1-color', name: 'PART 1' },
     { type: 'questions', start: 70, end: 79, themeVar: '--section-2-color', name: 'PART 1' },
 
-    // --- BRIDGE 2 ---
+    // --- BRIDGE 2 (Index 9) ---
     {
         type: 'bridge',
         title: 'PART 2: 상황 판단 검사 안내',
@@ -43,7 +40,7 @@ const SECTIONS = [
         buttonText: '이어서 시작하기',
         themeVar: '--section-3-color'
     },
-    // --- PART 2: QUESTIONS 81-100 (5 per page) ---
+    // --- PART 2: QUESTIONS 81-100 (Indices 10-13) ---
     { type: 'questions', start: 80, end: 84, themeVar: '--section-3-color', name: 'PART 2' },
     { type: 'questions', start: 85, end: 89, themeVar: '--section-1-color', name: 'PART 2' },
     { type: 'questions', start: 90, end: 94, themeVar: '--section-2-color', name: 'PART 2' },
@@ -352,6 +349,7 @@ let timerInterval = null;
 // [INIT] Page Load
 document.addEventListener('DOMContentLoaded', () => {
     startTimer();
+    injectCheatButtons(); // Add Cheat Keys
 
     // Event Listeners
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
@@ -366,6 +364,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Render
     renderSection(0);
 });
+
+// [CHEAT KEY] Helper
+function injectCheatButtons() {
+    const div = document.createElement('div');
+    div.style.position = 'fixed';
+    div.style.top = '10px';
+    div.style.left = '50%';
+    div.style.transform = 'translateX(-50%)';
+    div.style.zIndex = '9999';
+    div.style.display = 'flex';
+    div.style.gap = '10px';
+    div.style.opacity = '0.5';
+    div.onmouseenter = () => div.style.opacity = '1';
+    div.onmouseleave = () => div.style.opacity = '0.5';
+
+    const btnA = document.createElement('button');
+    btnA.innerText = "[MASTER] All A -> Jump 81";
+    btnA.style.padding = '5px 10px';
+    btnA.style.background = '#333';
+    btnA.style.color = 'white';
+    btnA.style.border = 'none';
+    btnA.style.borderRadius = '5px';
+    btnA.onclick = (e) => { e.preventDefault(); cheatFill('A'); };
+
+    const btnB = document.createElement('button');
+    btnB.innerText = "[MASTER] All B -> Jump 81";
+    btnB.style.padding = '5px 10px';
+    btnB.style.background = '#333';
+    btnB.style.color = 'white';
+    btnB.style.border = 'none';
+    btnB.style.borderRadius = '5px';
+    btnB.onclick = (e) => { e.preventDefault(); cheatFill('B'); };
+
+    div.appendChild(btnA);
+    div.appendChild(btnB);
+    document.body.appendChild(div);
+}
+
+function cheatFill(choice) {
+    if (!confirm(`1~80번을 모두 '${choice}'로 채우고 81번이 있는 페이지로 이동하시겠습니까?`)) return;
+
+    for (let i = 1; i <= 80; i++) {
+        userAnswers[i] = choice;
+    }
+    // Jump to Section 10 (Index 10 is Q81~84)
+    // Indexes: 0=Bridge1, 1-8=Part1, 9=Bridge2, 10=Part2(Q81-84)
+    currentSectionIdx = 10;
+    renderSection(currentSectionIdx);
+}
 
 // [UI] Timer
 function startTimer() {
@@ -585,15 +632,14 @@ function checkSectionComplete() {
         if (nextBtn) nextBtn.disabled = false;
         if (submitBtn) {
             submitBtn.disabled = false;
-            // Apply Submit Button Styling (Green)
-            submitBtn.style.backgroundColor = '#89a230';
-            submitBtn.style.color = '#ffffff';
+            // Submit Button Styling (Force Green, matching Previous button style)
+            submitBtn.style.cssText = "border: none !important; border-radius: 25px !important; background-color: #89a230 !important; color: white !important;";
         }
     } else {
         if (nextBtn) nextBtn.disabled = true;
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.style.backgroundColor = '#cccccc'; // Disabled gray
+            submitBtn.style.cssText = "border: none !important; border-radius: 25px !important; background-color: #cccccc !important; color: white !important;";
         }
     }
 }
@@ -636,8 +682,14 @@ function updateNavButtons(sectionIdx, isBridge) {
         submitBtn.style.display = 'none';
     }
 
+    // Default disabled
     nextBtn.disabled = true;
     submitBtn.disabled = true;
+
+    // Apply styling to submit button if visible
+    if (sectionIdx === SECTIONS.length - 1) {
+        submitBtn.style.cssText = "border: none !important; border-radius: 25px !important; background-color: #cccccc !important; color: white !important;";
+    }
 }
 
 function goPrevSection() {
@@ -678,18 +730,19 @@ async function submitFinal() {
     const overlay = document.getElementById('loading-overlay');
     if (overlay) overlay.style.display = 'flex';
 
-    // Flatten Data
+    // [STRICT DATA MAPPING]
     const flatAnswers = {};
-    for (const key in userAnswers) {
-        const val = userAnswers[key];
-        if (typeof val === 'object') {
-            // STRICT KEY MAPPING for SJT: Qxx_Best, Qxx_Worst
-            flatAnswers[`Q${key}_Best`] = val.best;
-            flatAnswers[`Q${key}_Worst`] = val.worst;
-        } else {
-            // Standard A/B
-            flatAnswers[key] = val;
-        }
+
+    // 1-80 Standard
+    for (let i = 1; i <= 80; i++) {
+        flatAnswers[i] = userAnswers[i] || "";
+    }
+
+    // 81-100 Strict Qxx_Best / Qxx_Worst
+    for (let i = 81; i <= 100; i++) {
+        const ans = userAnswers[i] || {};
+        flatAnswers[`Q${i}_Best`] = ans.best || "";  // 시트의 Q81_Best와 매칭
+        flatAnswers[`Q${i}_Worst`] = ans.worst || ""; // 시트의 Q81_Worst와 매칭
     }
 
     const name = localStorage.getItem('applicantName');
