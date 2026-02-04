@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검사 진행 - 굿네이버스 GN-fit 역량검사</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="test.css">
+</head>
+
+<body class="section-1">
+
+    <!-- Fixed Header with Progress Bar -->
+    <header class="test-header">
+        <div class="progress-container">
+            <div class="progress-info">
+                <span>GN-fit Competency Test</span>
+                <span id="timer-display" style="font-weight: bold; color: #ff6b6b;">소요 시간 00:00</span>
+                <span id="progress-text">0 / 60</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="progress-bar" class="progress-bar-fill"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container test-container">
+
+        <!-- Guide Text -->
+        <div class="guide-text-container" style="text-align: center; margin-bottom: 20px; padding: 0 15px;">
+            <h2 style="font-size: 1.3rem; margin-bottom: 8px; color: #333; word-break: keep-all;">본인을 더 잘 표현한다고 생각하는 문장을
+                선택해 주세요.</h2>
+            <p style="font-size: 0.95rem; color: #666; margin: 0; word-break: keep-all;">정답이 없으므로 너무 오래 고민하지 말고 평소 본인의
+                모습과 더 가까운 것을 선택하세요.</p>
+        </div>
+
+        <form id="test-form">
+            <div id="question-list">
+                <!-- Javascript will inject questions here -->
+                <div class="loading-placeholder">문항을 불러오는 중입니다...</div>
+            </div>
+
+            <div class="nav-area">
+                <button type="button" id="prev-btn" class="btn-prev" style="display: none;">이전</button>
+                <button type="button" id="next-btn" class="btn-next" disabled style="display: none;">다음</button>
+                <button type="button" id="submit-btn" class="btn-submit" style="display: none;">결과 분석하기</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">데이터를 안전하게 전송 중입니다...</div>
+    </div>
+
+    <!-- Data & Script -->
+    <script src="test.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검사 완료 - 굿네이버스 GN-fit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .result-icon {
+            font-size: 60px;
+            color: var(--primary-color);
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .result-message {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .result-sub {
+            font-size: 16px;
+            color: var(--text-sub);
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card" style="padding: 60px 40px;">
+            <header class="header">
+                <div class="logo-container">
+                    <img src="logo.jpg" alt="굿네이버스 로고" class="logo">
+                </div>
+            </header>
+
+            <div class="content">
+                <span class="result-icon">🎉</span>
+                <h1 class="result-message">모든 검사가 완료되었습니다.<br>고생하셨습니다.</h1>
+                <p class="result-sub">귀하의 답변은 시스템에 안전하게 기록되었습니다.</p>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-primary" onclick="window.location.href='index.html'">[검사 종료]</button>
+            </div>
+
+            <footer class="footer">
+                <p>Copyright &copy; Good Neighbors International. All rights reserved.</p>
+            </footer>
+        </div>
+    </div>
+</body>
+
+</html>

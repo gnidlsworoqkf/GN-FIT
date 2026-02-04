@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사단법인 굿네이버스 인터내셔날 - 인성검사</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <header class="header">
+                <div class="logo-container">
+                    <img src="logo.jpg" alt="굿네이버스 로고" class="logo">
+                </div>
+                <h1 class="title">굿네이버스 GN_fit 역량검사</h1>
+                <p class="subtitle">사단법인 굿네이버스 인터내셔날</p>
+            </header>
+
+            <form id="loginForm" class="login-form">
+                <!-- 부정 응시 방지 안내 -->
+                <p style="color: #d9534f; font-size: 13px; margin-bottom: 15px; line-height: 1.4; font-weight: 500;">
+                    정확한 본인 확인을 위해 입사지원서에 기재한 연락처로 로그인해 주세요.<br>
+                    허위 정보 입력 시 전형 결과 확인에 제한이 있을 수 있습니다.
+                </p>
+
+                <div class="input-group">
+                    <label for="name">성명 (Name)</label>
+                    <input type="text" id="name" name="name" placeholder="성명을 입력하세요" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="birth">생년월일 (Date of Birth)</label>
+                    <input type="text" id="birth" name="birth" placeholder="6자리(예: 950101)" maxlength="6"
+                        pattern="\d{6}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="phone">휴대폰 번호 (Phone Number)</label>
+                    <input type="tel" id="phone" name="phone" placeholder="'-' 제외 숫자만 입력 (예: 01012345678)"
+                        maxlength="11" pattern="\d{10,11}" required>
+                </div>
+
+                <div class="input-group consent-group"
+                    style="margin-top: 15px; display: flex; align-items: start; gap: 8px;">
+                    <input type="checkbox" id="agree" name="agree"
+                        style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer;">
+                    <label for="agree" style="font-size: 14px; color: #555; line-height: 1.4; cursor: pointer;">
+                        이름, 연락처, 생년월일 수집에 동의합니다.<br>
+                        <span style="font-size: 12px; color: #888;">수집된 정보는 검사 결과 확인용으로만 사용되며 종료 후 파기됩니다.</span>
+                    </label>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">검사 시작하기</button>
+                </div>
+            </form>
+
+            <footer class="footer">
+                <p>Copyright &copy; Good Neighbors International. All rights reserved.</p>
+                <p>정직하고 성실하게 답변해 주시기 바랍니다.</p>
+            </footer>
+        </div>
+        <!-- Hidden Admin Link -->
+        <div style="position: fixed; bottom: 10px; right: 10px; opacity: 0.1; font-size: 10px;">
+            <a href="#" id="admin-link" style="color: #000; text-decoration: none;">Admin</a>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('admin-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            const pw = prompt("관리자 비밀번호를 입력하세요:");
+            if (pw === '1234') {
+                window.location.href = 'admin.html';
+            } else if (pw !== null) {
+                alert("비밀번호가 일치하지 않습니다.");
+            }
+        });
+    </script>
+</body>
+
+
+</html>

@@ -1,0 +1,323 @@
+/* Inherit base styles from style.css but add test-specific overrides */
+:root {
+    /* Base Colors */
+    --primary-color: #89a230;
+    --bg-color: #c2b49a;
+    --card-bg: #FFFFFF;
+    --text-main: #333333;
+
+    /* Section Colors (Dynamic) */
+    --section-1-color: #c5db91;
+    /* Light Green */
+    --section-2-color: #c6afd1;
+    /* Purple */
+    --section-3-color: #ff7f3c;
+    /* Orange */
+
+    /* Current Theme Color (Updated via JS) */
+    --theme-color: var(--section-1-color);
+
+    /* Progress Bar */
+    --progress-bg: #E0E0E0;
+    /* Gray bg for better contrast */
+    --progress-fill: #ffd55b;
+    /* Yellow progress */
+
+    --radius-md: 8px;
+    --radius-lg: 20px;
+}
+
+body {
+    padding-top: 80px;
+    /* Space for fixed header */
+    transition: background-color 0.5s ease;
+}
+
+/* Fixed Header & Progress Bar */
+.test-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    padding: 16px 0;
+}
+
+.progress-container {
+    max-width: 800px;
+    /* Wider for test page */
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 10px;
+    background-color: var(--progress-bg);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--theme-color);
+    /* Use theme color for progress */
+    width: 0%;
+    /* JS will update this */
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
+}
+
+/* Test Content */
+.test-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px 20px 80px;
+}
+
+/* Hidden Section Title but kept for structure or accessible if needed */
+.section-marker {
+    display: none;
+    /* Requested to hide */
+}
+
+/* Question Card */
+.question-item {
+    background-color: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 35px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger animation for items */
+.question-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.question-item:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.question-item:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+/* ... roughly enough for visible viewport */
+
+.question-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #F0F0F0;
+}
+
+.q-number {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--theme-color);
+    transition: color 0.5s ease;
+}
+
+.q-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.option-card {
+    position: relative;
+    border: 2px solid #EAEAEA;
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 110px;
+    background-color: #FFFFFF;
+}
+
+.option-card:hover {
+    border-color: var(--theme-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.option-card.selected {
+    border-color: var(--theme-color);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px var(--theme-color), 0 8px 20px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    transform: translateY(-2px);
+}
+
+/* Theme specific overrides for selection tint if needed */
+.section-1 .option-card.selected {
+    background-color: #f7fbf0;
+}
+
+.section-2 .option-card.selected {
+    background-color: #fbf7fc;
+}
+
+.section-3 .option-card.selected {
+    background-color: #fff8f5;
+}
+
+
+.option-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-main);
+    line-height: 1.5;
+    word-break: keep-all;
+}
+
+/* Hidden Radio Input */
+.option-input {
+    display: none;
+}
+
+/* Navigation Buttons */
+.nav-area {
+    margin-top: 50px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-next,
+.btn-submit {
+    padding: 18px 50px;
+    background-color: var(--theme-color);
+    /* Use theme color for button */
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-next:hover,
+.btn-submit:hover {
+    filter: brightness(0.95);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-next:disabled,
+.btn-submit:disabled {
+    background-color: #E0E0E0;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .test-container {
+        padding: 20px 16px 60px;
+    }
+
+    .question-item {
+        padding: 24px;
+    }
+
+    .option-card {
+        min-height: 90px;
+        padding: 20px;
+    }
+}
+
+/* Loading Overlay for Data Submission */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    display: none;
+    /* JS will toggle */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #89a230;
+    /* Green */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loading-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
