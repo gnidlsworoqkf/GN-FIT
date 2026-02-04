@@ -1,10 +1,9 @@
-// test.js - 100 Questions (80 Personality + 20 Situational)
+// test.js - 100 Questions (Real-time Validation Fixed)
 
 // [CONFIG] Google Apps Script URL
 const scriptURL = "https://script.google.com/macros/s/AKfycbymGazKH5ak6SG6-vE42MzzAwI6J-pvz78Q0bBgCbq6xPpqCTPptQPS439_r1KMOOij/exec";
 
 // [THEME CONFIG] Sections Configuration
-// Type: 'questions' (standard/scenario) or 'bridge' (guide screen)
 const SECTIONS = [
     // --- BRIDGE 1 ---
     {
@@ -47,7 +46,7 @@ const SECTIONS = [
     { type: 'questions', start: 95, end: 99, themeVar: '--section-3-color', name: 'PART 2' }
 ];
 
-// [DATA] 1-80 (Personality) + 81-100 (Situational)
+// [DATA] 100 Questions
 const allQuestions = [
     // --- 1~80: 기존 성향 문항 ---
     { id: 1, type: 'AB', category: "주도적 능력", optionA: "가이드라인을 완벽히 숙달하는 것이 우선이다.", optionB: "효율을 높일 새로운 방법을 찾는 것이 우선이다." },
@@ -394,13 +393,13 @@ function renderSection(sectionIdx) {
 
     // 2. Handle Question Screen
     renderQuestions(sectionConfig, container);
+
+    // 3. Initial check for button state (in case needed)
     updateNavButtons(sectionIdx, false);
+    checkSectionComplete(); // Validate immediately to set button state
 }
 
 function renderBridge(config, container) {
-    // Hide standard progress bar during bridge if desired, or keep it.
-    // User Guide: "유의사항 확인 후 바로 문제를 띄우지 말고 ... 안내를 보여줘"
-    // Hide header info? Let's keep header but update text.
     document.getElementById('progress-text').textContent = config.subtitle || '';
 
     const html = `
@@ -415,15 +414,10 @@ function renderBridge(config, container) {
 }
 
 function renderQuestions(config, container) {
-    // Update Progress Bar
-    // We have 12 question sections (8 for Part 1, 4 for Part 2).
-    // Let's map section index to progress.
-    // Section 1-8 are indices 1-8. Section 9 is Bridge. Section 10-13 are indices 10-13.
-    // Total question pages = 12.
-    // Current Page Number Logic:
+    // Progress Calculation
     let pageNum = 0;
     if (currentSectionIdx >= 1 && currentSectionIdx <= 8) pageNum = currentSectionIdx;
-    else if (currentSectionIdx >= 10) pageNum = currentSectionIdx - 1; // 10->9, 11->10...
+    else if (currentSectionIdx >= 10) pageNum = currentSectionIdx - 1;
 
     const totalPages = 12;
     if (pageNum > 0) {
@@ -522,6 +516,9 @@ window.selectOption = function (qId, val) {
             card.classList.remove('selected');
         }
     });
+
+    // Real-time Validation Check
+    checkSectionComplete();
 };
 
 // [ACTION] Type BW Selection (Best/Worst)
@@ -535,7 +532,6 @@ window.selectScenarioOption = function (qId, optionIdx, type) {
     const currentWorst = userAnswers[qId].worst;
 
     // Logic: 
-    // If selecting Best, clear previous Best. If new Best was Worst, clear Worst.
     if (type === 'best') {
         if (currentBest === optionIdx) {
             userAnswers[qId].best = null; // Toggle off
@@ -552,9 +548,10 @@ window.selectScenarioOption = function (qId, optionIdx, type) {
         }
     }
 
-    // Re-render this specific question's options to reflect state?
-    // Partial re-render is complex, let's just update DOM classes manually for performance.
     updateScenarioDOM(qId);
+
+    // Real-time Validation Check
+    checkSectionComplete();
 };
 
 function updateScenarioDOM(qId) {
@@ -581,6 +578,38 @@ function updateScenarioDOM(qId) {
     }
 }
 
+// [NAV] Real-time Validation
+function checkSectionComplete() {
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // If bridge, buttons handle themselves (no "Next" button in main nav)
+    if (SECTIONS[currentSectionIdx].type === 'bridge') return;
+
+    if (validateSectionSilently(currentSectionIdx)) {
+        if (nextBtn) nextBtn.disabled = false;
+        if (submitBtn) submitBtn.disabled = false;
+    } else {
+        if (nextBtn) nextBtn.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
+    }
+}
+
+function validateSectionSilently(sectionIdx) {
+    const section = SECTIONS[sectionIdx];
+    for (let i = section.start; i <= section.end; i++) {
+        const q = allQuestions[i];
+        const ans = userAnswers[q.id];
+
+        if (q.type === 'AB') {
+            if (!ans) return false;
+        } else if (q.type === 'BW') {
+            if (!ans || !ans.best || !ans.worst) return false;
+        }
+    }
+    return true;
+}
+
 // [NAV] Buttons Logic
 function updateNavButtons(sectionIdx, isBridge) {
     const prevBtn = document.getElementById('prev-btn');
@@ -595,11 +624,7 @@ function updateNavButtons(sectionIdx, isBridge) {
     }
 
     // Prev Button
-    // If it's the first section OR first section after first bridge?
-    // Actually, if sectionIdx > 0, we can show prev.
-    // Exception: If prev section was bridge? User can go back to bridge.
-    if (sectionIdx === 1) prevBtn.style.display = 'none'; // Don't allow going back to Bridge 1? Or Allow?
-    // User requested "Bridge -> Start". Typically no "Prev" on Q1.
+    if (sectionIdx === 1) prevBtn.style.display = 'none';
     else prevBtn.style.display = 'block';
 
     // Submit Button
@@ -610,6 +635,10 @@ function updateNavButtons(sectionIdx, isBridge) {
         nextBtn.style.display = 'block';
         submitBtn.style.display = 'none';
     }
+
+    // Disable by default, will be enabled by checkSectionComplete
+    nextBtn.disabled = true;
+    submitBtn.disabled = true;
 }
 
 function goPrevSection() {
@@ -627,40 +656,23 @@ function goNextSection() {
         return;
     }
 
-    // Validate
-    if (validateSection(currentSectionIdx)) {
+    // Double check roughly, but button should be enabled only if valid
+    if (validateSectionSilently(currentSectionIdx)) {
         if (currentSectionIdx < SECTIONS.length - 1) {
             currentSectionIdx++;
             renderSection(currentSectionIdx);
         }
+    } else {
+        alert("모든 문항에 답변해주세요.");
     }
-}
-
-function validateSection(sectionIdx) {
-    const section = SECTIONS[sectionIdx];
-    const missing = [];
-
-    for (let i = section.start; i <= section.end; i++) {
-        const q = allQuestions[i];
-        const ans = userAnswers[q.id];
-
-        if (q.type === 'AB') {
-            if (!ans) missing.push(q.id);
-        } else if (q.type === 'BW') {
-            if (!ans || !ans.best || !ans.worst) missing.push(q.id);
-        }
-    }
-
-    if (missing.length > 0) {
-        alert(`아직 답변하지 않은 문항이 있습니다.\n(Q${missing[0]}번)`);
-        return false;
-    }
-    return true;
 }
 
 // [SUBMIT]
 async function submitFinal() {
-    if (!validateSection(currentSectionIdx)) return;
+    if (!validateSectionSilently(currentSectionIdx)) {
+        alert("모든 문항에 답변해주세요.");
+        return;
+    }
     if (!confirm("모든 검사를 마쳤습니다. 제출하시겠습니까?")) return;
 
     // UI Loading
