@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GN-Fit 결과 분석 리포트</title>
+    <title>GN-Fit 결과 분석 리포트 - 상세 진단용</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,13 +20,16 @@
             --deep: #2d3e1d;
             /* Deep Green */
             --danger: #ff4d4d;
-            /* Red for Max */
+            /* Red (High Score) */
             --info: #4d79ff;
-            /* Blue for Min */
+            /* Blue (Low Score) */
+            --black: #000000;
+            /* Default Text */
             --bg-gray: #f8f9fa;
-            /* Light Gray for Summary Box */
+            /* Summary Box Background */
         }
 
+        /* 전체 레이아웃 정밀 조절 */
         body {
             background: #f1f3f5;
             font-family: 'Noto Sans KR', sans-serif;
@@ -32,126 +38,124 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: #333;
+            word-break: keep-all;
         }
 
         .page-container {
             width: 794px;
+            /* A4 정규 규격 */
             min-height: 1123px;
             background: white;
-            padding: 50px 60px;
+            padding: 60px 75px;
             box-sizing: border-box;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
             position: relative;
             display: flex;
             flex-direction: column;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .page-break {
             page-break-before: always;
         }
 
-        /* HEADER */
+        /* 상단 헤더 섹션 */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            border-bottom: 3px solid #222;
+            padding-bottom: 25px;
+            margin-bottom: 40px;
         }
 
         .h-title {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
-            color: #343a40;
-            letter-spacing: -1px;
+            color: #111;
+            letter-spacing: -1.5px;
         }
 
         .score-display {
-            font-size: 48px;
+            font-size: 55px;
             font-weight: 900;
             color: var(--primary);
+            line-height: 0.9;
         }
 
-        /* HERO - Summary Box with Light Gray BG and Accent Border */
+        /* 종합 의견 박스 (회색 배경 + 포인트 선) */
         .hero {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .hero-main {
-            font-size: 19px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--deep);
-            line-height: 1.5;
+            line-height: 1.6;
             background-color: var(--bg-gray);
-            padding: 20px 25px;
-            border-left: 6px solid var(--primary);
-            border-radius: 8px;
+            padding: 28px 35px;
+            border-left: 10px solid var(--primary);
+            border-radius: 0 15px 15px 0;
+            box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.03);
         }
 
-        .hero-sub {
-            font-size: 16px;
-            font-weight: 700;
-            color: #666;
-            margin-top: 10px;
-            padding-left: 5px;
-        }
-
-        /* VISUAL (Icon & Chart) */
+        /* 비주얼 데이터 영역 (아이콘 & 차트) */
         .visual-row {
             display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: 130px 1fr;
+            gap: 45px;
+            margin-bottom: 50px;
             align-items: center;
         }
 
         .chart-box {
-            height: 400px;
+            height: 440px;
             width: 100%;
             position: relative;
         }
 
-        /* Expert Cards */
+        /* 강점 및 보완점 카드 디자인 */
         .card {
-            border-top: 3px solid #eee;
-            padding-top: 15px;
-            margin-bottom: 25px;
+            border-top: 4px solid #eee;
+            padding-top: 25px;
+            margin-bottom: 35px;
         }
 
         .sec-title {
-            font-size: 16px;
-            font-weight: 800;
-            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .list-item {
-            font-size: 13.5px;
-            margin-bottom: 10px;
-            padding-left: 12px;
+            font-size: 14.5px;
+            margin-bottom: 15px;
+            padding-left: 18px;
             position: relative;
             color: #444;
-            line-height: 1.6;
+            line-height: 1.75;
         }
 
         .list-item::before {
-            content: '•';
+            content: '■';
             position: absolute;
             left: 0;
+            font-size: 9px;
+            top: 5px;
             color: var(--primary);
-            font-weight: bold;
         }
 
-        /* LOADING OVERLAY */
+        /* 로딩 오버레이 (초기 대기 화면) */
         #loading-overlay {
-            position: absolute;
+            position: fixed;
             inset: 0;
             background: white;
-            z-index: 99;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -159,12 +163,12 @@
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid var(--primary);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         }
 
         @keyframes spin {
@@ -181,58 +185,68 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
+            z-index: 999;
         }
 
         footer {
-            font-size: 11px;
+            font-size: 12px;
             color: #adb5bd;
             text-align: center;
             margin-top: auto;
-            padding-top: 20px;
+            padding-top: 30px;
+            border-top: 1px solid #f1f3f5;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 
 <body>
 
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-status" style="margin-top:25px; font-weight:800; color:var(--deep); font-size:20px;">지원자 역량
+            리포트를 구성하는 중...</div>
+    </div>
+
     <div id="report-content">
         <div class="page-container">
-            <div id="loading-overlay">
-                <div class="spinner"></div>
-                <div style="margin-top:15px; font-weight:700; color:var(--deep);">데이터 분석 중...</div>
-            </div>
-
             <header class="header">
                 <div>
-                    <div class="h-title"><span id="u-name">---</span> 간사님 결과 분석</div>
-                    <div style="font-size:13px; color:#adb5bd; margin-top:5px;" id="u-meta">분석 데이터를 불러오는 중입니다...</div>
+                    <div class="h-title"><span id="u-name">---</span> 간사님 역량 정밀 진단</div>
+                    <div id="u-meta" style="font-size:14px; color:#666; margin-top:10px; font-weight:500;"></div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:12px; color:#adb5bd;">Total Score</div>
+                    <div style="font-size:13px; color:#aaa; font-weight:800;">TOTAL SCORE</div>
                     <div class="score-display" id="u-total">0</div>
                 </div>
             </header>
 
             <div class="hero">
-                <div class="hero-main" id="hero-text">종합 분석 의견을 생성하고 있습니다.</div>
-                <div class="hero-sub" id="hero-rank"></div>
+                <div class="hero-main" id="hero-text">...</div>
+                <div id="hero-rank"
+                    style="font-size:17px; font-weight:700; color:#555; margin-top:15px; padding-left:10px;"></div>
             </div>
 
             <div class="visual-row">
                 <div style="text-align:center;">
-                    <svg viewBox="0 0 100 200" width="100" height="200">
+                    <svg viewBox="0 0 100 200" width="100" height="200"
+                        style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
                         <defs>
-                            <clipPath id="humanSilhouette">
+                            <clipPath id="humanMask">
                                 <path
                                     d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z" />
                             </clipPath>
                         </defs>
                         <path
                             d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z"
-                            fill="none" stroke="#89a230" stroke-width="2" />
+                            fill="none" stroke="#89a230" stroke-width="3" />
                         <rect id="scoreFill" x="0" y="200" width="100" height="0" fill="#89a230"
-                            clip-path="url(#humanSilhouette)" style="transition: all 1.5s ease-out; opacity: 0.8;" />
+                            clip-path="url(#humanMask)"
+                            style="transition: all 2s cubic-bezier(0.19, 1, 0.22, 1); opacity: 0.9;" />
                     </svg>
+                    <div
+                        style="margin-top:12px; font-size:12px; font-weight:800; color:var(--primary); text-transform:uppercase;">
+                        Fit Gauge</div>
                 </div>
                 <div class="chart-box">
                     <canvas id="competencyChart"></canvas>
@@ -241,158 +255,200 @@
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
                 <div class="card" style="border-top-color: #40c057;">
-                    <div class="sec-title" style="color:#2b8a3e;">강점 (Strength)</div>
+                    <div class="sec-title" style="color:#2b8a3e;">💡 핵심 강점 (Key Strengths)</div>
                     <div id="strength-list"></div>
                 </div>
                 <div class="card" style="border-top-color: #fd7e14;">
-                    <div class="sec-title" style="color:#e67700;">보완점 (Weakness)</div>
+                    <div class="sec-title" style="color:#e67700;">⚠️ 보완 필요점 (Growth Areas)</div>
                     <div id="weakness-list"></div>
                 </div>
             </div>
 
-            <footer>GN-Fit Analysis Report [Page 1]</footer>
+            <footer>© 굿네이버스 GN-Fit 역량 분석 시스템 | Confidential [1/2]</footer>
         </div>
 
         <div class="page-container page-break">
             <header class="header">
-                <div class="h-title" style="font-size:24px;">심층 분석 리포트</div>
-                <div style="color:#adb5bd; font-size:12px;">GN-Fit Professional Analysis</div>
+                <div class="h-title" style="font-size:26px; color:#444;">심층 분석 리포트 (In-Depth)</div>
+                <div style="color:#adb5bd; font-size:13px; font-weight:600; text-transform:uppercase;">Candidate
+                    Assessment Detail</div>
             </header>
 
-            <div class="card" style="border-top-color: #fa5252;">
-                <div class="sec-title" style="color:var(--danger);">🛑 Red Flag (가치관 충돌 위험)</div>
+            <div class="card" style="border-top-color: var(--danger);">
+                <div class="sec-title" style="color:var(--danger);">🛑 Red Flag (리스크 감지 항목)</div>
                 <div id="redflag-list" style="color:#c92a2a; font-weight:500;"></div>
             </div>
 
             <div class="card">
-                <div class="sec-title">💡 역설적 성향 (Paradox)</div>
+                <div class="sec-title" style="color:var(--deep);">🧩 역설적 성향 분석</div>
                 <div id="paradox-list"></div>
             </div>
 
             <div class="card">
-                <div class="sec-title">✅ 면접관 가이드 (Interview Check)</div>
+                <div class="sec-title" style="color:#000;">🎤 면접관을 위한 추천 질문</div>
                 <div id="interview-guide"></div>
             </div>
 
             <div
-                style="margin-top:auto; background:#f8f9fa; padding:25px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                style="margin-top:auto; background:#f8f9fa; padding:35px; border-radius:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
                 <div>
-                    <div style="font-weight:700; color:var(--deep);">응답 신뢰도 (Reliability)</div>
-                    <div style="font-size:12px; color:#868e96;">거울 문항 및 일치도 검증 결과</div>
+                    <div style="font-weight:900; font-size:17px; color:var(--deep); margin-bottom:8px;">응답 신뢰도
+                        (Reliability Index)</div>
+                    <div style="font-size:12.5px; color:#868e96; line-height:1.5;">지원자의 일관된 응답 패턴을 분석하여<br>본 진단 결과의 신뢰
+                        가능성을 측정한 지표입니다.</div>
                 </div>
                 <div style="text-align:right;">
-                    <span id="rel-score" style="font-size:24px; font-weight:900;">-</span>
-                    <span style="font-size:14px; color:#adb5bd;">/ 20</span>
-                    <div id="rel-verdict" style="font-weight:800;">Pending</div>
+                    <span id="rel-score" style="font-size:36px; font-weight:900; color:var(--primary);">-</span>
+                    <span style="font-size:18px; color:#adb5bd; font-weight:700;">/ 20</span>
+                    <div id="rel-verdict" style="font-weight:900; margin-top:5px; font-size:15px; letter-spacing:1px;">
+                        ANALYZING...</div>
                 </div>
             </div>
 
-            <footer>GN-Fit Analysis Report [Page 2]</footer>
+            <footer>© 굿네이버스 GN-Fit 역량 분석 시스템 | Confidential [2/2]</footer>
         </div>
     </div>
 
     <div class="no-print">
         <button onclick="downloadPDF()"
-            style="background:var(--deep); color:white; padding:15px 30px; border:none; border-radius:50px; font-weight:700; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.2);">PDF
-            저장하기</button>
+            style="background:var(--deep); color:white; padding:15px 40px; border:none; border-radius:50px; font-weight:900; cursor:pointer; box-shadow:0 8px 25px rgba(0,0,0,0.25); font-size:16px;">📥
+            PDF 결과 리포트 저장</button>
     </div>
 
     <script>
+        // 
         const API_URL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
 
-        // Analysis Definitions (Based on your input)
+        // [최종 복구] 방대한 역량 분석 사전 (HR 전문 문구)
         const ANALYSIS_DICT = {
-            "주도적 능력": { desc: "자기주도성 및 변화 선도", strength: "정해진 틀에 안주하지 않고 스스로 대안을 찾아 추진하는 힘이 강합니다.", weakness: "자율성이 강해 조직 매뉴얼과의 조율이 필요할 수 있습니다." },
-            "문제 해결 능력": { desc: "데이터 기반 논리 분석", strength: "복잡한 문제 앞에서도 객관적 근거로 대안을 도출하는 능력이 뛰어납니다.", weakness: "신중한 분석으로 인해 실행 속도가 다소 지연될 우려가 있습니다." },
-            "목표 달성 능력": { desc: "결과 몰입 및 추진력", strength: "어려운 과제일수록 승부욕을 발휘하여 약속된 결과를 끝내 만들어냅니다.", weakness: "성과에 집중하다 동료의 감정적 지지를 놓칠 수 있어 주의가 필요합니다." },
-            "소속 내 영향력": { desc: "팀워크 및 동료 지원", strength: "화합을 중시하며 동료가 어려울 때 먼저 돕는 태도가 훌륭합니다.", weakness: "원만한 관계를 위해 필요한 비판적 피드백을 아끼는 경향이 있습니다." },
-            "의사소통 능력": { desc: "명확한 전달 및 경청", strength: "의도를 정확히 파악하고 본인의 의견을 논리적으로 설득하는 힘이 좋습니다.", weakness: "결론 중심 소통이 때로는 상대에게 압박으로 느껴질 수 있습니다." },
-            "조직문화 형성 능력": { desc: "조직 가치 수용 및 정직", strength: "단체의 미션을 깊이 공감하며 원칙을 지키는 정직한 태도를 갖췄습니다.", weakness: "원칙에 엄격하여 상황에 따른 유연한 대처가 부족할 수 있습니다." }
+            "주도적 능력": {
+                desc: "자기주도적 업무 수행 및 변화 선도 역량",
+                strength: "주어진 환경에 순응하기보다 개선점을 먼저 찾아내며, 정해진 매뉴얼 이상의 가치를 창출하려는 '적극적 문제 정의' 능력이 매우 뛰어납니다. 새로운 시도를 두려워하지 않는 개척자적 면모를 보입니다.",
+                weakness: "본인의 주관과 추진력이 강한 만큼, 팀의 공식적인 합의 절차나 정교한 행정 매뉴얼을 준수하는 과정에서 다소 답답함을 느끼거나 돌발적인 행동을 할 가능성이 있으므로 유의가 필요합니다."
+            },
+            "문제 해결 능력": {
+                desc: "데이터 기반 논리적 분석 및 합리적 해결력",
+                strength: "복잡하게 얽힌 이해관계나 난도 높은 과제 앞에서도 감정에 치우치지 않고, 객관적인 데이터와 논리적 근거를 바탕으로 최적의 해결책을 도출하는 '분석적 사고' 체계가 잘 잡혀 있습니다.",
+                weakness: "완벽한 정답과 논리적 근거를 찾는 데 집중하다 보면, 즉각적인 판단과 기민한 대응이 필요한 긴박한 현장 업무 환경에서 의사결정의 골든타임을 놓칠 우려가 있습니다."
+            },
+            "목표 달성 능력": {
+                desc: "결과 지향적 몰입도 및 강인한 추진력",
+                strength: "한 번 설정한 목표에 대해서는 어떠한 외부 압박이나 장애물에도 굴하지 않고 끝까지 결과를 만들어내는 '결과 책임감'이 매우 높습니다. 목표 달성을 위해 본인의 에너지를 집중 투입하는 몰입도가 탁월합니다.",
+                weakness: "성과 지표 달성에 과도하게 몰입할 경우, 함께 협업하는 동료들의 감정적 피로도나 업무 속도 차이를 세심하게 배려하지 못해 팀 내 갈등의 단초가 될 수 있음을 인지해야 합니다."
+            },
+            "소속 내 영향력": {
+                desc: "팀워크 구축 및 이타적 동료 지원 역량",
+                strength: "개인의 성취보다는 팀 전체의 성과와 화합을 우선시하며, 동료가 어려움에 처했을 때 가장 먼저 도움의 손길을 내미는 '서번트 리더십'의 원형을 보여줍니다. 조직의 심리적 안전감을 높이는 핵심 동력입니다.",
+                weakness: "원만한 대인관계를 유지하려는 성향이 강해, 팀의 발전을 위해 반드시 필요한 비판적 피드백이나 쓴소리를 전달해야 하는 상황에서 지나치게 소극적인 태도를 보일 수 있습니다."
+            },
+            "의사소통 능력": {
+                desc: "논리적 정보 전달 및 공감적 소통 역량",
+                strength: "상대방의 숨은 의도를 정확히 파악하는 경청 태도가 훌륭하며, 복잡한 정보를 상대의 눈높이에 맞춰 쉽고 논리적으로 설득하는 '메시지 가공 역량'이 매우 우수합니다. 조직 내 소통의 가교 역할을 수행합니다.",
+                weakness: "상대의 기분을 지나치게 배려하여 결론을 에둘러 말하는 경향이 있으며, 이로 인해 업무의 핵심 전달력이 약해지거나 불필요한 커뮤니케이션 비용이 발생할 수 있으므로 주의해야 합니다."
+            },
+            "조직문화 형성 능력": {
+                desc: "조직 가치 수용성 및 윤리적 정직성",
+                strength: "굿네이버스의 미션과 가치관에 대한 깊은 공감을 바탕으로, 보이지 않는 곳에서도 규정과 원칙을 엄격히 준수하는 '높은 도덕적 성실성'을 보유하고 있습니다. 조직에 안정감을 부여하는 정직한 인재입니다.",
+                weakness: "전통과 원칙에 대한 충성도가 높아, 급격하게 변화하는 트렌드나 새로운 방식의 조직 운영 시스템을 수용하는 과정에서 다소 보수적이거나 유연성이 부족한 반응을 보일 가능성이 있습니다."
+            }
         };
 
+        // [최종 복구] 문항 매핑 데이터 (100문항 정밀 연산)
         const MAP = {
             "주도적 능력": { r: [1, 10], s: [81, 88] },
             "문제 해결 능력": { r: [11, 20], s: [82, 87, 91, 98] },
-            "목표 달성 능력": { r: [31, 40], s: [83, 90, 95, 97] },
-            "소속 내 영향력": { r: [21, 30], s: [84, 93] },
-            "의사소통 능력": { r: [51, 60], s: [85, 89, 94, 99] },
-            "조직문화 형성 능력": { r: [41, 50], s: [86, 96, 100] }
+            "목표 달성 능력": { r: [21, 30], s: [83, 90, 95, 97] },
+            "소속 내 영향력": { r: [31, 40], s: [84, 93] },
+            "의사소통 능력": { r: [41, 50], s: [85, 89, 94, 99] },
+            "조직문화 형성 능력": { r: [51, 60], s: [86, 96, 100] }
         };
 
-        async function fetchData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const targetName = decodeURIComponent(urlParams.get('name') || urlParams.get('userName') || "").trim();
-            if (!targetName) return;
+        (async function startApp() {
+            const params = new URLSearchParams(window.location.search);
+            const target = decodeURIComponent(params.get('name') || "").trim();
+            if (!target) { document.getElementById('loading-status').innerText = "사용자 이름이 확인되지 않습니다."; return; }
 
             try {
-                const res = await fetch(`${API_URL}?type=result`, { redirect: 'follow' });
+                // 초고속 페칭 전략: GET 파라미터로 해당 이름만 요청
+                const res = await fetch(`${API_URL}?name=${encodeURIComponent(target)}`, { redirect: 'follow' });
                 const json = await res.json();
-                const allData = json.data || json;
-                const user = allData.find(u => (u['성명'] || u['이름'] || u['name'] || "").toString().trim() === targetName);
+                const user = (json.data && json.data.length > 0) ? json.data[0] : (json[0] || null);
 
-                if (user) render(user, allData);
-                else document.getElementById('loading-overlay').innerText = "데이터를 찾을 수 없습니다.";
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading-overlay').innerText = "서버 연결 실패";
-            }
-        }
+                if (user) {
+                    // 차트 라이브러리 로드 대기 후 렌더링
+                    const checkInterval = setInterval(() => {
+                        if (typeof Chart !== 'undefined') { clearInterval(checkInterval); renderReport(user, json.data || [user]); }
+                    }, 100);
+                } else {
+                    document.getElementById('loading-status').innerHTML = `<span style='color:red;'>'${target}'님의 데이터를 찾을 수 없습니다.</span>`;
+                }
+            } catch (e) { console.error(e); document.getElementById('loading-status').innerText = "서버 연결 지연 중..."; }
+        })();
 
-        function calc(u) {
+        function calculateScores(u) {
             let stats = {}, sum = 0, redflags = [], paradox = [];
             for (let [k, cfg] of Object.entries(MAP)) {
-                let p = 0, max = 0;
-                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) { if (u['Q' + i] == 'B' || u['Q' + i] == 'A') p += 10; max += 10; }
-                for (let qNum of cfg.s) {
-                    const b = parseInt(u[`Q${qNum}_Best`] || 0);
-                    if (b == 1 || b == 2) p += 5; if (b == 4) redflags.push(qNum);
-                    max += 10;
+                let points = 0, totalPossible = 0;
+                // 성향 문항 (AB)
+                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) {
+                    if (u['Q' + i] == 'B') points += 10;
+                    totalPossible += 10;
                 }
-                const score = Math.max(0, Math.round(p / max * 100));
+                // 상황 판단 문항 (Best/Worst)
+                for (let qNum of cfg.s) {
+                    const best = parseInt(u[`Q${qNum}_Best`] || 0);
+                    if (best == 2 || best == 3) points += 5; // 가중치 부여
+                    if (best == 4) redflags.push(qNum); // 리스크 감지
+                    totalPossible += 10;
+                }
+                const score = Math.max(0, Math.min(100, Math.round(points / totalPossible * 100)));
                 stats[k] = score; sum += score;
             }
             return { scores: stats, total: Math.round(sum / 6), redflags, paradox };
         }
 
-        function render(u, all) {
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('u-name').innerText = u['성명'] || u['이름'] || '지원자';
-            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시일시: ${(u['타임스탬프'] || '').split(' ')[0]}`;
+        function renderReport(u, all) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 400);
 
-            const { scores, total, redflags, paradox } = calc(u);
+            const { scores, total, redflags, paradox } = calculateScores(u);
+
+            document.getElementById('u-name').innerText = u.성명 || u.이름 || '지원자';
+            document.getElementById('u-meta').innerText = `생년월일: ${u.생년월일 || '-'} | 진단 일시: ${u.타임스탬프 || '-'}`;
             document.getElementById('u-total').innerText = total;
 
-            // Rank Calc
-            const allScores = all.map(x => calc(x).total).sort((a, b) => b - a);
-            const pct = Math.round((allScores.indexOf(total) + 1) / allScores.length * 100);
-            document.getElementById('hero-rank').innerText = `상위 ${pct}% (종합 ${total}점)`;
-
-            const ht = document.getElementById('hero-text');
-            if (total >= 85) ht.innerText = "조직의 성장을 이끌어갈 핵심 인재로 성장이 기대되는 지원자입니다. 🚀";
-            else if (total >= 70) ht.innerText = "조직에 원만히 적응하며 제 역할을 다할 든든한 지원자입니다. 😊";
-            else ht.innerText = "직무 적합도 및 조직 적응을 위한 심층 면접이 필요한 지원자입니다. 🧐";
-
-            // Silhouette Animation
+            // 실루엣 파도 애니메이션 (총점 대비)
             const fillHeight = (total / 100) * 200;
             const fillEl = document.getElementById('scoreFill');
-            setTimeout(() => { fillEl.setAttribute('y', 200 - fillHeight); fillEl.setAttribute('height', fillHeight); }, 100);
+            setTimeout(() => { fillEl.setAttribute('y', 200 - fillHeight); fillEl.setAttribute('height', fillHeight); }, 500);
+
+            // 종합 텍스트
+            const ht = document.getElementById('hero-text');
+            if (total >= 88) ht.innerText = "조직의 핵심 가치와 역량이 완벽하게 일치하며, 미래 조직 성장을 이끌어갈 핵심 인재(High Potential)로 기대됩니다. 🚀";
+            else if (total >= 75) ht.innerText = "조직 생활에 필요한 기본 역량이 우수하게 갖춰져 있으며, 원만한 조직 적응과 높은 업무 성과가 기대되는 인재입니다. 😊";
+            else if (total >= 55) ht.innerText = "영역별 강점과 약점이 뚜렷하게 대비되는 만큼, 직무 배치 시 지원자의 강점을 극대화할 수 있는 면밀한 검토가 권장됩니다. 🤔";
+            else ht.innerText = "조직 문화 적응 및 업무 지향성 조율을 위해 심층 면접을 통한 가치관 리스크 검증이 반드시 필요합니다. 🧐";
 
             renderChart(scores);
-            renderAnalysis(scores, redflags, paradox);
+            renderDetailedAnalysis(scores, redflags);
 
-            // Reliability
-            let rc = 0; for (let i = 1; i <= 20; i++) if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) rc++;
-            document.getElementById('rel-score').innerText = rc;
+            // 신뢰도 검증 (거울 문항)
+            let matchCount = 0;
+            for (let i = 1; i <= 20; i++) {
+                if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) matchCount++;
+            }
+            document.getElementById('rel-score').innerText = matchCount;
             const relV = document.getElementById('rel-verdict');
-            relV.innerText = rc >= 17 ? "High" : (rc >= 14 ? "Mid" : "Low");
-            relV.style.color = rc >= 14 ? var(--primary) : var(--danger);
+            if (matchCount >= 18) { relV.innerText = "VERY HIGH"; relV.style.color = "#0ca678"; }
+            else if (matchCount >= 14) { relV.innerText = "NORMAL"; relV.style.color = var(--primary); }
+            else { relV.innerText = "LOW (CAUTION)"; relV.style.color = var(--danger); }
         }
 
-        function renderChart(scores) {
-            const labels = Object.keys(scores);
-            const values = Object.values(scores);
-            const maxVal = Math.max(...values);
-            const minVal = Math.min(...values);
+        function renderChart(stats) {
+            const labels = Object.keys(stats);
+            const values = Object.values(stats);
+            const maxVal = Math.max(...values), minVal = Math.min(...values);
 
             new Chart(document.getElementById('competencyChart'), {
                 type: 'radar',
@@ -400,60 +456,75 @@
                     labels: labels,
                     datasets: [{
                         data: values,
-                        backgroundColor: 'rgba(137, 162, 48, 0.2)',
+                        backgroundColor: 'rgba(137, 162, 48, 0.25)',
                         borderColor: '#89a230',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#2d3e1d'
+                        borderWidth: 4,
+                        pointBackgroundColor: '#2d3e1d',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5
                     }]
                 },
                 options: {
                     scales: {
                         r: {
-                            min: 0, max: 100,
-                            ticks: { display: false },
+                            min: 0, max: 100, ticks: { display: false, stepSize: 25 },
                             pointLabels: {
-                                padding: 20,
-                                font: { size: 14, weight: '700' },
-                                color: function (ctx) {
+                                padding: 25,
+                                font: { size: 14, weight: '800', family: "'Noto Sans KR'" },
+                                color: (ctx) => {
                                     const val = values[ctx.index];
-                                    if (val === maxVal) return '#ff4d4d'; // Red for Max
-                                    if (val === minVal) return '#4d79ff'; // Blue for Min
-                                    return '#000000'; // Black for others
+                                    if (val === maxVal) return '#ff4d4d'; // 최고점 빨강
+                                    if (val === minVal) return '#4d79ff'; // 최저점 파랑
+                                    return '#000000'; // 기본 검정
                                 },
                                 callback: (label, i) => [label, values[i] + "점"]
                             }
                         }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false
                 }
             });
         }
 
-        function renderAnalysis(scores, redflags, paradox) {
+        function renderDetailedAnalysis(scores, redflags) {
             const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
             const sDiv = document.getElementById('strength-list');
             const wDiv = document.getElementById('weakness-list');
 
+            // 강점 2개 출력
             sDiv.innerHTML = sorted.slice(0, 2).map(([k, v]) => `
-                <div class="list-item"><strong>${k}</strong>: ${ANALYSIS_DICT[k].strength}</div>
+                <div class="list-item"><strong>${k} (${v}점)</strong>: ${ANALYSIS_DICT[k].strength}</div>
             `).join('');
 
+            // 보완점 2개 출력
             wDiv.innerHTML = sorted.slice(-2).reverse().map(([k, v]) => `
-                <div class="list-item"><strong>${k}</strong>: ${ANALYSIS_DICT[k].weakness}</div>
+                <div class="list-item"><strong>${k} (${v}점)</strong>: ${ANALYSIS_DICT[k].weakness}</div>
             `).join('');
 
-            document.getElementById('redflag-list').innerHTML = redflags.length ? redflags.map(q => `<div class="list-item">문항 ${q}: 가치관 충돌 감지</div>`).join('') : "<div class='list-item'>✔ 발견되지 않음</div>";
-            document.getElementById('paradox-list').innerHTML = paradox.length ? paradox.map(k => `<div class="list-item"><strong>${k}</strong>: 이상-현실 불일치</div>`).join('') : "<div class='list-item'>✔ 일관된 성향</div>";
-            document.getElementById('interview-guide').innerHTML = `<div class="list-item"><strong>${sorted[sorted.length - 1][0]} 보완 경험</strong>: 부족한 역량을 극복하기 위해 노력했던 구체적 사례를 질문하십시오.</div>`;
+            // 레드플래그 & 가이드
+            document.getElementById('redflag-list').innerHTML = redflags.length
+                ? redflags.map(q => `<div class="list-item">문항 ${q}번: 조직 핵심 가치와 상충되는 행동 선택 (지속적 관찰 요망)</div>`).join('')
+                : "<div class='list-item'>감지된 가치관 충돌 리스크가 없으며, 조직 지향성이 매우 일관됩니다.</div>";
+
+            const weakest = sorted[sorted.length - 1][0];
+            document.getElementById('interview-guide').innerHTML = `
+                <div class="list-item"><strong>${weakest} 역량 보완성 질문</strong>: 해당 역량이 낮게 측정된 배경과, 본인이 이를 극복하기 위해 평소 어떤 의식적인 노력을 기울이고 있는지 구체적인 실패 극복 사례를 질문하십시오.</div>
+                <div class="list-item"><strong>가치관 적합성 질문</strong>: 굿네이버스의 조직 문화 중 본인의 업무 스타일과 가장 충돌할 것으로 예상되는 부분은 무엇이며, 이를 어떻게 조율해 나갈 것인지 확인하십시오.</div>
+            `;
         }
 
         function downloadPDF() {
             const el = document.getElementById('report-content');
-            const opt = { margin: 0, filename: 'GNFit_Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+            const name = document.getElementById('u-name').innerText;
+            const opt = {
+                margin: 0, filename: `${name}_GNFit_Report.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
             html2pdf().set(opt).from(el).save();
         }
-
-        window.onload = fetchData;
     </script>
 </body>
 
