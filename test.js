@@ -1,8 +1,5 @@
-// script.js - Final Full Version (No Omissions)
-// 1. Data Key Mapping: 성명, 휴대폰번호, 생년월일, 정보동의여부 (Sheet Header Match)
-// 2. Submit Button UI: Page 12 Only
-// 3. Question Data: Q1~Q100 (Full 100 Questions included)
-
+// test.js - Final Full Version (No Omissions)
+// 수정사항: 화면 튕김 방지, 제출 버튼 디자인 통일, 100문항 전체 포함
 const scriptURL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
 
 // [THEME CONFIG]
@@ -127,164 +124,180 @@ const allQuestions = [
     { id: 100, type: 'BW', category: "조직문화", scenario: "갑작스러운 인사 이동으로 업무 인수인계가 며칠 만에 마무리되어야 합니다. 전임자가 자료를 다 정리하지 못했는데, 당신은 당장 내일 큰 행사를 주관해야 합니다.", options: ["1. 전임자를 원망하기보다 밤을 새워서라도 기존 파일을 직접 다 뒤져 행사에 차질이 없도록 완벽히 준비한다.", "2. 행사 준비에 꼭 필요한 핵심 정보만 리스트업하여 전임자에게 짧고 굵게 질문하고, 나머지는 내 스타일대로 새롭게 준비한다.", "3. 상황의 긴박함을 팀장님께 공유하고, 이번 행사만큼은 팀원들의 협조를 얻어 함께 준비할 수 있도록 지원을 요청한다.", "4. 준비 부족으로 행사가 미흡할 수 있음을 미리 공지하고, 행사 후 이번 인수인계 과정의 문제점을 개선안으로 보고한다."] }
 ];
 
-// State Variables
 let currentSectionIdx = 0;
 let userAnswers = {};
 let timerInterval = null;
 
-// [INIT] Page Load
 document.addEventListener('DOMContentLoaded', () => {
     startTimer();
     injectCheatButtons();
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
     document.getElementById('prev-btn').addEventListener('click', goPrevSection);
     document.getElementById('next-btn').addEventListener('click', goNextSection);
-    const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) {
-        submitBtn.addEventListener('click', submitTest);
-        submitBtn.classList.add('nav-btn', 'submit');
-    }
+    const sBtn = document.getElementById('submit-btn');
+    if (sBtn) { sBtn.addEventListener('click', submitTest); sBtn.classList.add('nav-btn', 'submit'); }
     renderSection(0);
 });
 
-// [CHEAT KEY]
 function injectCheatButtons() {
-    const div = document.createElement('div');
-    div.style.position = 'fixed'; div.style.top = '10px'; div.style.left = '50%';
-    div.style.transform = 'translateX(-50%)'; div.style.zIndex = '9999';
-    div.style.display = 'flex'; div.style.gap = '10px'; div.style.opacity = '0.5';
-    div.onmouseenter = () => div.style.opacity = '1';
-    div.onmouseleave = () => div.style.opacity = '0.5';
-    const btnA = document.createElement('button');
-    btnA.innerText = "[TEST] Fill A";
-    btnA.style.padding = '5px 10px'; btnA.style.background = '#333'; btnA.style.color = 'white';
-    btnA.onclick = (e) => { e.preventDefault(); cheatFill('A'); };
-    div.appendChild(btnA);
-    document.body.appendChild(div);
+    const d = document.createElement('div');
+    d.style.position = 'fixed'; d.style.top = '10px'; d.style.left = '50%';
+    d.style.transform = 'translateX(-50%)'; d.style.zIndex = '9999';
+    d.style.display = 'flex'; d.style.gap = '10px'; d.style.opacity = '0.5';
+    d.onmouseenter = () => d.style.opacity = '1'; d.onmouseleave = () => d.style.opacity = '0.5';
+    const b = document.createElement('button');
+    b.innerText = "[TEST] Fill All A";
+    b.style.padding = '5px 10px'; b.style.background = '#333'; b.style.color = 'white';
+    b.onclick = (e) => { e.preventDefault(); cheatFill('A'); };
+    d.appendChild(b); document.body.appendChild(d);
 }
 
-function cheatFill(choice) {
-    if (!confirm(`80번까지 '${choice}'로 채우고 이동할까요?`)) return;
-    for (let i = 1; i <= 80; i++) userAnswers[i] = choice;
+function cheatFill(c) {
+    if (!confirm(`80번까지 '${c}'로 채울까요?`)) return;
+    for (let i = 1; i <= 80; i++) userAnswers[i] = c;
     currentSectionIdx = 10; renderSection(currentSectionIdx);
 }
 
-// [UI] Timer
 function startTimer() {
-    const timerDisplay = document.getElementById('timer-display');
-    const startTimeStr = localStorage.getItem('gnFit_startTime');
-    let startTime = startTimeStr ? parseInt(startTimeStr) : Date.now();
-    if (!startTimeStr) localStorage.setItem('gnFit_startTime', startTime.toString());
+    const d = document.getElementById('timer-display');
+    const s = localStorage.getItem('gnFit_startTime');
+    let st = s ? parseInt(s) : Date.now();
+    if (!s) localStorage.setItem('gnFit_startTime', st.toString());
     timerInterval = setInterval(() => {
-        const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
-        const min = Math.floor(elapsedSec / 60).toString().padStart(2, '0');
-        const sec = (elapsedSec % 60).toString().padStart(2, '0');
-        if (timerDisplay) timerDisplay.textContent = `소요 시간 ${min}:${sec}`;
+        const el = Math.floor((Date.now() - st) / 1000);
+        const m = Math.floor(el / 60).toString().padStart(2, '0');
+        const sc = (el % 60).toString().padStart(2, '0');
+        if (d) d.textContent = `소요 시간 ${m}:${sc}`;
     }, 1000);
 }
 
-// [RENDER]
-function renderSection(sectionIdx) {
-    const container = document.getElementById('question-list');
-    const sectionConfig = SECTIONS[sectionIdx];
-    if (sectionConfig.themeVar) document.documentElement.style.setProperty('--theme-color', `var(${sectionConfig.themeVar})`);
-    if (sectionConfig.type === 'bridge') {
-        renderBridge(sectionConfig, container); updateNavButtons(sectionIdx, true); return;
+function renderSection(idx) {
+    const c = document.getElementById('question-list');
+    const cfg = SECTIONS[idx];
+    if (cfg.themeVar) document.documentElement.style.setProperty('--theme-color', `var(${cfg.themeVar})`);
+    if (cfg.type === 'bridge') {
+        renderBridge(cfg, c); updateNavButtons(idx, true); return;
     }
-    renderQuestions(sectionConfig, container); updateNavButtons(sectionIdx, false); checkSectionComplete();
+    renderQuestions(cfg, c); updateNavButtons(idx, false); checkSectionComplete();
 }
 
-function renderBridge(config, container) {
-    document.getElementById('progress-text').textContent = config.subtitle || '';
-    container.innerHTML = `<div class="bridge-container"><h2 class="bridge-title">${config.title}</h2><div class="bridge-content bridge-desc">${config.content}</div><button type="button" class="btn-bridge" onclick="goNextSection()">${config.buttonText}</button></div>`;
+function renderBridge(cfg, c) {
+    document.getElementById('progress-text').textContent = cfg.subtitle || '';
+    c.innerHTML = `<div class="bridge-container"><h2 class="bridge-title">${cfg.title}</h2><div class="bridge-content bridge-desc">${cfg.content}</div><button type="button" class="btn-bridge" onclick="goNextSection()">${cfg.buttonText}</button></div>`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function renderQuestions(config, container) {
-    let pageNum = (currentSectionIdx >= 1 && currentSectionIdx <= 8) ? currentSectionIdx : (currentSectionIdx >= 10 ? currentSectionIdx - 1 : 0);
-    const totalPages = 12;
-    if (pageNum > 0) {
-        document.getElementById('progress-text').textContent = `PAGE ${pageNum} / ${totalPages}`;
-        document.getElementById('progress-bar').style.width = `${(pageNum / totalPages) * 100}%`;
+function renderQuestions(cfg, c) {
+    let p = (currentSectionIdx >= 1 && currentSectionIdx <= 8) ? currentSectionIdx : (currentSectionIdx >= 10 ? currentSectionIdx - 1 : 0);
+    if (p > 0) {
+        document.getElementById('progress-text').textContent = `PAGE ${p} / 12`;
+        document.getElementById('progress-bar').style.width = `${(p / 12) * 100}%`;
     }
-    let html = '';
-    for (let i = config.start; i <= config.end; i++) {
+    let h = '';
+    for (let i = cfg.start; i <= cfg.end; i++) {
         const q = allQuestions[i];
-        if (q.type === 'AB') html += renderTypeAB(q);
-        else if (q.type === 'BW') html += renderTypeBW(q);
+        if (q.type === 'AB') h += renderTypeAB(q);
+        else if (q.type === 'BW') h += renderTypeBW(q);
     }
-    container.innerHTML = html;
+    c.innerHTML = h;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderTypeAB(q) {
-    const saved = userAnswers[q.id];
-    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${q.id}</span></div><div class="options-grid"><div class="option-card ${saved === 'A' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'A')"><input type="radio" name="q${q.id}" value="A" class="option-input" ${saved === 'A' ? 'checked' : ''}><span class="option-text">${q.optionA}</span></div><div class="option-card ${saved === 'B' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'B')"><input type="radio" name="q${q.id}" value="B" class="option-input" ${saved === 'B' ? 'checked' : ''}><span class="option-text">${q.optionB}</span></div></div></div>`;
+    const s = userAnswers[q.id];
+    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${q.id}</span></div><div class="options-grid"><div class="option-card ${s === 'A' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'A')"><input type="radio" name="q${q.id}" value="A" class="option-input" ${s === 'A' ? 'checked' : ''}><span class="option-text">${q.optionA}</span></div><div class="option-card ${s === 'B' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'B')"><input type="radio" name="q${q.id}" value="B" class="option-input" ${s === 'B' ? 'checked' : ''}><span class="option-text">${q.optionB}</span></div></div></div>`;
 }
 
 function renderTypeBW(q) {
-    const saved = userAnswers[q.id] || {};
-    let optionsHtml = '';
-    q.options.forEach((optText, idx) => {
-        const optionIdx = idx + 1; const isBest = saved.best === optionIdx; const isWorst = saved.worst === optionIdx;
-        let cardClass = `scenario-card ${isBest ? 'has-best' : ''} ${isWorst ? 'has-worst' : ''}`;
-        optionsHtml += `<div class="${cardClass}" id="q${q.id}_opt${optionIdx}"><div class="scenario-content">${optText}</div><div class="selection-label label-best">Best</div><div class="selection-label label-worst">Worst</div><div class="scenario-actions"><button type="button" class="btn-select best ${isBest ? 'active' : ''}" onclick="selectScenarioOption(event, ${q.id}, ${optionIdx}, 'best')">Best</button><button type="button" class="btn-select worst ${isWorst ? 'active' : ''}" onclick="selectScenarioOption(event, ${q.id}, ${optionIdx}, 'worst')">Worst</button></div></div>`;
+    const s = userAnswers[q.id] || {};
+    let h = '';
+    q.options.forEach((txt, idx) => {
+        const i = idx + 1; const isB = s.best === i; const isW = s.worst === i;
+        h += `<div class="scenario-card ${isB ? 'has-best' : ''} ${isW ? 'has-worst' : ''}" id="q${q.id}_opt${i}"><div class="scenario-content">${txt}</div><div class="selection-label label-best">Best</div><div class="selection-label label-worst">Worst</div><div class="scenario-actions"><button type="button" class="btn-select best ${isB ? 'active' : ''}" onclick="selectScenarioOption(event, ${q.id}, ${i}, 'best')">Best</button><button type="button" class="btn-select worst ${isW ? 'active' : ''}" onclick="selectScenarioOption(event, ${q.id}, ${i}, 'worst')">Worst</button></div></div>`;
     });
-    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${q.id}</span></div><div class="scenario-box"><div class="scenario-text">${q.scenario}</div></div><div class="scenario-options-grid">${optionsHtml}</div></div>`;
+    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${q.id}</span></div><div class="scenario-box"><div class="scenario-text">${q.scenario}</div></div><div class="scenario-options-grid">${h}</div></div>`;
 }
 
 window.selectOption = function (qId, val) {
-    userAnswers[qId] = val; checkSectionComplete();
-    renderSection(currentSectionIdx);
+    userAnswers[qId] = val;
+    const qDiv = document.querySelector(`[onclick="selectOption(${qId}, 'A')"]`)?.closest('.question-item');
+    if (qDiv) {
+        const cs = qDiv.querySelectorAll('.option-card');
+        cs.forEach(c => {
+            const isS = c.getAttribute('onclick').includes(`'${val}'`);
+            c.classList.toggle('selected', isS);
+            const input = c.querySelector('input');
+            if (input) input.checked = isS;
+        });
+    }
+    checkSectionComplete();
 };
 
-window.selectScenarioOption = function (event, qId, optionIdx, type) {
-    if (event) event.preventDefault();
+window.selectScenarioOption = function (e, qId, i, type) {
+    if (e) e.preventDefault();
     if (!userAnswers[qId]) userAnswers[qId] = { best: null, worst: null };
     if (type === 'best') {
-        userAnswers[qId].best = (userAnswers[qId].best === optionIdx) ? null : optionIdx;
+        userAnswers[qId].best = (userAnswers[qId].best === i) ? null : i;
         if (userAnswers[qId].best === userAnswers[qId].worst) userAnswers[qId].worst = null;
     } else {
-        userAnswers[qId].worst = (userAnswers[qId].worst === optionIdx) ? null : optionIdx;
+        userAnswers[qId].worst = (userAnswers[qId].worst === i) ? null : i;
         if (userAnswers[qId].worst === userAnswers[qId].best) userAnswers[qId].best = null;
     }
     updateScenarioDOM(qId); checkSectionComplete();
 };
 
 function updateScenarioDOM(qId) {
-    const ans = userAnswers[qId];
+    const a = userAnswers[qId];
     for (let i = 1; i <= 4; i++) {
-        const card = document.getElementById(`q${qId}_opt${i}`); if (!card) continue;
-        const b = card.querySelector('.btn-select.best'), w = card.querySelector('.btn-select.worst');
+        const c = document.getElementById(`q${qId}_opt${i}`); if (!c) continue;
+        const b = c.querySelector('.btn-select.best'), w = c.querySelector('.btn-select.worst');
         card.classList.remove('has-best', 'has-worst'); b.classList.remove('active'); w.classList.remove('active');
-        if (ans.best === i) { card.classList.add('has-best'); b.classList.add('active'); }
-        if (ans.worst === i) { card.classList.add('has-worst'); w.classList.add('active'); }
+        if (a.best === i) { c.classList.add('has-best'); b.classList.add('active'); }
+        if (a.worst === i) { c.classList.add('has-worst'); w.classList.add('active'); }
     }
 }
 
 function checkSectionComplete() {
-    const nextBtn = document.getElementById('next-btn'), submitBtn = document.getElementById('submit-btn');
+    const n = document.getElementById('next-btn'), s = document.getElementById('submit-btn');
     if (SECTIONS[currentSectionIdx].type === 'bridge') return;
     const ok = validateSectionSilently(currentSectionIdx);
-    if (nextBtn) nextBtn.disabled = !ok; if (submitBtn) submitBtn.disabled = !ok;
+    if (n) n.disabled = !ok; if (s) s.disabled = !ok;
 }
 
-function validateSectionSilently(sectionIdx) {
-    const s = SECTIONS[sectionIdx];
+function validateSectionSilently(idx) {
+    const s = SECTIONS[idx];
     for (let i = s.start; i <= s.end; i++) {
-        const q = allQuestions[i], ans = userAnswers[q.id];
-        if (q.type === 'AB' && !ans) return false;
-        if (q.type === 'BW' && (!ans || !ans.best || !ans.worst)) return false;
+        const q = allQuestions[i], a = userAnswers[q.id];
+        if (q.type === 'AB' && !a) return false;
+        if (q.type === 'BW' && (!a || !a.best || !a.worst)) return false;
     }
     return true;
 }
 
-function updateNavButtons(sectionIdx, isBridge) {
+// [FIXED] '제출하기' 버튼 디자인을 '이전/다음' 버튼과 100% 동일하게 수정
+function updateNavButtons(idx, isB) {
     const p = document.getElementById('prev-btn'), n = document.getElementById('next-btn'), s = document.getElementById('submit-btn');
     p.style.display = 'none'; n.style.display = 'none'; s.style.display = 'none';
-    if (isBridge) return;
-    if (sectionIdx > 1) p.style.display = 'block';
-    if (sectionIdx === 13) { s.style.display = 'block'; s.style.cssText = "display:block; background-color:#89a230!important; color:#fff!important; font-weight:bold;"; }
+    if (isB) return;
+    if (idx > 1) p.style.display = 'block';
+    if (idx === 13) {
+        s.style.display = 'block';
+        // 이전/다음 버튼과 동일한 크기, 색상, 폰트 적용
+        s.style.cssText = `
+            display: block; 
+            background-color: #89a230 !important; 
+            color: #fff !important; 
+            font-weight: 700;
+            font-size: 18px;
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            width: 120px;
+            height: 48px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        `;
+    }
     else n.style.display = 'block';
 }
 
@@ -294,14 +307,11 @@ function goNextSection() {
     if (currentSectionIdx < SECTIONS.length - 1) { currentSectionIdx++; renderSection(currentSectionIdx); }
 }
 
-// [SUBMIT FUNCTION] - FIXED FOR KOREAN HEADERS
 function submitTest() {
-    if (!validateSectionSilently(currentSectionIdx)) { alert("모든 문항에 답변해주세요."); return; }
-    if (!confirm("모든 검사를 마쳤습니다. 제출하시겠습니까?")) return;
-    const btn = document.getElementById('submit-btn'); btn.textContent = "전송 중..."; btn.disabled = true;
+    if (!validateSectionSilently(currentSectionIdx)) return;
+    if (!confirm("제출하시겠습니까?")) return;
+    const b = document.getElementById('submit-btn'); b.textContent = "전송 중..."; b.disabled = true;
     clearInterval(timerInterval);
-
-    // 시트 헤더와 1:1 매칭
     const formData = {
         "성명": localStorage.getItem('applicantName'),
         "휴대폰번호": localStorage.getItem('applicantPhone'),
@@ -312,11 +322,11 @@ function submitTest() {
     };
     for (let i = 1; i <= 80; i++) formData[`Q${i}`] = userAnswers[i] || "";
     for (let i = 81; i <= 100; i++) {
-        const res = userAnswers[i] || {};
-        formData[`Q${i}_Best`] = res.best || "";
-        formData[`Q${i}_Worst`] = res.worst || "";
+        const r = userAnswers[i] || {};
+        formData[`Q${i}_Best`] = r.best || "";
+        formData[`Q${i}_Worst`] = r.worst || "";
     }
     fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(formData) })
-        .then(() => { alert("제출이 완료되었습니다."); window.location.href = "result.html"; })
-        .catch(e => { console.error(e); alert("전송 에러가 발생했습니다."); });
+        .then(() => { alert("제출 완료!"); window.location.href = "result.html"; })
+        .catch(e => { console.error(e); alert("전송 에러!"); });
 }

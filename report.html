@@ -4,30 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GN-Fit 결과 분석</title>
-    <!-- Fonts -->
+    <title>GN-Fit 결과 분석 리포트</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
-    <!-- Chart.js and html2pdf -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
         :root {
             --primary: #89a230;
             /* Olive Green */
             --deep: #2d3e1d;
             /* Deep Green */
-            --danger: #e03131;
-            --bg: #FFFFFF;
+            --danger: #ff4d4d;
+            /* Red for Max */
+            --info: #4d79ff;
+            /* Blue for Min */
+            --bg-gray: #f8f9fa;
+            /* Light Gray for Summary Box */
         }
 
         body {
-            background: #f8f9fa;
+            background: #f1f3f5;
             font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
             padding: 40px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
         }
 
         .page-container {
@@ -38,41 +42,13 @@
             box-sizing: border-box;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
             position: relative;
-            margin-bottom: 40px;
             display: flex;
             flex-direction: column;
+            margin-bottom: 30px;
         }
 
         .page-break {
             page-break-before: always;
-            border-top: 1px dashed #eee;
-            margin-top: 50px;
-            padding-top: 50px;
-        }
-
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-
-            .page-container {
-                box-shadow: none;
-                margin: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
-            }
-
-            .page-break {
-                border: none;
-                margin-top: 0;
-                padding-top: 0;
-            }
-
-            .no-print {
-                display: none !important;
-            }
         }
 
         /* HEADER */
@@ -85,39 +61,101 @@
             margin-bottom: 30px;
         }
 
-        .h-logo {
-            height: 28px;
-            opacity: 0.8;
-            margin-bottom: 10px;
-        }
-
         .h-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 900;
             color: #343a40;
             letter-spacing: -1px;
         }
 
-        .h-meta {
-            font-size: 13px;
-            color: #adb5bd;
-            margin-top: 4px;
+        .score-display {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--primary);
         }
 
-        /* LOADING */
+        /* HERO - Summary Box with Light Gray BG and Accent Border */
+        .hero {
+            margin-bottom: 30px;
+        }
+
+        .hero-main {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--deep);
+            line-height: 1.5;
+            background-color: var(--bg-gray);
+            padding: 20px 25px;
+            border-left: 6px solid var(--primary);
+            border-radius: 8px;
+        }
+
+        .hero-sub {
+            font-size: 16px;
+            font-weight: 700;
+            color: #666;
+            margin-top: 10px;
+            padding-left: 5px;
+        }
+
+        /* VISUAL (Icon & Chart) */
+        .visual-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+
+        .chart-box {
+            height: 400px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Expert Cards */
+        .card {
+            border-top: 3px solid #eee;
+            padding-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .sec-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .list-item {
+            font-size: 13.5px;
+            margin-bottom: 10px;
+            padding-left: 12px;
+            position: relative;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .list-item::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* LOADING OVERLAY */
         #loading-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: white;
             z-index: 99;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.5s;
         }
 
         .spinner {
@@ -139,118 +177,17 @@
             }
         }
 
-        /* HERO - White Background, Deep Green Text */
-        .hero {
-            text-align: left;
-            margin-bottom: 30px;
-        }
-
-        .hero-main {
-            font-size: 18px;
-            /* Changed from 26px to 18px (text-lg) */
-            font-weight: 800;
-            color: var(--deep);
-            /* Deep Green #2d3e1d */
-            line-height: 1.4;
-            margin-bottom: 10px;
-        }
-
-        .hero-sub {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--deep);
-            /* Deep Green */
-        }
-
-        /* VISUAL */
-        .visual-row {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-            align-items: center;
-        }
-
-        .silhouette-box {
-            width: 140px;
-            height: 300px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .chart-box {
-            height: 340px;
-            width: 100%;
-            position: relative;
-        }
-
-        /* Expert Cards */
-        .card {
-            border-top: 3px solid #eee;
-            padding-top: 15px;
-            margin-bottom: 30px;
-        }
-
-        .sec-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #343a40;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sec-title.green {
-            border-color: var(--primary);
-            color: #2b8a3e;
-        }
-
-        .sec-title.orange {
-            border-color: #fd7e14;
-            color: #e67700;
-        }
-
-        .sec-title.red {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .list-item {
-            font-size: 14px;
-            margin-bottom: 8px;
-            padding-left: 12px;
-            position: relative;
-            color: #495057;
-        }
-
-        .list-item::before {
-            content: '•';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .score-display {
-            font-size: 48px;
-            font-weight: 900;
-            color: var(--primary);
-        }
-
-        #loading-text {
-            margin-top: 15px;
-            font-weight: 700;
-            color: #2d3e1d;
-            /* Deep Green */
+        .no-print {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
         }
 
         footer {
-            margin-top: auto;
             font-size: 11px;
-            color: #dee2e6;
+            color: #adb5bd;
             text-align: center;
-            border-top: 1px solid #f8f9fa;
+            margin-top: auto;
             padding-top: 20px;
         }
     </style>
@@ -259,20 +196,16 @@
 <body>
 
     <div id="report-content">
-
-        <!-- PAGE 1 -->
         <div class="page-container">
-            <!-- LOADING SPINNER -->
             <div id="loading-overlay">
                 <div class="spinner"></div>
-                <div id="loading-text">데이터 분석 중...</div>
+                <div style="margin-top:15px; font-weight:700; color:var(--deep);">데이터 분석 중...</div>
             </div>
 
             <header class="header">
                 <div>
-                    <img src="gn_logo.jpg" class="h-logo" alt="Logo">
-                    <div class="h-title"><span id="u-name">---</span>님 결과 분석</div>
-                    <div class="h-meta" id="u-meta">생년월일: - | 응시일시: -</div>
+                    <div class="h-title"><span id="u-name">---</span> 간사님 결과 분석</div>
+                    <div style="font-size:13px; color:#adb5bd; margin-top:5px;" id="u-meta">분석 데이터를 불러오는 중입니다...</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:12px; color:#adb5bd;">Total Score</div>
@@ -281,36 +214,26 @@
             </header>
 
             <div class="hero">
-                <div class="hero-main" id="hero-text">...</div>
+                <div class="hero-main" id="hero-text">종합 분석 의견을 생성하고 있습니다.</div>
                 <div class="hero-sub" id="hero-rank"></div>
             </div>
 
             <div class="visual-row">
-                <!-- CUTE ROUND SILHOUETTE (No Stroke, Olive Fill) -->
                 <div style="text-align:center;">
-                    <!-- Updated SVG container with reduced size -->
-                    <div style="display: flex; justify-content: center; position: relative;">
-                        <!-- Changed width/height to 100/200 as requested -->
-                        <svg viewBox="0 0 100 200" width="100" height="200" style="position: relative;">
-                            <defs>
-                                <clipPath id="humanSilhouette">
-                                    <path
-                                        d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z" />
-                                </clipPath>
-                            </defs>
-
-                            <path
-                                d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z"
-                                fill="none" stroke="#89a230" stroke-width="2" />
-
-                            <rect id="scoreFill" x="0" y="200" width="100" height="0" fill="#89a230"
-                                clip-path="url(#humanSilhouette)"
-                                style="transition: all 1.5s ease-out; opacity: 0.8;" />
-                        </svg>
-                    </div>
+                    <svg viewBox="0 0 100 200" width="100" height="200">
+                        <defs>
+                            <clipPath id="humanSilhouette">
+                                <path
+                                    d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z" />
+                            </clipPath>
+                        </defs>
+                        <path
+                            d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z"
+                            fill="none" stroke="#89a230" stroke-width="2" />
+                        <rect id="scoreFill" x="0" y="200" width="100" height="0" fill="#89a230"
+                            clip-path="url(#humanSilhouette)" style="transition: all 1.5s ease-out; opacity: 0.8;" />
+                    </svg>
                 </div>
-
-                <!-- RADAR CHART (Restored) -->
                 <div class="chart-box">
                     <canvas id="competencyChart"></canvas>
                 </div>
@@ -318,11 +241,11 @@
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
                 <div class="card" style="border-top-color: #40c057;">
-                    <div class="sec-title green">강점 (Strength)</div>
+                    <div class="sec-title" style="color:#2b8a3e;">강점 (Strength)</div>
                     <div id="strength-list"></div>
                 </div>
                 <div class="card" style="border-top-color: #fd7e14;">
-                    <div class="sec-title orange">보완점 (Weakness)</div>
+                    <div class="sec-title" style="color:#e67700;">보완점 (Weakness)</div>
                     <div id="weakness-list"></div>
                 </div>
             </div>
@@ -330,15 +253,14 @@
             <footer>GN-Fit Analysis Report [Page 1]</footer>
         </div>
 
-        <!-- PAGE 2 -->
         <div class="page-container page-break">
             <header class="header">
                 <div class="h-title" style="font-size:24px;">심층 분석 리포트</div>
-                <img src="gn_logo.jpg" style="height:20px; opacity:0.3;">
+                <div style="color:#adb5bd; font-size:12px;">GN-Fit Professional Analysis</div>
             </header>
 
             <div class="card" style="border-top-color: #fa5252;">
-                <div class="sec-title red">🛑 Red Flag (가치관 충돌 위험)</div>
+                <div class="sec-title" style="color:var(--danger);">🛑 Red Flag (가치관 충돌 위험)</div>
                 <div id="redflag-list" style="color:#c92a2a; font-weight:500;"></div>
             </div>
 
@@ -353,15 +275,15 @@
             </div>
 
             <div
-                style="margin-top:auto; background:#f8f9fa; padding:20px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                style="margin-top:auto; background:#f8f9fa; padding:25px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <div style="font-weight:700;">응답 신뢰도 (Reliability)</div>
-                    <div style="font-size:12px; color:#868e96;">거울 문항 일치도 검증</div>
+                    <div style="font-weight:700; color:var(--deep);">응답 신뢰도 (Reliability)</div>
+                    <div style="font-size:12px; color:#868e96;">거울 문항 및 일치도 검증 결과</div>
                 </div>
                 <div style="text-align:right;">
-                    <span id="rel-score" style="font-size:24px; font-weight:900;">-</span> <span
-                        style="font-size:14px; color:#adb5bd;">/ 20</span>
-                    <div id="rel-verdict" style="font-weight:800; color:var(--primary);">High</div>
+                    <span id="rel-score" style="font-size:24px; font-weight:900;">-</span>
+                    <span style="font-size:14px; color:#adb5bd;">/ 20</span>
+                    <div id="rel-verdict" style="font-weight:800;">Pending</div>
                 </div>
             </div>
 
@@ -369,18 +291,25 @@
         </div>
     </div>
 
-    <!-- Print Button -->
-    <div class="no-print" style="position:fixed; bottom:30px; right:30px;">
+    <div class="no-print">
         <button onclick="downloadPDF()"
             style="background:var(--deep); color:white; padding:15px 30px; border:none; border-radius:50px; font-weight:700; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.2);">PDF
-            저장</button>
+            저장하기</button>
     </div>
 
     <script>
-        // [FINAL API URL]
         const API_URL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
 
-        // Strict Mapping (6 Capabilities)
+        // Analysis Definitions (Based on your input)
+        const ANALYSIS_DICT = {
+            "주도적 능력": { desc: "자기주도성 및 변화 선도", strength: "정해진 틀에 안주하지 않고 스스로 대안을 찾아 추진하는 힘이 강합니다.", weakness: "자율성이 강해 조직 매뉴얼과의 조율이 필요할 수 있습니다." },
+            "문제 해결 능력": { desc: "데이터 기반 논리 분석", strength: "복잡한 문제 앞에서도 객관적 근거로 대안을 도출하는 능력이 뛰어납니다.", weakness: "신중한 분석으로 인해 실행 속도가 다소 지연될 우려가 있습니다." },
+            "목표 달성 능력": { desc: "결과 몰입 및 추진력", strength: "어려운 과제일수록 승부욕을 발휘하여 약속된 결과를 끝내 만들어냅니다.", weakness: "성과에 집중하다 동료의 감정적 지지를 놓칠 수 있어 주의가 필요합니다." },
+            "소속 내 영향력": { desc: "팀워크 및 동료 지원", strength: "화합을 중시하며 동료가 어려울 때 먼저 돕는 태도가 훌륭합니다.", weakness: "원만한 관계를 위해 필요한 비판적 피드백을 아끼는 경향이 있습니다." },
+            "의사소통 능력": { desc: "명확한 전달 및 경청", strength: "의도를 정확히 파악하고 본인의 의견을 논리적으로 설득하는 힘이 좋습니다.", weakness: "결론 중심 소통이 때로는 상대에게 압박으로 느껴질 수 있습니다." },
+            "조직문화 형성 능력": { desc: "조직 가치 수용 및 정직", strength: "단체의 미션을 깊이 공감하며 원칙을 지키는 정직한 태도를 갖췄습니다.", weakness: "원칙에 엄격하여 상황에 따른 유연한 대처가 부족할 수 있습니다." }
+        };
+
         const MAP = {
             "주도적 능력": { r: [1, 10], s: [81, 88] },
             "문제 해결 능력": { r: [11, 20], s: [82, 87, 91, 98] },
@@ -390,224 +319,137 @@
             "조직문화 형성 능력": { r: [41, 50], s: [86, 96, 100] }
         };
 
+        async function fetchData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetName = decodeURIComponent(urlParams.get('name') || urlParams.get('userName') || "").trim();
+            if (!targetName) return;
+
+            try {
+                const res = await fetch(`${API_URL}?type=result`, { redirect: 'follow' });
+                const json = await res.json();
+                const allData = json.data || json;
+                const user = allData.find(u => (u['성명'] || u['이름'] || u['name'] || "").toString().trim() === targetName);
+
+                if (user) render(user, allData);
+                else document.getElementById('loading-overlay').innerText = "데이터를 찾을 수 없습니다.";
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading-overlay').innerText = "서버 연결 실패";
+            }
+        }
+
         function calc(u) {
             let stats = {}, sum = 0, redflags = [], paradox = [];
             for (let [k, cfg] of Object.entries(MAP)) {
-                let p1 = 0, max1 = 0, p2 = 0, max2 = 0;
-                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) { if (u['Q' + i] == 'A') p1 += 10; max1 += 10; }
-                const sArr = cfg.s;
-                for (let qNum of sArr) {
-                    const b = parseInt(u[`Q${qNum}_Best`] || 0), w = parseInt(u[`Q${qNum}_Worst`] || 0);
-                    if (b == 1) p2 += 5; if (b == 3) { p2 -= 5; redflags.push(qNum); }
-                    if (w == 2) p2 += 5; if (w == 4) { p2 -= 5; redflags.push(qNum); }
-                    max2 += 10;
+                let p = 0, max = 0;
+                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) { if (u['Q' + i] == 'B' || u['Q' + i] == 'A') p += 10; max += 10; }
+                for (let qNum of cfg.s) {
+                    const b = parseInt(u[`Q${qNum}_Best`] || 0);
+                    if (b == 1 || b == 2) p += 5; if (b == 4) redflags.push(qNum);
+                    max += 10;
                 }
-                if (Math.round(p1 / max1 * 100) >= 70 && Math.round(p2 / max2 * 100) <= 40) paradox.push(k);
-                const score = Math.max(0, Math.round((p1 + p2) / (max1 + max2) * 100));
+                const score = Math.max(0, Math.round(p / max * 100));
                 stats[k] = score; sum += score;
             }
             return { scores: stats, total: Math.round(sum / 6), redflags, paradox };
         }
 
-        async function fetchData() {
-            // [ROBUST PARSING]
-            const urlParams = new URLSearchParams(window.location.search);
-            // Support ?name= or ?userName=
-            const rawName = urlParams.get('name') || urlParams.get('userName') || "";
-            // Always trim
-            const targetName = decodeURIComponent(rawName).trim();
-            const phone = urlParams.get('phone');
-
-            if (!targetName) {
-                console.warn("Invalid access: Missing name param.");
-                return;
-            }
-
-            console.log(`[Report] Searching for: "${targetName}"`);
-
-            try {
-                // [STRICT] redirect: 'follow'
-                const res = await fetch(`${API_URL}?type=result`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
-
-                if (!res.ok) throw new Error("서버 응답 오류");
-
-                const json = await res.json();
-                const allData = json.data || json; // Handle array or object wrapper
-
-                console.log(`[Report] Total Data Loaded: ${allData.length} records.`);
-
-                // [FAILSAFE SEARCH]
-                const user = allData.find(u => {
-                    // Check strict '성명' first, then fallback
-                    const sheetName = (u['성명'] || u['이름'] || u['name'] || "").toString().trim();
-                    return sheetName === targetName;
-                });
-
-                if (user) {
-                    console.log("[Report] User Found!", user);
-                    render(user, allData);
-                } else {
-                    console.error("[Report] User Not Found.");
-                    alert(`데이터를 찾을 수 없습니다: ${targetName}`);
-                }
-
-            } catch (error) {
-                console.error(error);
-                alert("서버 연결 실패. 네트워크 상태를 확인해주세요.");
-            }
-        }
-
-        window.loadForPrint = function (u, all) {
-            document.getElementById('loading-overlay').style.display = 'none';
-            render(u, all);
-        }
-
         function render(u, all) {
-            // Hide Loader
-            const ov = document.getElementById('loading-overlay');
-            ov.style.opacity = 0;
-            setTimeout(() => ov.style.display = 'none', 500);
-
-            // [STRICT] Use '성명'
-            const userName = u['성명'] || u['이름'] || '---';
-            document.getElementById('u-name').innerText = userName;
-            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시: ${(u['응시일시'] || '').split('T')[0]}`;
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('u-name').innerText = u['성명'] || u['이름'] || '지원자';
+            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시일시: ${(u['타임스탬프'] || '').split(' ')[0]}`;
 
             const { scores, total, redflags, paradox } = calc(u);
-
-            // Score
             document.getElementById('u-total').innerText = total;
 
-            // Rank
+            // Rank Calc
             const allScores = all.map(x => calc(x).total).sort((a, b) => b - a);
-            const rank = allScores.indexOf(total) + 1;
-            const pct = Math.round(rank / allScores.length * 100);
-
-            // [STRICT] Visual Requirements: White bg, Dark Green Text
-            document.getElementById('hero-rank').innerHTML = `상위 ${pct}% (종합 <span style="color:#2d3e1d">${total}점</span>)`;
+            const pct = Math.round((allScores.indexOf(total) + 1) / allScores.length * 100);
+            document.getElementById('hero-rank').innerText = `상위 ${pct}% (종합 ${total}점)`;
 
             const ht = document.getElementById('hero-text');
-            if (total >= 90) ht.innerText = "조직의 핵심 인재로 성장이 기대되는 지원자입니다. 🚀";
-            else if (total >= 70) ht.innerText = "조직에 잘 녹아들 든든한 지원자입니다. 😊";
-            else if (total >= 50) ht.innerText = "직무 적합도에 대한 면밀한 검토가 필요합니다. 🤔";
-            else ht.innerText = "조직 적응에 어려움이 있을 수 있어 심층 면접이 필요합니다. 🧐";
+            if (total >= 85) ht.innerText = "조직의 성장을 이끌어갈 핵심 인재로 성장이 기대되는 지원자입니다. 🚀";
+            else if (total >= 70) ht.innerText = "조직에 원만히 적응하며 제 역할을 다할 든든한 지원자입니다. 😊";
+            else ht.innerText = "직무 적합도 및 조직 적응을 위한 심층 면접이 필요한 지원자입니다. 🧐";
 
-            // Gauge Animation (New Logic)
+            // Silhouette Animation
             const fillHeight = (total / 100) * 200;
-            const fillElement = document.getElementById('scoreFill');
-            if (fillElement) {
-                // Fill from bottom up
-                setTimeout(() => {
-                    fillElement.setAttribute('y', 200 - fillHeight);
-                    fillElement.setAttribute('height', fillHeight);
-                }, 100);
-            }
+            const fillEl = document.getElementById('scoreFill');
+            setTimeout(() => { fillEl.setAttribute('y', 200 - fillHeight); fillEl.setAttribute('height', fillHeight); }, 100);
 
-            // --- CHART RESTORATION ---
+            renderChart(scores);
+            renderAnalysis(scores, redflags, paradox);
+
+            // Reliability
+            let rc = 0; for (let i = 1; i <= 20; i++) if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) rc++;
+            document.getElementById('rel-score').innerText = rc;
+            const relV = document.getElementById('rel-verdict');
+            relV.innerText = rc >= 17 ? "High" : (rc >= 14 ? "Mid" : "Low");
+            relV.style.color = rc >= 14 ? var(--primary) : var(--danger);
+        }
+
+        function renderChart(scores) {
             const labels = Object.keys(scores);
             const values = Object.values(scores);
-            const ctx = document.getElementById('competencyChart').getContext('2d');
-
-            // Calc Min/Max for Coloring
             const maxVal = Math.max(...values);
             const minVal = Math.min(...values);
 
-            Chart.defaults.font.family = "'Noto Sans KR'";
-
-            new Chart(ctx, {
+            new Chart(document.getElementById('competencyChart'), {
                 type: 'radar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '역량 점수',
                         data: values,
-                        backgroundColor: 'rgba(137, 162, 48, 0.2)', // #89a230
+                        backgroundColor: 'rgba(137, 162, 48, 0.2)',
                         borderColor: '#89a230',
-                        pointBackgroundColor: '#2d3e1d',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#2d3e1d'
+                        borderWidth: 3,
+                        pointBackgroundColor: '#2d3e1d'
                     }]
                 },
                 options: {
                     scales: {
                         r: {
-                            min: 0,
-                            max: 100,
+                            min: 0, max: 100,
+                            ticks: { display: false },
                             pointLabels: {
-                                font: {
-                                    size: 16,
-                                    weight: '700',
-                                    family: "'Noto Sans KR'"
-                                },
-                                // [NEW] Conditional Color Logic
-                                color: function (context) {
-                                    // context.index (chart.js v3+)
-                                    const idx = context.index;
-                                    const val = values[idx];
+                                padding: 20,
+                                font: { size: 14, weight: '700' },
+                                color: function (ctx) {
+                                    const val = values[ctx.index];
                                     if (val === maxVal) return '#ff4d4d'; // Red for Max
                                     if (val === minVal) return '#4d79ff'; // Blue for Min
-                                    return '#ffa500'; // Orange for Default
+                                    return '#000000'; // Black for others
                                 },
-                                // [NEW] Multi-line Callback & Padding
-                                padding: 15,
-                                callback: function (label, index) {
-                                    // Return array for multiline
-                                    return [label, values[index] + "점"];
-                                }
-                            },
-                            ticks: {
-                                display: false, // Hide numeric ticks (0, 20, 40...)
-                                stepSize: 20
-                            },
-                            grid: {
-                                color: '#e9ecef'
+                                callback: (label, i) => [label, values[i] + "점"]
                             }
                         }
                     },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: true
-                        }
-                    },
-                    maintainAspectRatio: false
+                    plugins: { legend: { display: false } }
                 }
             });
+        }
 
-            // Lists
+        function renderAnalysis(scores, redflags, paradox) {
             const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
             const sDiv = document.getElementById('strength-list');
             const wDiv = document.getElementById('weakness-list');
-            sDiv.innerHTML = sorted.slice(0, 2).map(([k, v]) => `<div class="list-item"><strong>${k}</strong> (${v}점)</div>`).join('');
-            wDiv.innerHTML = sorted.slice(-2).reverse().map(([k, v]) => `<div class="list-item"><strong>${k}</strong> (${v}점)</div>`).join('');
 
-            // Page 2 Info
-            const rfDiv = document.getElementById('redflag-list');
-            rfDiv.innerHTML = redflags.length ? redflags.map(q => `<div class="list-item">문항 ${q}: 가치관 충돌</div>`).join('') : "<div class='list-item' style='color:#343a40'>✔ 발견되지 않음 (Clean)</div>";
-            const pxDiv = document.getElementById('paradox-list');
-            pxDiv.innerHTML = paradox.length ? paradox.map(k => `<div class="list-item"><strong>${k}</strong>: 이상/현실 불일치</div>`).join('') : "<div class='list-item'>✔ 일관된 성향</div>";
+            sDiv.innerHTML = sorted.slice(0, 2).map(([k, v]) => `
+                <div class="list-item"><strong>${k}</strong>: ${ANALYSIS_DICT[k].strength}</div>
+            `).join('');
 
-            const weak = sorted[sorted.length - 1][0];
-            document.getElementById('interview-guide').innerHTML = `<div class="list-item"><strong>${weak} 검증</strong>: 관련 경험 및 극복 노력 질문</div>`;
+            wDiv.innerHTML = sorted.slice(-2).reverse().map(([k, v]) => `
+                <div class="list-item"><strong>${k}</strong>: ${ANALYSIS_DICT[k].weakness}</div>
+            `).join('');
 
-            // Reliability
-            let rc = 0; for (let i = 1; i <= 20; i++)if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) rc++;
-            document.getElementById('rel-score').innerText = rc;
-            document.getElementById('rel-verdict').innerText = rc >= 18 ? "High" : (rc >= 14 ? "Mid" : "Low");
-            document.getElementById('rel-verdict').style.color = rc >= 14 ? "#0ca678" : "#fa5252";
+            document.getElementById('redflag-list').innerHTML = redflags.length ? redflags.map(q => `<div class="list-item">문항 ${q}: 가치관 충돌 감지</div>`).join('') : "<div class='list-item'>✔ 발견되지 않음</div>";
+            document.getElementById('paradox-list').innerHTML = paradox.length ? paradox.map(k => `<div class="list-item"><strong>${k}</strong>: 이상-현실 불일치</div>`).join('') : "<div class='list-item'>✔ 일관된 성향</div>";
+            document.getElementById('interview-guide').innerHTML = `<div class="list-item"><strong>${sorted[sorted.length - 1][0]} 보완 경험</strong>: 부족한 역량을 극복하기 위해 노력했던 구체적 사례를 질문하십시오.</div>`;
         }
 
         function downloadPDF() {
             const el = document.getElementById('report-content');
-            const name = document.getElementById('u-name').innerText;
-            const safe = name.replace(/[^a-zA-Z가-힣0-9]/g, "");
-            const opt = { margin: 0, filename: `${safe}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+            const opt = { margin: 0, filename: 'GNFit_Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
             html2pdf().set(opt).from(el).save();
         }
 
