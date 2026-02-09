@@ -376,6 +376,7 @@
     </div>
 
     <script>
+        // [FINAL API URL]
         const API_URL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
 
         // Strict Mapping (6 Capabilities)
@@ -407,48 +408,57 @@
             return { scores: stats, total: Math.round(sum / 6), redflags, paradox };
         }
 
-        // 1. URL Parameter Parsing
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        // 2. Fetch Data (Strict Redirect 'follow')
         async function fetchData() {
-            const name = getQueryParam('name');
-            const phone = getQueryParam('phone');
+            // [ROBUST PARSING]
+            const urlParams = new URLSearchParams(window.location.search);
+            // Support ?name= or ?userName=
+            const rawName = urlParams.get('name') || urlParams.get('userName') || "";
+            // Always trim
+            const targetName = decodeURIComponent(rawName).trim();
+            const phone = urlParams.get('phone');
 
-            if (!name || !phone) {
-                console.warn("Invalid access: Missing params.");
-                // We keep the loading spinner as per instruction (removed panic logic)
+            if (!targetName) {
+                console.warn("Invalid access: Missing name param.");
                 return;
             }
 
+            console.log(`[Report] Searching for: "${targetName}"`);
+
             try {
-                // New URL + redirect: 'follow'
-                const res = await fetch(`${API_URL}?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`, {
+                // [STRICT] redirect: 'follow'
+                const res = await fetch(`${API_URL}?type=result`, {
                     method: 'GET',
                     redirect: 'follow'
                 });
 
                 if (!res.ok) throw new Error("서버 응답 오류");
 
-                const data = await res.json();
+                const json = await res.json();
+                const allData = json.data || json; // Handle array or object wrapper
 
-                if (data.result === "success") {
-                    render(data.data, data.allData);
+                console.log(`[Report] Total Data Loaded: ${allData.length} records.`);
+
+                // [FAILSAFE SEARCH]
+                const user = allData.find(u => {
+                    // Check strict '성명' first, then fallback
+                    const sheetName = (u['성명'] || u['이름'] || u['name'] || "").toString().trim();
+                    return sheetName === targetName;
+                });
+
+                if (user) {
+                    console.log("[Report] User Found!", user);
+                    render(user, allData);
                 } else {
-                    alert("데이터를 찾을 수 없습니다.");
-                    // Keep spinner
+                    console.error("[Report] User Not Found.");
+                    alert(`데이터를 찾을 수 없습니다: ${targetName}`);
                 }
 
             } catch (error) {
                 console.error(error);
-                // Keep spinner
+                alert("서버 연결 실패. 네트워크 상태를 확인해주세요.");
             }
         }
 
-        // Admin Hook
         window.loadForPrint = function (u, all) {
             document.getElementById('loading-overlay').style.display = 'none';
             render(u, all);
@@ -461,7 +471,8 @@
             setTimeout(() => ov.style.display = 'none', 500);
 
             // [STRICT] Use '성명'
-            document.getElementById('u-name').innerText = u['성명'] || '---';
+            const userName = u['성명'] || u['이름'] || '---';
+            document.getElementById('u-name').innerText = userName;
             document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시: ${(u['응시일시'] || '').split('T')[0]}`;
 
             const { scores, total, redflags, paradox } = calc(u);
@@ -485,8 +496,8 @@
 
             // Silhouette Animation
             setTimeout(() => {
-                const h = 400 - (total * 4); // Adjusted for new SVG height
-                document.getElementById('liquid-rect').setAttribute('y', h); // Just logic, attr name is y
+                const h = 400 - (total * 4);
+                document.getElementById('liquid-rect').setAttribute('y', h);
             }, 500);
 
             // --- CHART RESTORATION ---
