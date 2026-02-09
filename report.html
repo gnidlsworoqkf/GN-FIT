@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GN-Fit 결과 분석</title>
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
+    <!-- Chart.js and html2pdf -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -16,7 +18,6 @@
             --deep: #2d3e1d;
             /* Deep Green */
             --danger: #e03131;
-            --text-gray: #495057;
             --bg: #FFFFFF;
         }
 
@@ -93,7 +94,7 @@
         .h-title {
             font-size: 32px;
             font-weight: 900;
-            color: var(--text-gray);
+            color: #343a40;
             letter-spacing: -1px;
         }
 
@@ -103,7 +104,7 @@
             margin-top: 4px;
         }
 
-        /* Loading Overlay */
+        /* LOADING */
         #loading-overlay {
             position: absolute;
             top: 0;
@@ -116,7 +117,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            opacity: 1;
             transition: opacity 0.5s;
         }
 
@@ -139,16 +139,17 @@
             }
         }
 
-        /* HERO SECTION */
+        /* HERO - White Background, Deep Green Text */
         .hero {
             text-align: left;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
         }
 
         .hero-main {
             font-size: 26px;
             font-weight: 800;
             color: var(--deep);
+            /* Deep Green #2d3e1d */
             line-height: 1.4;
             margin-bottom: 10px;
         }
@@ -156,19 +157,19 @@
         .hero-sub {
             font-size: 18px;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--deep);
+            /* Changed to Deep Green as per request */
         }
 
-        /* VISUAL ROW */
+        /* VISUAL */
         .visual-row {
             display: grid;
             grid-template-columns: 200px 1fr;
-            gap: 40px;
+            gap: 30px;
             margin-bottom: 40px;
             align-items: center;
         }
 
-        /* Silhouette (No Stroke) */
         .silhouette-box {
             width: 140px;
             height: 300px;
@@ -176,13 +177,13 @@
             position: relative;
         }
 
-        /* Chart */
         .chart-box {
-            height: 320px;
+            height: 340px;
             width: 100%;
+            position: relative;
         }
 
-        /* Cards */
+        /* Expert Cards */
         .card {
             border-top: 3px solid #eee;
             padding-top: 15px;
@@ -236,6 +237,13 @@
             color: var(--primary);
         }
 
+        #loading-text {
+            margin-top: 15px;
+            font-weight: 700;
+            color: #2d3e1d;
+            /* Deep Green */
+        }
+
         footer {
             margin-top: auto;
             font-size: 11px;
@@ -253,16 +261,16 @@
 
         <!-- PAGE 1 -->
         <div class="page-container">
-            <!-- LOADING -->
+            <!-- LOADING SPINNER -->
             <div id="loading-overlay">
                 <div class="spinner"></div>
-                <div style="margin-top:15px; font-weight:700; color:#888;">데이터 분석 중...</div>
+                <div id="loading-text">데이터 분석 중...</div>
             </div>
 
             <header class="header">
                 <div>
                     <img src="gn_logo.jpg" class="h-logo" alt="Logo">
-                    <div class="h-title"><span id="u-name">---</span> 결과 분석</div>
+                    <div class="h-title"><span id="u-name">---</span>님 결과 분석</div>
                     <div class="h-meta" id="u-meta">생년월일: - | 응시일시: -</div>
                 </div>
                 <div style="text-align:right;">
@@ -277,35 +285,33 @@
             </div>
 
             <div class="visual-row">
-                <!-- Full Body Silhouette (No Stroke, Fill Only) -->
+                <!-- CUTE ROUND SILHOUETTE (No Stroke, Olive Fill) -->
                 <div style="text-align:center;">
                     <div class="silhouette-box">
-                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                        <svg viewBox="0 0 216 400" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <clipPath id="bodyClip">
                                     <path
-                                        d="M50,10 C40,10 32,18 32,28 C32,38 40,46 50,46 C60,46 68,38 68,28 C68,18 60,10 50,10 Z
-                                         M30,52 C20,55 15,65 15,85 L15,130 L35,130 L35,190 L65,190 L65,130 L85,130 L85,85 C85,65 80,55 70,52 C65,50 60,48 50,48 C40,48 35,50 30,52 Z" />
+                                        d="M108,0C55,0,0,50,0,120c0,50,30,90,80,110v170h56V230c50-20,80-60,80-110C216,50,161,0,108,0z" />
                                 </clipPath>
                             </defs>
-                            <!-- Background Placeholder (Very Light Gray for context) -->
+                            <!-- Fill Only -->
                             <path
-                                d="M50,10 C40,10 32,18 32,28 C32,38 40,46 50,46 C60,46 68,38 68,28 C68,18 60,10 50,10 Z
-                                 M30,52 C20,55 15,65 15,85 L15,130 L35,130 L35,190 L65,190 L65,130 L85,130 L85,85 C85,65 80,55 70,52 C65,50 60,48 50,48 C40,48 35,50 30,52 Z"
-                                fill="#f8f9fa" stroke="none" />
+                                d="M108,0C55,0,0,50,0,120c0,50,30,90,80,110v170h56V230c50-20,80-60,80-110C216,50,161,0,108,0z"
+                                fill="#89a230" stroke="none" />
 
-                            <!-- Rising Liquid -->
+                            <!-- Liquid (Olive Green) -->
                             <g clip-path="url(#bodyClip)">
-                                <rect id="liquid-rect" x="0" y="200" width="100" height="200" fill="#89a230"
+                                <rect id="liquid-rect" x="0" y="200" width="216" height="400" fill="#89a230"
                                     transition="all 1s ease" />
                             </g>
                         </svg>
                     </div>
-                    <!-- Title removed as requested to be minimal -->
                 </div>
 
+                <!-- RADAR CHART (Restored) -->
                 <div class="chart-box">
-                    <canvas id="radarChart"></canvas>
+                    <canvas id="competencyChart"></canvas>
                 </div>
             </div>
 
@@ -362,6 +368,7 @@
         </div>
     </div>
 
+    <!-- Print Button -->
     <div class="no-print" style="position:fixed; bottom:30px; right:30px;">
         <button onclick="downloadPDF()"
             style="background:var(--deep); color:white; padding:15px 30px; border:none; border-radius:50px; font-weight:700; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.2);">PDF
@@ -371,6 +378,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxWJqjwMgbsySFDu2toUnDaoqZb5AVLdtMB0FUjoO1lLpliA3KuoZfGEdUtlUPR4QnI/exec";
 
+        // Strict Mapping (6 Capabilities)
         const MAP = {
             "주도적 능력": { r: [1, 10], s: [81, 88] },
             "문제 해결 능력": { r: [11, 20], s: [82, 87, 91, 98] },
@@ -381,121 +389,167 @@
         };
 
         function calc(u) {
-            let stats = {}, sum = 0;
-            let redflags = [];
-            let paradox = [];
-
+            let stats = {}, sum = 0, redflags = [], paradox = [];
             for (let [k, cfg] of Object.entries(MAP)) {
                 let p1 = 0, max1 = 0, p2 = 0, max2 = 0;
-                // P1
-                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) {
-                    if (u['Q' + i] == 'A') p1 += 10; max1 += 10;
-                }
-                // P2
+                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) { if (u['Q' + i] == 'A') p1 += 10; max1 += 10; }
                 for (let q of cfg.sjt) {
                     const b = parseInt(u[`Q${q}_Best`] || 0), w = parseInt(u[`Q${q}_Worst`] || 0);
-                    if (b === 1) p2 += 5; if (b === 3) { p2 -= 5; redflags.push(q); }
-                    if (w === 2) p2 += 5; if (w === 4) { p2 -= 5; redflags.push(q); }
+                    if (b == 1) p2 += 5; if (b == 3) { p2 -= 5; redflags.push(q); }
+                    if (w == 2) p2 += 5; if (w == 4) { p2 -= 5; redflags.push(q); }
                     max2 += 10;
                 }
-                // Paradox
-                const s1 = Math.round(p1 / max1 * 100), s2 = Math.round(p2 / max2 * 100);
-                if (s1 >= 70 && s2 <= 40) paradox.push(k);
-
-                const score = Math.max(0, Math.round(((p1 + p2) / (max1 + max2)) * 100));
-                stats[k] = score;
-                sum += score;
+                if (Math.round(p1 / max1 * 100) >= 70 && Math.round(p2 / max2 * 100) <= 40) paradox.push(k);
+                const score = Math.max(0, Math.round((p1 + p2) / (max1 + max2) * 100));
+                stats[k] = score; sum += score;
             }
             return { scores: stats, total: Math.round(sum / 6), redflags, paradox };
         }
 
-        async function init() {
-            const p = new URLSearchParams(window.location.search);
-            const name = p.get('name');
-            if (!name) {
+        // 1. URL 파라미터 파싱
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // 2. 데이터 가져오기 (Google Apps Script)
+        async function fetchData() {
+            const name = getQueryParam('name');
+            const phone = getQueryParam('phone');
+
+            if (!name || !phone) {
                 alert("잘못된 접근입니다.");
-                document.getElementById('loading-overlay').style.display = 'none';
+                window.location.href = "index.html";
                 return;
             }
 
             try {
-                document.getElementById('u-name').innerText = name;
+                // fetch 옵션 최적화 (redirect: 'follow' 중요)
+                const res = await fetch(`${API_URL}?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
 
-                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error("서버 응답 오류");
+
                 const data = await res.json();
 
-                // STRICT MATCH
-                const u = data.find(x => (x['이름'] || x['성명'] || x['name']) == name);
-                if (u) {
-                    render(u, data);
+                if (data.result === "success") {
+                    render(data.data, data.allData);
                 } else {
-                    alert("데이터 없음: " + name);
+                    alert("데이터를 찾을 수 없습니다.");
+                    window.location.href = "index.html";
                 }
-            } catch (e) {
-                console.error(e);
-                alert("서버 연결 실패");
+
+            } catch (error) {
+                console.error(error);
+                alert("서버 연결 실패. 잠시 후 다시 시도해주세요.");
+                // renderReport(getMockData()); // Test
             } finally {
-                // HIDE LOADING AFTER RENDER
+                document.getElementById('loading-overlay').style.opacity = '0';
                 setTimeout(() => {
-                    document.getElementById('loading-overlay').style.opacity = 0;
-                    setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
+                    document.getElementById('loading-overlay').style.display = 'none';
                 }, 500);
             }
         }
 
         // Admin Hook
         window.loadForPrint = function (u, all) {
-            document.getElementById('loading-overlay').style.display = 'none'; // No loading for admin print
+            document.getElementById('loading-overlay').style.display = 'none';
             render(u, all);
         }
 
         function render(u, all) {
-            // Meta
-            document.getElementById('u-name').innerText = u['이름'] || u['성명'] || u['name'];
-            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || u['birth']} | 응시: ${(u['타임스탬프'] || u['date']).split('T')[0]}`;
+            // Hide Loader
+            const ov = document.getElementById('loading-overlay');
+            ov.style.opacity = 0;
+            setTimeout(() => ov.style.display = 'none', 500);
+
+            // Data Fill
+            document.getElementById('u-name').innerText = u['이름'];
+            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시: ${(u['타임스탬프'] || '').split('T')[0]}`;
 
             const { scores, total, redflags, paradox } = calc(u);
+
+            // Score
+            document.getElementById('u-total').innerText = total;
 
             // Rank
             const allScores = all.map(x => calc(x).total).sort((a, b) => b - a);
             const rank = allScores.indexOf(total) + 1;
             const pct = Math.round(rank / allScores.length * 100);
 
-            // Text
-            document.getElementById('u-total').innerText = total;
+            // Correct color for rank display (Deep Green as requested)
+            // User requested: "White background with dark green (#2d3e1d) text for results (Total score & Top %)"
+            // .hero-sub handles this already with class change I made, but let's check inline override
+            document.getElementById('hero-rank').innerHTML = `상위 ${pct}% (종합 <span style="color:#2d3e1d">${total}점</span>)`;
+
             const ht = document.getElementById('hero-text');
-            if (total >= 90) ht.innerText = "조직의 핵심 인재로 성장이 기대됩니다. 🚀";
+            if (total >= 90) ht.innerText = "조직의 핵심 인재로 성장이 기대되는 지원자입니다. 🚀";
             else if (total >= 70) ht.innerText = "조직에 잘 녹아들 든든한 지원자입니다. 😊";
-            else if (total >= 50) ht.innerText = "직무 적합도에 대한 검토가 필요합니다. 🤔";
-            else ht.innerText = "조직 적응에 어려움이 예상됩니다. 🧐";
+            else if (total >= 50) ht.innerText = "직무 적합도에 대한 면밀한 검토가 필요합니다. 🤔";
+            else ht.innerText = "조직 적응에 어려움이 있을 수 있어 심층 면접이 필요합니다. 🧐";
 
-            document.getElementById('hero-rank').innerHTML = `상위 ${pct}% (종합 ${total}점)`;
-
-            // Visuals
+            // Silhouette Animation
             setTimeout(() => {
-                const y = 200 - (total * 2);
-                document.getElementById('liquid-rect').setAttribute('y', y);
-            }, 300);
+                const h = 400 - (total * 4); // Adjusted for new SVG height
+                document.getElementById('liquid-rect').setAttribute('y', h);
+            }, 500);
 
-            // Chart
-            const labels = Object.keys(scores).map(k => `${k} \n[${scores[k]}점]`); // With Score
+            // --- CHART RESTORATION ---
+            const labels = Object.keys(scores);
+            const ctx = document.getElementById('competencyChart').getContext('2d');
+
             Chart.defaults.font.family = "'Noto Sans KR'";
-            Chart.defaults.font.size = 13;
 
-            new Chart(document.getElementById('radarChart'), {
+            new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Score', data: Object.values(scores),
-                        backgroundColor: 'rgba(137,162,48,0.2)', borderColor: '#89a230', pointBackgroundColor: '#2d3e1d', borderWidth: 2
+                        label: '역량 점수',
+                        data: Object.values(scores),
+                        backgroundColor: 'rgba(137, 162, 48, 0.2)', // #89a230 with opacity
+                        borderColor: '#89a230',
+                        pointBackgroundColor: '#2d3e1d',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#2d3e1d'
                     }]
                 },
                 options: {
                     scales: {
-                        r: { min: 0, max: 100, pointLabels: { font: { size: 14, weight: '700' }, color: '#2d3e1d' }, ticks: { display: false } }
+                        r: {
+                            min: 0,
+                            max: 100,
+                            pointLabels: {
+                                font: {
+                                    size: 16,
+                                    weight: '700',
+                                    family: "'Noto Sans KR'"
+                                },
+                                color: '#2d3e1d', // Deep Green
+                                callback: function (label, index) {
+                                    return label + " " + Object.values(scores)[index] + "점";
+                                }
+                            },
+                            ticks: {
+                                display: false,
+                                stepSize: 20
+                            },
+                            grid: {
+                                color: '#e9ecef'
+                            }
+                        }
                     },
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    },
                     maintainAspectRatio: false
                 }
             });
@@ -507,38 +561,31 @@
             sDiv.innerHTML = sorted.slice(0, 2).map(([k, v]) => `<div class="list-item"><strong>${k}</strong> (${v}점)</div>`).join('');
             wDiv.innerHTML = sorted.slice(-2).reverse().map(([k, v]) => `<div class="list-item"><strong>${k}</strong> (${v}점)</div>`).join('');
 
-            // Page 2
+            // Page 2 Info
             const rfDiv = document.getElementById('redflag-list');
-            if (redflags.length > 0) rfDiv.innerHTML = redflags.map(q => `<div class="list-item">문항 ${q}: 가치관 충돌 답변</div>`).join('');
-            else rfDiv.innerHTML = "<div class='list-item' style='color:#343a40'>✔ 발견되지 않음 (Clean)</div>";
-
+            rfDiv.innerHTML = redflags.length ? redflags.map(q => `<div class="list-item">문항 ${q}: 가치관 충돌</div>`).join('') : "<div class='list-item' style='color:#343a40'>✔ 발견되지 않음 (Clean)</div>";
             const pxDiv = document.getElementById('paradox-list');
-            if (paradox.length > 0) pxDiv.innerHTML = paradox.map(k => `<div class="list-item"><strong>${k}</strong>: 이상/현실 불일치</div>`).join('');
-            else pxDiv.innerHTML = "<div class='list-item'>✔ 일관된 성향</div>";
+            pxDiv.innerHTML = paradox.length ? paradox.map(k => `<div class="list-item"><strong>${k}</strong>: 이상/현실 불일치</div>`).join('') : "<div class='list-item'>✔ 일관된 성향</div>";
 
-            const intGuide = document.getElementById('interview-guide');
-            // Simple logic for guide based on weakness
             const weak = sorted[sorted.length - 1][0];
-            intGuide.innerHTML = `<div class="list-item"><strong>${weak} 검증 질문</strong>: 과거 경험 중 ${weak}을 발휘하지 못해 아쉬웠던 사례와 이를 극복하기 위한 노력은?</div>`;
+            document.getElementById('interview-guide').innerHTML = `<div class="list-item"><strong>${weak} 검증</strong>: 관련 경험 및 극복 노력 질문</div>`;
 
             // Reliability
-            let relCount = 0;
-            for (let i = 1; i <= 20; i++) if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) relCount++;
-            const rV = relCount >= 18 ? "High" : (relCount >= 14 ? "Mid" : "Low");
-
-            document.getElementById('rel-score').innerText = relCount;
-            document.getElementById('rel-verdict').innerText = rV;
-            document.getElementById('rel-verdict').style.color = relCount >= 14 ? "#0ca678" : "#fa5252";
+            let rc = 0; for (let i = 1; i <= 20; i++)if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) rc++;
+            document.getElementById('rel-score').innerText = rc;
+            document.getElementById('rel-verdict').innerText = rc >= 18 ? "High" : (rc >= 14 ? "Mid" : "Low");
+            document.getElementById('rel-verdict').style.color = rc >= 14 ? "#0ca678" : "#fa5252";
         }
 
         function downloadPDF() {
             const el = document.getElementById('report-content');
             const name = document.getElementById('u-name').innerText;
-            const opt = { margin: 0, filename: `${name}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+            const safe = name.replace(/[^a-zA-Z가-힣0-9]/g, "");
+            const opt = { margin: 0, filename: `${safe}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
             html2pdf().set(opt).from(el).save();
         }
 
-        window.onload = init;
+        window.onload = fetchData;
     </script>
 </body>
 

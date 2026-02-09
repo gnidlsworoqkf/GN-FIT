@@ -13,8 +13,7 @@
             --primary: #89a230;
             --text: #343a40;
             --bg: #f8f9fa;
-            --card-bg: #fff;
-            --radius: 16px;
+            --card: #fff;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
@@ -39,11 +38,6 @@
             color: #2c3e50;
         }
 
-        button {
-            cursor: pointer;
-            font-family: inherit;
-        }
-
         .btn-refresh {
             background: var(--primary);
             color: white;
@@ -51,10 +45,9 @@
             padding: 10px 20px;
             border-radius: 30px;
             font-weight: 700;
-            box-shadow: 0 4px 10px rgba(137, 162, 48, 0.3);
+            cursor: pointer;
         }
 
-        /* Stats */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -63,9 +56,9 @@
         }
 
         .stat-card {
-            background: var(--card-bg);
+            background: var(--card);
             padding: 25px;
-            border-radius: var(--radius);
+            border-radius: 16px;
             box-shadow: var(--shadow);
             display: flex;
             gap: 15px;
@@ -92,14 +85,12 @@
         .s-info .val {
             font-size: 24px;
             font-weight: 800;
-            color: var(--text);
         }
 
-        /* Table */
         .table-container {
-            background: var(--card-bg);
+            background: var(--card);
             padding: 30px;
-            border-radius: var(--radius);
+            border-radius: 16px;
             box-shadow: var(--shadow);
             overflow-x: auto;
         }
@@ -111,9 +102,19 @@
             align-items: center;
         }
 
-        .btn-group {
+        .btn-zip {
             display: flex;
             gap: 10px;
+        }
+
+        .btn-csv {
+            background: #228be6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         .btn-bulk {
@@ -126,20 +127,12 @@
             opacity: 0.5;
             pointer-events: none;
             transition: 0.3s;
+            cursor: pointer;
         }
 
         .btn-bulk.active {
             opacity: 1;
             pointer-events: all;
-        }
-
-        .btn-csv {
-            background: #228be6;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
         }
 
         table {
@@ -150,7 +143,7 @@
 
         th {
             text-align: left;
-            padding: 15px 10px;
+            padding: 15px;
             font-size: 13px;
             color: #adb5bd;
             border-bottom: 2px solid #eee;
@@ -158,17 +151,10 @@
         }
 
         td {
-            padding: 15px 10px;
+            padding: 15px;
             font-size: 14px;
             border-bottom: 1px solid #f8f9fa;
             vertical-align: middle;
-        }
-
-        input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: var(--primary);
-            cursor: pointer;
         }
 
         .btn-small {
@@ -177,13 +163,13 @@
             padding: 5px 10px;
             border-radius: 6px;
             font-size: 12px;
+            cursor: pointer;
         }
 
         .btn-small:hover {
             background: #f1f3f5;
         }
 
-        /* Type Badge */
         .t-badge {
             padding: 4px 8px;
             border-radius: 4px;
@@ -204,7 +190,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
+            z-index: 9999;
             justify-content: center;
             align-items: center;
         }
@@ -271,7 +257,7 @@
     <div class="table-container">
         <div class="action-bar">
             <strong>지원자 목록</strong>
-            <div class="btn-group">
+            <div class="btn-zip">
                 <button class="btn-csv" onclick="downloadCSV()">📊 명단 Excel 다운로드</button>
                 <button class="btn-bulk" id="btn-bulk" onclick="bulkDownload()">📄 선택 항목 PDF 일괄 저장</button>
             </div>
@@ -293,7 +279,7 @@
         </table>
     </div>
 
-    <!-- Hidden Iframe -->
+    <!-- Hidden Iframe for Bulk Print -->
     <iframe id="report-frame" src="report.html"
         style="position:fixed; top:-9999px; width:794px; height:1123px; border:none;"></iframe>
 
@@ -309,153 +295,98 @@
     </div>
 
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbxWJqjwMgbsySFDu2toUnDaoqZb5AVLdtMB0FUjoO1lLpliA3KuoZfGEdUtlUPR4QnI/exec";
-        let db = []; // Raw DB
-        let processedDB = []; // DB with scores
-        let stop = false;
+        const API_URL = "https://script.google.com/macros/s/AKfycbxWJqjwMgbsySFDu2toUnDaoqZb5AVLdtMB0FUjoO1lLpliA3KuoZfGEdUtlUPR4QnI/exec";
+        let db = [], processedDB = [], stop = false;
 
-        // SCORING LOGIC DUPLICATED FROM REPORT FOR ADMIN VIEW
-        // 6 Categories (Base 1-60 + SJT 81-100) are used for total. 
-        // Here we just need TOTAL SCORE for listing.
-        // Cap Map 
         const CATS = {
-            "C1": { range: [1, 10], sjt: [81, 88] },
-            "C2": { range: [11, 20], sjt: [82, 87, 91, 98] },
-            "C3": { range: [21, 30], sjt: [84, 93] },
-            "C4": { range: [31, 40], sjt: [83, 90, 95, 97] },
-            "C5": { range: [41, 50], sjt: [86, 96, 100] },
-            "C6": { range: [51, 60], sjt: [85, 89, 94, 99] }
+            "C1": { r: [1, 10], s: [81, 88] }, "C2": { r: [11, 20], s: [82, 87, 91, 98] },
+            "C3": { r: [21, 30], s: [84, 93] }, "C4": { r: [31, 40], s: [83, 90, 95, 97] },
+            "C5": { r: [41, 50], s: [86, 96, 100] }, "C6": { r: [51, 60], s: [85, 89, 94, 99] }
         };
 
         function calc(u) {
-            let totalSum = 0;
-            // Cats
-            for (const [k, cfg] of Object.entries(CATS)) {
-                let p1 = 0, p2 = 0, maxP1 = 0, maxP2 = 0;
-                // Part 1
-                for (let i = cfg.range[0]; i <= cfg.range[1]; i++) {
-                    if (u['Q' + i] == 'A') p1 += 10; maxP1 += 10;
+            let sum = 0;
+            for (let k in CATS) {
+                let p1 = 0, max1 = 0, p2 = 0, max2 = 0;
+                for (let i = CATS[k].r[0]; i <= CATS[k].r[1]; i++) { if (u['Q' + i] == 'A') p1 += 10; max1 += 10; }
+                for (let q of CATS[k].s) {
+                    const b = parseInt(u['Q' + q + '_Best'] || 0), w = parseInt(u['Q' + q + '_Worst'] || 0);
+                    if (b == 1) p2 += 5; if (b == 3) p2 -= 5; if (w == 2) p2 += 5; if (w == 4) p2 -= 5;
+                    max2 += 10;
                 }
-                // Part 2
-                for (let q of cfg.sjt) {
-                    const b = parseInt(u[`Q${q}_Best`] || 0);
-                    const w = parseInt(u[`Q${q}_Worst`] || 0);
-                    if (b === 1) p2 += 5; if (b === 3) p2 -= 5;
-                    if (w === 2) p2 += 5; if (w === 4) p2 -= 5;
-                    maxP2 += 10;
-                }
-                totalSum += Math.max(0, Math.round(((p1 + p2) / (maxP1 + maxP2)) * 100));
+                sum += Math.max(0, Math.round((p1 + p2) / (max1 + max2) * 100));
             }
-            const finalScore = Math.round(totalSum / 6);
+            const s = Math.round(sum / 6);
+            let t = "주도형"; if (s <= 40) t = "보완형"; else if (s <= 60) t = "잠재형"; else if (s <= 80) t = "성장형";
 
-            // Type
-            let type = "";
-            if (finalScore <= 40) type = "보완형";
-            else if (finalScore <= 60) type = "잠재형";
-            else if (finalScore <= 80) type = "성장형";
-            else type = "주도형";
-
-            // Reliability
-            let rel = 0;
-            for (let i = 1; i <= 20; i++) if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] === u['Q' + (60 + i)]) rel++;
-            const relStr = rel >= 18 ? "High" : (rel >= 14 ? "Mid" : "Low");
-
-            return { s: finalScore, t: type, r: relStr };
+            let r = 0; for (let i = 1; i <= 20; i++) if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) r++;
+            return { s, t, r: r >= 18 ? "High" : (r >= 14 ? "Mid" : "Low") };
         }
 
-        function mapUser(raw) {
+        function map(raw) {
             return {
-                name: getVal(raw, ['성명', '이름', 'name']),
-                phone: getVal(raw, ['휴대폰번호', '연락처', '번호', 'phone']),
-                birth: getVal(raw, ['생년월일', '생년', 'birth']),
-                date: getVal(raw, ['타임스탬프', '응시일시', '일시', 'timestamp']),
-                raw: raw
+                name: raw['성명'] || raw['이름'] || raw['name'],
+                phone: raw['휴대폰번호'] || raw['연락처'] || raw['phone'],
+                birth: raw['생년월일'] || raw['생년'] || raw['birth'],
+                date: raw['타임스탬프'] || raw['응시일시'] || raw['timestamp']
             };
         }
-        function getVal(obj, keys) { for (let k of keys) if (obj[k] != null && obj[k] !== "") return obj[k]; return "-"; }
 
         async function loadData() {
             try {
-                const res = await fetch(URL);
-                const json = await res.json();
-                db = json.reverse(); // Newest first
-                processAndRender();
+                // Fixed: Use API_URL and redirect: 'follow'
+                const res = await fetch(`${API_URL}?type=admin`, { redirect: 'follow' });
+                db = (await res.json()).reverse();
+                render();
             } catch (e) { console.error(e); alert("데이터 로딩 실패"); }
         }
 
-        function processAndRender() {
-            processedDB = db.map(raw => {
-                const info = mapUser(raw);
-                const stats = calc(raw);
-                return { ...info, stats };
-            });
+        function render() {
+            processedDB = db.map(r => ({ ...map(r), stats: calc(r), raw: r }));
 
-            // Calc Stats
-            const total = processedDB.length;
-            const now = new Date().toISOString().split('T')[0];
-            const today = processedDB.filter(p => p.date.includes(now)).length;
-
-            let sum = 0;
-            processedDB.forEach(p => sum += p.stats.s);
-            const avg = total > 0 ? Math.round(sum / total) : 0;
-
-            document.getElementById('cnt-total').innerText = total;
-            document.getElementById('cnt-today').innerText = today;
+            document.getElementById('cnt-total').innerText = processedDB.length;
+            document.getElementById('cnt-today').innerText = processedDB.filter(p => p.date.includes(new Date().toISOString().split('T')[0])).length;
+            const avg = processedDB.length ? Math.round(processedDB.reduce((a, b) => a + b.stats.s, 0) / processedDB.length) : 0;
             document.getElementById('avg-score').innerText = avg + "점";
 
-            // Render Table
-            const tbody = document.getElementById('tbody');
-            tbody.innerHTML = "";
-
-            processedDB.forEach((p, idx) => {
+            const tb = document.getElementById('tbody'); tb.innerHTML = "";
+            processedDB.forEach((p, i) => {
                 const tr = document.createElement('tr');
-
-                // Colors
-                let tCol = "#fab005"; // Yellow
-                if (p.stats.t === "주도형") tCol = "#0ca678"; // Green
-                if (p.stats.t === "보완형") tCol = "#adb5bd"; // Gray
-
-                let rCol = "black";
-                if (p.stats.r === "Low") rCol = "#e03131";
+                let tc = "#0ca678"; if (p.stats.t == "보완형") tc = "#adb5bd"; if (p.stats.t == "잠재형") tc = "#fab005";
+                let rc = "black"; if (p.stats.r == "Low") rc = "#e03131";
 
                 tr.innerHTML = `
-                    <td><input type="checkbox" class="chk" value="${idx}" onchange="chk()"></td>
+                    <td><input type="checkbox" class="chk" value="${i}" onchange="chk()"></td>
                     <td><b>${p.name}</b></td>
                     <td>${p.phone}</td>
                     <td><strong style="color:var(--primary); font-size:16px;">${p.stats.s}</strong></td>
-                    <td><span class="t-badge" style="background:${tCol}">${p.stats.t}</span></td>
-                    <td style="color:${rCol}; font-weight:700;">${p.stats.r}</td>
+                    <td><span class="t-badge" style="background:${tc}">${p.stats.t}</span></td>
+                    <td style="color:${rc}; font-weight:700;">${p.stats.r}</td>
                     <td>${p.date.split('T')[0]}</td>
-                    <td><button class="btn-small" onclick="view('${p.name}','${p.phone}')">상세보기</button></td>
+                    <td><button class="btn-small" onclick="goReport('${p.name}','${p.phone}')">상세보기</button></td>
                 `;
-                tbody.appendChild(tr);
+                tb.appendChild(tr);
             });
         }
 
-        function downloadCSV() {
-            if (processedDB.length === 0) return;
-            // Header
-            let csv = "\uFEFF이름,연락처,생년월일,총점,유형,신뢰도,응시일시\n";
-            processedDB.forEach(p => {
-                csv += `${p.name},${p.phone},${p.birth},${p.stats.s},${p.stats.t},${p.stats.r},${p.date}\n`;
-            });
+        function goReport(n, p) { window.open(`report.html?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}`, '_blank'); }
+        function chk() { const n = document.querySelectorAll('.chk:checked').length; const b = document.getElementById('btn-bulk'); n > 0 ? b.classList.add('active') : b.classList.remove('active'); }
+        function toggleAll(el) { document.querySelectorAll('.chk').forEach(c => c.checked = el.checked); chk(); }
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        function downloadCSV() {
+            if (!processedDB.length) return;
+            let csv = "\uFEFF이름,연락처,생년월일,총점,유형,신뢰도,응시일시\n";
+            processedDB.forEach(p => csv += `${p.name},${p.phone},${p.birth},${p.stats.s},${p.stats.t},${p.stats.r},${p.date}\n`);
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `GNFit_명단_${new Date().toISOString().slice(0, 10)}.csv`;
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `GN_Fit_명단.csv`;
             link.click();
         }
 
-        function toggleAll(el) { document.querySelectorAll('.chk').forEach(c => c.checked = el.checked); chk(); }
-        function chk() { const n = document.querySelectorAll('.chk:checked').length; const b = document.getElementById('btn-bulk'); if (n > 0) b.classList.add('active'); else b.classList.remove('active'); }
-        function view(n, p) { window.location.href = `report.html?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}`; }
-        function stopCalc() { stop = true; document.getElementById('modal').style.display = 'none'; }
-
         async function bulkDownload() {
             const list = document.querySelectorAll('.chk:checked');
-            if (list.length === 0) return;
-            if (!confirm(`선택한 ${list.length}명의 보고서를 다운로드하시겠습니까?`)) return;
+            if (!list.length) return;
+            if (!confirm(`${list.length}건을 다운로드하시겠습니까?`)) return;
 
             stop = false; document.getElementById('modal').style.display = 'flex';
             const frame = document.getElementById('report-frame').contentWindow;
@@ -463,23 +394,20 @@
             for (let i = 0; i < list.length; i++) {
                 if (stop) break;
                 const idx = list[i].value;
-                const raw = db[idx]; // Use RAW db index
-                const p = processedDB[idx];
-
-                document.getElementById('p-status').innerText = `생성 중: ${p.name} (${i + 1}/${list.length})`;
+                document.getElementById('p-status').innerText = `저장 중: ${processedDB[idx].name} (${i + 1}/${list.length})`;
                 document.getElementById('p-fill').style.width = `${((i + 1) / list.length) * 100}%`;
 
-                frame.loadForPrint(raw); // Logic in report
-                await new Promise(r => setTimeout(r, 800));
+                frame.loadForPrint(processedDB[idx].raw, db); // Direct inject
+                await new Promise(r => setTimeout(r, 800)); // Render wait
 
-                const el = frame.document.getElementById('report-content');
-                const opt = { margin: 0, filename: `${p.name}_${p.birth}_GNFit_보고서.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
-                await html2pdf().set(opt).from(el).save();
-                await new Promise(r => setTimeout(r, 500));
+                const opt = { margin: 0, filename: `${processedDB[idx].name}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+                await html2pdf().set(opt).from(frame.document.getElementById('report-content')).save();
+                await new Promise(r => setTimeout(r, 500)); // Cool down
             }
             document.getElementById('modal').style.display = 'none';
-            if (!stop) alert("완료!");
+            if (!stop) alert("완료되었습니다.");
         }
+        function stopCalc() { stop = true; document.getElementById('modal').style.display = 'none'; }
 
         window.onload = loadData;
     </script>
