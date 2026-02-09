@@ -158,7 +158,7 @@
             font-size: 18px;
             font-weight: 700;
             color: var(--deep);
-            /* Changed to Deep Green as per request */
+            /* Deep Green */
         }
 
         /* VISUAL */
@@ -376,7 +376,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxWJqjwMgbsySFDu2toUnDaoqZb5AVLdtMB0FUjoO1lLpliA3KuoZfGEdUtlUPR4QnI/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
 
         // Strict Mapping (6 Capabilities)
         const MAP = {
@@ -393,10 +393,11 @@
             for (let [k, cfg] of Object.entries(MAP)) {
                 let p1 = 0, max1 = 0, p2 = 0, max2 = 0;
                 for (let i = cfg.r[0]; i <= cfg.r[1]; i++) { if (u['Q' + i] == 'A') p1 += 10; max1 += 10; }
-                for (let q of cfg.sjt) {
-                    const b = parseInt(u[`Q${q}_Best`] || 0), w = parseInt(u[`Q${q}_Worst`] || 0);
-                    if (b == 1) p2 += 5; if (b == 3) { p2 -= 5; redflags.push(q); }
-                    if (w == 2) p2 += 5; if (w == 4) { p2 -= 5; redflags.push(q); }
+                const sArr = cfg.s;
+                for (let qNum of sArr) {
+                    const b = parseInt(u[`Q${qNum}_Best`] || 0), w = parseInt(u[`Q${qNum}_Worst`] || 0);
+                    if (b == 1) p2 += 5; if (b == 3) { p2 -= 5; redflags.push(qNum); }
+                    if (w == 2) p2 += 5; if (w == 4) { p2 -= 5; redflags.push(qNum); }
                     max2 += 10;
                 }
                 if (Math.round(p1 / max1 * 100) >= 70 && Math.round(p2 / max2 * 100) <= 40) paradox.push(k);
@@ -406,25 +407,25 @@
             return { scores: stats, total: Math.round(sum / 6), redflags, paradox };
         }
 
-        // 1. URL 파라미터 파싱
+        // 1. URL Parameter Parsing
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
         }
 
-        // 2. 데이터 가져오기 (Google Apps Script)
+        // 2. Fetch Data (Strict Redirect 'follow')
         async function fetchData() {
             const name = getQueryParam('name');
             const phone = getQueryParam('phone');
 
             if (!name || !phone) {
-                alert("잘못된 접근입니다.");
-                window.location.href = "index.html";
+                console.warn("Invalid access: Missing params.");
+                // We keep the loading spinner as per instruction (removed panic logic)
                 return;
             }
 
             try {
-                // fetch 옵션 최적화 (redirect: 'follow' 중요)
+                // New URL + redirect: 'follow'
                 const res = await fetch(`${API_URL}?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`, {
                     method: 'GET',
                     redirect: 'follow'
@@ -438,18 +439,12 @@
                     render(data.data, data.allData);
                 } else {
                     alert("데이터를 찾을 수 없습니다.");
-                    window.location.href = "index.html";
+                    // Keep spinner
                 }
 
             } catch (error) {
                 console.error(error);
-                alert("서버 연결 실패. 잠시 후 다시 시도해주세요.");
-                // renderReport(getMockData()); // Test
-            } finally {
-                document.getElementById('loading-overlay').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                }, 500);
+                // Keep spinner
             }
         }
 
@@ -465,9 +460,9 @@
             ov.style.opacity = 0;
             setTimeout(() => ov.style.display = 'none', 500);
 
-            // Data Fill
-            document.getElementById('u-name').innerText = u['이름'];
-            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시: ${(u['타임스탬프'] || '').split('T')[0]}`;
+            // [STRICT] Use '성명'
+            document.getElementById('u-name').innerText = u['성명'] || '---';
+            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시: ${(u['응시일시'] || '').split('T')[0]}`;
 
             const { scores, total, redflags, paradox } = calc(u);
 
@@ -479,9 +474,7 @@
             const rank = allScores.indexOf(total) + 1;
             const pct = Math.round(rank / allScores.length * 100);
 
-            // Correct color for rank display (Deep Green as requested)
-            // User requested: "White background with dark green (#2d3e1d) text for results (Total score & Top %)"
-            // .hero-sub handles this already with class change I made, but let's check inline override
+            // [STRICT] Visual Requirements: White bg, Dark Green Text
             document.getElementById('hero-rank').innerHTML = `상위 ${pct}% (종합 <span style="color:#2d3e1d">${total}점</span>)`;
 
             const ht = document.getElementById('hero-text');
@@ -493,7 +486,7 @@
             // Silhouette Animation
             setTimeout(() => {
                 const h = 400 - (total * 4); // Adjusted for new SVG height
-                document.getElementById('liquid-rect').setAttribute('y', h);
+                document.getElementById('liquid-rect').setAttribute('y', h); // Just logic, attr name is y
             }, 500);
 
             // --- CHART RESTORATION ---
@@ -509,7 +502,7 @@
                     datasets: [{
                         label: '역량 점수',
                         data: Object.values(scores),
-                        backgroundColor: 'rgba(137, 162, 48, 0.2)', // #89a230 with opacity
+                        backgroundColor: 'rgba(137, 162, 48, 0.2)', // #89a230
                         borderColor: '#89a230',
                         pointBackgroundColor: '#2d3e1d',
                         pointBorderColor: '#fff',
@@ -530,6 +523,7 @@
                                 },
                                 color: '#2d3e1d', // Deep Green
                                 callback: function (label, index) {
+                                    // [STRICT] Label Format: "Name [Score]"
                                     return label + " " + Object.values(scores)[index] + "점";
                                 }
                             },

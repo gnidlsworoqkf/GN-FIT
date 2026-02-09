@@ -266,7 +266,7 @@
             <thead>
                 <tr>
                     <th width="40"><input type="checkbox" onchange="toggleAll(this)"></th>
-                    <th>이름</th>
+                    <th>성명</th>
                     <th>연락처</th>
                     <th>총점</th>
                     <th>유형</th>
@@ -295,7 +295,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxWJqjwMgbsySFDu2toUnDaoqZb5AVLdtMB0FUjoO1lLpliA3KuoZfGEdUtlUPR4QnI/exec";
+        // [New API URL]
+        const API_URL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
         let db = [], processedDB = [], stop = false;
 
         const CATS = {
@@ -323,29 +324,34 @@
             return { s, t, r: r >= 18 ? "High" : (r >= 14 ? "Mid" : "Low") };
         }
 
+        // [Strictly use "성명"]
         function map(raw) {
             return {
-                name: raw['성명'] || raw['이름'] || raw['name'],
-                phone: raw['휴대폰번호'] || raw['연락처'] || raw['phone'],
-                birth: raw['생년월일'] || raw['생년'] || raw['birth'],
-                date: raw['타임스탬프'] || raw['응시일시'] || raw['timestamp']
+                성명: raw['성명'] || '',
+                휴대폰번호: raw['휴대폰번호'] || '',
+                생년월일: raw['생년월일'] || '',
+                응시일시: raw['응시일시'] || ''
             };
         }
 
         async function loadData() {
             try {
                 // Fixed: Use API_URL and redirect: 'follow'
+                // No identity separation logic (blocking). Just load.
                 const res = await fetch(`${API_URL}?type=admin`, { redirect: 'follow' });
                 db = (await res.json()).reverse();
                 render();
-            } catch (e) { console.error(e); alert("데이터 로딩 실패"); }
+            } catch (e) {
+                console.error(e);
+                alert("데이터 로딩 실패");
+            }
         }
 
         function render() {
             processedDB = db.map(r => ({ ...map(r), stats: calc(r), raw: r }));
 
             document.getElementById('cnt-total').innerText = processedDB.length;
-            document.getElementById('cnt-today').innerText = processedDB.filter(p => p.date.includes(new Date().toISOString().split('T')[0])).length;
+            document.getElementById('cnt-today').innerText = processedDB.filter(p => (p.응시일시 || '').includes(new Date().toISOString().split('T')[0])).length;
             const avg = processedDB.length ? Math.round(processedDB.reduce((a, b) => a + b.stats.s, 0) / processedDB.length) : 0;
             document.getElementById('avg-score').innerText = avg + "점";
 
@@ -357,13 +363,13 @@
 
                 tr.innerHTML = `
                     <td><input type="checkbox" class="chk" value="${i}" onchange="chk()"></td>
-                    <td><b>${p.name}</b></td>
-                    <td>${p.phone}</td>
+                    <td><b>${p.성명}</b></td>
+                    <td>${p.휴대폰번호}</td>
                     <td><strong style="color:var(--primary); font-size:16px;">${p.stats.s}</strong></td>
                     <td><span class="t-badge" style="background:${tc}">${p.stats.t}</span></td>
                     <td style="color:${rc}; font-weight:700;">${p.stats.r}</td>
-                    <td>${p.date.split('T')[0]}</td>
-                    <td><button class="btn-small" onclick="goReport('${p.name}','${p.phone}')">상세보기</button></td>
+                    <td>${(p.응시일시 || '').split('T')[0]}</td>
+                    <td><button class="btn-small" onclick="goReport('${p.성명}','${p.휴대폰번호}')">상세보기</button></td>
                 `;
                 tb.appendChild(tr);
             });
@@ -375,8 +381,8 @@
 
         function downloadCSV() {
             if (!processedDB.length) return;
-            let csv = "\uFEFF이름,연락처,생년월일,총점,유형,신뢰도,응시일시\n";
-            processedDB.forEach(p => csv += `${p.name},${p.phone},${p.birth},${p.stats.s},${p.stats.t},${p.stats.r},${p.date}\n`);
+            let csv = "\uFEFF성명,휴대폰번호,생년월일,총점,유형,신뢰도,응시일시\n";
+            processedDB.forEach(p => csv += `${p.성명},${p.휴대폰번호},${p.생년월일},${p.stats.s},${p.stats.t},${p.stats.r},${p.응시일시}\n`);
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `GN_Fit_명단.csv`;
@@ -394,13 +400,13 @@
             for (let i = 0; i < list.length; i++) {
                 if (stop) break;
                 const idx = list[i].value;
-                document.getElementById('p-status').innerText = `저장 중: ${processedDB[idx].name} (${i + 1}/${list.length})`;
+                document.getElementById('p-status').innerText = `저장 중: ${processedDB[idx].성명} (${i + 1}/${list.length})`;
                 document.getElementById('p-fill').style.width = `${((i + 1) / list.length) * 100}%`;
 
                 frame.loadForPrint(processedDB[idx].raw, db); // Direct inject
                 await new Promise(r => setTimeout(r, 800)); // Render wait
 
-                const opt = { margin: 0, filename: `${processedDB[idx].name}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+                const opt = { margin: 0, filename: `${processedDB[idx].성명}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
                 await html2pdf().set(opt).from(frame.document.getElementById('report-content')).save();
                 await new Promise(r => setTimeout(r, 500)); // Cool down
             }
