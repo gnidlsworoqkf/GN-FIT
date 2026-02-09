@@ -287,24 +287,22 @@
             <div class="visual-row">
                 <!-- CUTE ROUND SILHOUETTE (No Stroke, Olive Fill) -->
                 <div style="text-align:center;">
-                    <div class="silhouette-box">
-                        <svg viewBox="0 0 216 400" xmlns="http://www.w3.org/2000/svg">
+                    <div style="display: flex; justify-content: center; position: relative;">
+                        <svg viewBox="0 0 100 200" width="200" height="400" style="position: relative;">
                             <defs>
-                                <clipPath id="bodyClip">
+                                <clipPath id="humanSilhouette">
                                     <path
-                                        d="M108,0C55,0,0,50,0,120c0,50,30,90,80,110v170h56V230c50-20,80-60,80-110C216,50,161,0,108,0z" />
+                                        d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z" />
                                 </clipPath>
                             </defs>
-                            <!-- Fill Only -->
-                            <path
-                                d="M108,0C55,0,0,50,0,120c0,50,30,90,80,110v170h56V230c50-20,80-60,80-110C216,50,161,0,108,0z"
-                                fill="#89a230" stroke="none" />
 
-                            <!-- Liquid (Olive Green) -->
-                            <g clip-path="url(#bodyClip)">
-                                <rect id="liquid-rect" x="0" y="200" width="216" height="400" fill="#89a230"
-                                    transition="all 1s ease" />
-                            </g>
+                            <path
+                                d="M50,15 C58,15 65,22 65,30 C65,38 58,45 50,45 C42,45 35,38 35,30 C35,22 42,15 50,15 Z M35,50 C25,50 18,60 18,75 L22,185 C22,190 26,195 30,195 L45,195 L45,130 L55,130 L55,195 L70,195 C74,195 78,190 78,185 L82,75 C82,60 75,50 65,50 Z"
+                                fill="none" stroke="#89a230" stroke-width="2" />
+
+                            <rect id="scoreFill" x="0" y="200" width="100" height="0" fill="#89a230"
+                                clip-path="url(#humanSilhouette)"
+                                style="transition: all 1.5s ease-out; opacity: 0.8;" />
                         </svg>
                     </div>
                 </div>
@@ -495,10 +493,22 @@
             else ht.innerText = "조직 적응에 어려움이 있을 수 있어 심층 면접이 필요합니다. 🧐";
 
             // Silhouette Animation
-            setTimeout(() => {
-                const h = 400 - (total * 4);
-                document.getElementById('liquid-rect').setAttribute('y', h);
-            }, 500);
+            // Gauge Animation (New Logic)
+            const fillHeight = (total / 100) * 200;
+            const fillElement = document.getElementById('scoreFill');
+            if (fillElement) {
+                // Fill from bottom up: y decreases as height increases
+                // viewBox height base is 200 (from 0 to 200 in the new SVG?)
+                // Wait, viewBox is "0 0 100 200". Max Y is 200.
+                // If height is 200, y should be 0.
+                // If height is 0, y should be 200.
+
+                // Use a small timeout to ensure transition plays
+                setTimeout(() => {
+                    fillElement.setAttribute('y', 200 - fillHeight);
+                    fillElement.setAttribute('height', fillHeight);
+                }, 100);
+            }
 
             // --- CHART RESTORATION ---
             const labels = Object.keys(scores);
