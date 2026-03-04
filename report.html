@@ -4,30 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GN-Fit 결과 분석</title>
-    <!-- Fonts -->
+    <title>GN-Fit 전문 결과 분석 리포트</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
-    <!-- Chart.js and html2pdf -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary: #89a230;
-            /* Olive Green */
             --deep: #2d3e1d;
-            /* Deep Green */
             --danger: #e03131;
             --bg: #FFFFFF;
+            --gray: #f8f9fa;
         }
 
         body {
-            background: #f8f9fa;
+            background: #f1f3f5;
             font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
-            padding: 40px;
+            padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
         }
 
         .page-container {
@@ -38,16 +36,13 @@
             box-sizing: border-box;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
             position: relative;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             display: flex;
             flex-direction: column;
         }
 
         .page-break {
             page-break-before: always;
-            border-top: 1px dashed #eee;
-            margin-top: 50px;
-            padding-top: 50px;
         }
 
         @media print {
@@ -60,14 +55,6 @@
                 box-shadow: none;
                 margin: 0;
                 width: 100%;
-                height: 100%;
-                border: none;
-            }
-
-            .page-break {
-                border: none;
-                margin-top: 0;
-                padding-top: 0;
             }
 
             .no-print {
@@ -75,49 +62,130 @@
             }
         }
 
-        /* HEADER */
+        /* Header & Hero */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             border-bottom: 2px solid #eee;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
-        .h-logo {
-            height: 28px;
-            opacity: 0.8;
-            margin-bottom: 10px;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
 
         .h-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 900;
             color: #343a40;
-            letter-spacing: -1px;
         }
 
-        .h-meta {
+        .score-display {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .hero-main {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--deep);
+            background: var(--gray);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* Visuals */
+        .visual-row {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .chart-box {
+            height: 320px;
+            width: 100%;
+        }
+
+        /* Cards */
+        .card {
+            border-top: 3px solid #dee2e6;
+            padding-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .sec-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #343a40;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-box {
+            background: #fdfdfd;
+            border: 1px solid #f1f3f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .q-badge {
+            background: #e9ecef;
+            color: #495057;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .interview-guide-box {
+            background: #fff5f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        .interview-q {
             font-size: 13px;
-            color: #adb5bd;
-            margin-top: 4px;
+            color: #c92a2a;
+            font-weight: 600;
+            list-style: none;
+            padding: 0;
+            margin: 5px 0;
         }
 
-        /* LOADING */
-        #loading-overlay {
-            position: absolute;
+        .interview-q li::before {
+            content: "Q. ";
+            color: #fa5252;
+        }
+
+        footer {
+            margin-top: auto;
+            font-size: 10px;
+            color: #adb5bd;
+            text-align: center;
+            border-top: 1px solid #f8f9fa;
+            padding-top: 15px;
+        }
+
+        .loading-overlay {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: white;
-            z-index: 99;
+            z-index: 999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.5s;
         }
 
         .spinner {
@@ -138,279 +206,130 @@
                 transform: rotate(360deg);
             }
         }
-
-        /* HERO - Styled Box */
-        .hero {
-            text-align: left;
-            margin-bottom: 30px;
-        }
-
-        /* [STYLE UPDATE] 19px, bold, gray bg, rounded */
-        .hero-main {
-            font-size: 19px;
-            font-weight: 700;
-            color: var(--deep);
-            /* Deep Green */
-            line-height: 1.6;
-            margin-bottom: 10px;
-            background-color: #f1f3f5;
-            padding: 24px;
-            border-radius: 12px;
-            word-break: keep-all;
-        }
-
-        .hero-sub {
-            font-size: 16px;
-            font-weight: 600;
-            color: #495057;
-            text-align: right;
-            margin-top: 5px;
-            padding-right: 10px;
-        }
-
-        /* VISUAL */
-        .visual-row {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-            align-items: center;
-        }
-
-        .silhouette-box {
-            width: 100px;
-            height: 200px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .chart-box {
-            height: 340px;
-            width: 100%;
-            position: relative;
-        }
-
-        /* Expert Cards */
-        .card {
-            border-top: 3px solid #eee;
-            padding-top: 15px;
-            margin-bottom: 30px;
-        }
-
-        .sec-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #343a40;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sec-title.green {
-            border-color: var(--primary);
-            color: #2b8a3e;
-        }
-
-        .sec-title.orange {
-            border-color: #fd7e14;
-            color: #e67700;
-        }
-
-        .sec-title.red {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .list-item {
-            font-size: 14px;
-            margin-bottom: 8px;
-            padding-left: 12px;
-            position: relative;
-            color: #495057;
-        }
-
-        .list-item::before {
-            content: '•';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .score-display {
-            font-size: 48px;
-            font-weight: 900;
-            color: var(--primary);
-        }
-
-        #loading-text {
-            margin-top: 15px;
-            font-weight: 700;
-            color: #2d3e1d;
-            /* Deep Green */
-        }
-
-        /* Wave Animation */
-        @keyframes wave {
-            0% {
-                transform: translateX(0);
-            }
-
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-
-        .wave-fill {
-            animation: wave 3s linear infinite;
-        }
-
-        footer {
-            margin-top: auto;
-            font-size: 11px;
-            color: #dee2e6;
-            text-align: center;
-            border-top: 1px solid #f8f9fa;
-            padding-top: 20px;
-        }
     </style>
 </head>
 
 <body>
 
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text" style="margin-top:15px; font-weight:700;">데이터를 불러오는 중입니다...</p>
+    </div>
+
     <div id="report-content">
-
-        <!-- PAGE 1 -->
         <div class="page-container">
-            <!-- LOADING SPINNER -->
-            <div id="loading-overlay">
-                <div class="spinner"></div>
-                <div id="loading-text">데이터 분석 중...</div>
-            </div>
-
             <header class="header">
                 <div>
-                    <img src="gn_logo.jpg" class="h-logo" alt="Logo">
-                    <div class="h-title"><span id="u-name">---</span>님 결과 분석</div>
-                    <div class="h-meta" id="u-meta">생년월일: - | 응시일시: -</div>
+                    <div class="h-title"><span id="u-name">---</span>님 GN-Fit 결과 분석</div>
+                    <div id="u-meta" style="font-size:13px; color:#adb5bd; margin-top:5px;"></div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:12px; color:#adb5bd;">Total Score</div>
+                    <div style="font-size:11px; color:#adb5bd;">Total Score</div>
                     <div class="score-display" id="u-total">0</div>
                 </div>
             </header>
 
             <div class="hero">
-                <div class="hero-main" id="hero-text">...</div>
-                <div class="hero-sub" id="hero-rank"></div>
+                <div class="hero-main" id="hero-text">데이터 분석을 진행하고 있습니다.</div>
+                <div id="hero-rank" style="text-align:right; font-weight:600; color:#495057; padding-right:10px;"></div>
             </div>
 
             <div class="visual-row">
-                <!-- CUTE ROUND SILHOUETTE (Wave Fill) -->
                 <div style="text-align:center;">
-                    <div class="silhouette-box">
-                        <svg viewBox="0 0 100 200" width="100" height="200">
-                            <defs>
-                                <!-- Cute Rounded Silhouette Clip -->
-                                <clipPath id="cuteClip">
-                                    <path
-                                        d="M50,15 C61,15 70,24 70,35 C70,46 61,55 50,55 C39,55 30,46 30,35 C30,24 39,15 50,15 Z 
-                                             M25,65 Q50,55 75,65 Q85,70 85,90 V170 Q85,190 50,190 Q15,190 15,170 V90 Q15,70 25,65 Z" />
-                                </clipPath>
-                            </defs>
-
-                            <!-- Background Outline -->
+                    <svg viewBox="0 0 100 200" width="120" height="240">
+                        <clipPath id="cuteClip">
                             <path
-                                d="M50,15 C61,15 70,24 70,35 C70,46 61,55 50,55 C39,55 30,46 30,35 C30,24 39,15 50,15 Z 
-                                     M25,65 Q50,55 75,65 Q85,70 85,90 V170 Q85,190 50,190 Q15,190 15,170 V90 Q15,70 25,65 Z"
-                                fill="#f1f3f5" stroke="#e9ecef" stroke-width="2" />
-
-                            <!-- Wave Fill Container -->
-                            <g clip-path="url(#cuteClip)">
-                                <g id="wave-group" transform="translate(0, 200)">
-                                    <!-- Wave Path (Double width for looping) -->
-                                    <path class="wave-fill" fill="#89a230" opacity="0.8"
-                                        d="M0,0 Q25,-10 50,0 T100,0 T150,0 T200,0 V200 H0 Z" width="200" height="200"
-                                        transform="scale(1,1)" />
-                                </g>
+                                d="M50,15 C61,15 70,24 70,35 C70,46 61,55 50,55 C39,55 30,46 30,35 C30,24 39,15 50,15 Z M25,65 Q50,55 75,65 Q85,70 85,90 V170 Q85,190 50,190 Q15,190 15,170 V90 Q15,70 25,65 Z" />
+                        </clipPath>
+                        <path
+                            d="M50,15 C61,15 70,24 70,35 C70,46 61,55 50,55 C39,55 30,46 30,35 C30,24 39,15 50,15 Z M25,65 Q50,55 75,65 Q85,70 85,90 V170 Q85,190 50,190 Q15,190 15,170 V90 Q15,70 25,65 Z"
+                            fill="#f1f3f5" stroke="#e9ecef" stroke-width="2" />
+                        <g clip-path="url(#cuteClip)">
+                            <g id="wave-group" transform="translate(0, 200)">
+                                <path fill="#89a230" opacity="0.8"
+                                    d="M0,0 Q25,-10 50,0 T100,0 T150,0 T200,0 V200 H0 Z" />
                             </g>
-                        </svg>
-                    </div>
+                        </g>
+                    </svg>
                 </div>
-
-                <!-- RADAR CHART -->
-                <div class="chart-box">
-                    <canvas id="competencyChart"></canvas>
-                </div>
+                <div class="chart-box"><canvas id="competencyChart"></canvas></div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
                 <div class="card" style="border-top-color: #40c057;">
-                    <div class="sec-title green">강점 (Strength)</div>
-                    <div id="strength-list"></div>
+                    <div class="sec-title" style="color:#2b8a3e;">🌟 강점 (Strength)</div>
+                    <div id="strength-list" style="font-size:14px; color:#495057;"></div>
                 </div>
                 <div class="card" style="border-top-color: #fd7e14;">
-                    <div class="sec-title orange">보완점 (Weakness)</div>
-                    <div id="weakness-list"></div>
+                    <div class="sec-title" style="color:#e67700;">💡 보완점 (Weakness)</div>
+                    <div id="weakness-list" style="font-size:14px; color:#495057;"></div>
                 </div>
             </div>
-
             <footer>GN-Fit Analysis Report [Page 1]</footer>
         </div>
 
-        <!-- PAGE 2 -->
         <div class="page-container page-break">
             <header class="header">
-                <div class="h-title" style="font-size:24px;">심층 분석 리포트</div>
-                <img src="gn_logo.jpg" style="height:20px; opacity:0.3;">
+                <div class="h-title" style="font-size:22px;">🔍 역량별 상세 분석 및 면접 가이드</div>
+            </header>
+            <div id="deep-analysis-section">
+            </div>
+            <footer>GN-Fit Analysis Report [Page 2]</footer>
+        </div>
+
+        <div class="page-container page-break">
+            <header class="header">
+                <div class="h-title" style="font-size:22px;">🧩 행동 가치 및 성향 심층 리포트</div>
             </header>
 
-            <div class="card" style="border-top-color: #fa5252;">
-                <div class="sec-title red">🛑 Red Flag (가치관 충돌 위험)</div>
-                <div id="redflag-list" style="color:#c92a2a; font-weight:500;"></div>
+            <div class="card" style="border-top-color: var(--primary);">
+                <div class="sec-title">📊 81-100번 문항 기반 성향 분석</div>
+                <div id="tendency-analysis" class="analysis-box"
+                    style="background:#f8f9fa; line-height:1.7; font-size:14px;">
+                </div>
             </div>
 
-            <div class="card">
-                <div class="sec-title">💡 역설적 성향 (Paradox)</div>
-                <div id="paradox-list"></div>
-            </div>
-
-            <div class="card">
-                <div class="sec-title">✅ 면접관 가이드 (Interview Check)</div>
-                <div id="interview-guide"></div>
+            <div class="card" style="border-top-color: #339af0;">
+                <div class="sec-title">✅ 최종 면접 총평 및 가이드</div>
+                <div id="final-interview-guide" style="font-size:14px;">
+                </div>
             </div>
 
             <div
                 style="margin-top:auto; background:#f8f9fa; padding:20px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <div style="font-weight:700;">응답 신뢰도 (Reliability)</div>
-                    <div style="font-size:12px; color:#868e96;">거울 문항 일치도 검증</div>
+                    <div style="font-size:12px; color:#868e96;">거울 문항 일치도 기반</div>
                 </div>
-                <div style="text-align:right;">
-                    <span id="rel-score" style="font-size:24px; font-weight:900;">-</span> <span
-                        style="font-size:14px; color:#adb5bd;">/ 20</span>
-                    <div id="rel-verdict" style="font-weight:800; color:var(--primary);">High</div>
+                <div style="text-align:right;"><span id="rel-score" style="font-size:24px; font-weight:900;">-</span>
+                    <span style="font-size:14px; color:#adb5bd;">/ 20</span>
+                    <div id="rel-verdict" style="font-weight:800;">High</div>
                 </div>
             </div>
-
-            <footer>GN-Fit Analysis Report [Page 2]</footer>
+            <footer>GN-Fit Analysis Report [Page 3]</footer>
         </div>
     </div>
 
-    <!-- Print Button -->
     <div class="no-print" style="position:fixed; bottom:30px; right:30px;">
         <button onclick="downloadPDF()"
-            style="background:var(--deep); color:white; padding:15px 30px; border:none; border-radius:50px; font-weight:700; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.2);">PDF
-            저장</button>
+            style="background:var(--deep); color:white; padding:15px 35px; border:none; border-radius:50px; font-weight:700; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.2);">PDF
+            리포트 저장</button>
     </div>
 
     <script>
-        // [FINAL API URL]
         const API_URL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
 
-        // Strict Mapping (6 Capabilities)
-        const MAP = {
+        // 1. 문항 매핑 사전 (역량별 대표 분석 문항)
+        const GUIDE_MAP = {
+            "주도적 능력": { q: "Q1", target: "A", analysis: "업무의 공백이 생겼을 때 스스로 과업을 정의하기보다 지시를 기다리는 수동적 태도를 보일 수 있습니다.", questions: ["지침이 없는 상황에서 본인만의 판단으로 일을 추진해본 경험은?", "조직의 문제를 발견하고 자발적으로 개선안을 제안했던 사례는?"] },
+            "문제 해결 능력": { q: "Q11", target: "A", analysis: "데이터나 논리적 근거보다는 과거의 경험이나 직관에 의존하여 문제를 해결할 가능성이 높습니다.", questions: ["의사결정 시 가장 중요하게 생각하는 데이터 수집 경로는?", "본인의 직관과 데이터가 충돌할 때 어떤 선택을 하겠습니까?"] },
+            "목표 달성 능력": { q: "Q31", target: "A", analysis: "목표 달성 과정에서 효율성보다 절차의 완결성에 몰입하여 성과 창출 속도가 다소 정체될 수 있습니다.", questions: ["촉박한 마감 기한 내에 목표를 달성해야 한다면 무엇을 희생하겠습니까?", "목표치를 초과 달성하기 위해 본인이 발휘했던 끈기는?"] },
+            "소속 내 영향력": { q: "Q21", target: "A", analysis: "자신의 의견을 관철시키기보다 다수의 의견에 무비판적으로 동조할 우려가 있어 주관 확인이 필요합니다.", questions: ["팀 전체의 방향이 본인의 가치관과 다를 때 어떻게 행동하나요?", "동료의 잘못된 판단을 목격했을 때 이를 어떻게 바로잡았습니까?"] },
+            "의사소통 능력": { q: "Q51", target: "A", analysis: "정보를 전달할 때 상대방의 수용도보다 본인의 전달 논리에만 집중하여 오해가 발생할 소지가 있습니다.", questions: ["복잡한 전문 지식을 비전문가에게 설명해야 했던 경험은?", "커뮤니케이션 미스로 인해 발생한 사고를 수습했던 사례는?"] },
+            "조직문화 형성 능력": { q: "Q41", target: "A", analysis: "조직의 규칙 준수에는 능하나, 유연한 변화나 창의적인 문화 형성에는 소극적일 수 있습니다.", questions: ["팀 분위기를 반전시키기 위해 본인이 시도했던 작은 노력은?", "불합리하다고 느껴지는 조직의 관행을 어떻게 대처하시겠습니까?"] }
+        };
+
+        const CAP_MAP = {
             "주도적 능력": { r: [1, 10], s: [81, 88] },
             "문제 해결 능력": { r: [11, 20], s: [82, 87, 91, 98] },
             "목표 달성 능력": { r: [31, 40], s: [83, 90, 95, 97] },
@@ -419,236 +338,147 @@
             "조직문화 형성 능력": { r: [41, 50], s: [86, 96, 100] }
         };
 
-        function calc(u) {
-            let stats = {}, sum = 0, redflags = [], paradox = [];
-            for (let [k, cfg] of Object.entries(MAP)) {
-                let p1 = 0, max1 = 0, p2 = 0, max2 = 0;
-                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) { if (u['Q' + i] == 'A') p1 += 10; max1 += 10; }
-                const sArr = cfg.s;
-                for (let qNum of sArr) {
-                    const b = parseInt(u[`Q${qNum}_Best`] || 0), w = parseInt(u[`Q${qNum}_Worst`] || 0);
-                    if (b == 1) p2 += 5; if (b == 3) { p2 -= 5; redflags.push(qNum); }
-                    if (w == 2) p2 += 5; if (w == 4) { p2 -= 5; redflags.push(qNum); }
-                    max2 += 10;
-                }
-                if (Math.round(p1 / max1 * 100) >= 70 && Math.round(p2 / max2 * 100) <= 40) paradox.push(k);
-                const score = Math.max(0, Math.round((p1 + p2) / (max1 + max2) * 100));
-                stats[k] = score; sum += score;
-            }
-            return { scores: stats, total: Math.round(sum / 6), redflags, paradox };
-        }
-
         async function fetchData() {
-            // [ROBUST PARSING]
-            const urlParams = new URLSearchParams(window.location.search);
-            // Support ?name= or ?userName=
-            const rawName = urlParams.get('name') || urlParams.get('userName') || "";
-            // Always trim
-            const targetName = decodeURIComponent(rawName).trim();
-            const phone = urlParams.get('phone');
-
-            if (!targetName) {
-                console.warn("Invalid access: Missing name param.");
-                return;
-            }
-
-            console.log(`[Report] Searching for: "${targetName}"`);
+            const params = new URLSearchParams(window.location.search);
+            const targetName = decodeURIComponent(params.get('name') || "").trim();
+            if (!targetName) { alert("이름 파라미터가 없습니다."); return; }
 
             try {
-                // [STRICT] redirect: 'follow'
-                const res = await fetch(`${API_URL}?type=result`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
-
-                if (!res.ok) throw new Error("서버 응답 오류");
-
+                const res = await fetch(`${API_URL}?type=result`);
                 const json = await res.json();
-                const allData = json.data || json; // Handle array or object wrapper
+                const allData = json.data || json;
+                const user = allData.find(u => (u['성명'] || u['이름'] || "").toString().trim() === targetName);
 
-                console.log(`[Report] Total Data Loaded: ${allData.length} records.`);
-
-                // [FAILSAFE SEARCH]
-                const user = allData.find(u => {
-                    // Check strict '성명' first, then fallback
-                    const sheetName = (u['성명'] || u['이름'] || u['name'] || "").toString().trim();
-                    return sheetName === targetName;
-                });
-
-                if (user) {
-                    console.log("[Report] User Found!", user);
-                    render(user, allData);
-                } else {
-                    console.error("[Report] User Not Found.");
-                    alert(`데이터를 찾을 수 없습니다: ${targetName}`);
-                }
-
-            } catch (error) {
-                console.error(error);
-                alert("서버 연결 실패. 네트워크 상태를 확인해주세요.");
-            }
+                if (user) render(user, allData);
+                else alert("사용자를 찾을 수 없습니다.");
+            } catch (e) { alert("데이터 로드 실패"); }
         }
 
-        window.loadForPrint = function (u, all) {
-            document.getElementById('loading-overlay').style.display = 'none';
-            render(u, all);
+        function calcScores(u) {
+            let stats = {}, sum = 0;
+            for (let [k, cfg] of Object.entries(CAP_MAP)) {
+                let p1 = 0, m1 = 0, p2 = 0, m2 = 0;
+                for (let i = cfg.r[0]; i <= cfg.r[1]; i++) { if (u['Q' + i] == 'A') p1 += 10; m1 += 10; }
+                for (let qNum of cfg.s) {
+                    const b = parseInt(u[`Q${qNum}_Best`] || 0), w = parseInt(u[`Q${qNum}_Worst`] || 0);
+                    if (b == 1) p2 += 5; if (b == 3) p2 -= 5;
+                    if (w == 2) p2 += 5; if (w == 4) p2 -= 5;
+                    m2 += 10;
+                }
+                const score = Math.max(0, Math.round((p1 + p2) / (m1 + m2) * 100));
+                stats[k] = score; sum += score;
+            }
+            return { scores: stats, total: Math.round(sum / 6) };
         }
 
         function render(u, all) {
-            // Hide Loader
-            const ov = document.getElementById('loading-overlay');
-            ov.style.opacity = 0;
-            setTimeout(() => ov.style.display = 'none', 500);
+            document.getElementById('loading-overlay').style.display = 'none';
+            const { scores, total } = calcScores(u);
 
-            // [STRICT] Use '성명'
-            const userName = u['성명'] || u['이름'] || '---';
-            document.getElementById('u-name').innerText = userName;
-            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시: ${(u['응시일시'] || '').split('T')[0]}`;
-
-            const { scores, total, redflags, paradox } = calc(u);
-
-            // Score
+            // 기본 정보
+            document.getElementById('u-name').innerText = u['성명'] || u['이름'];
+            document.getElementById('u-meta').innerText = `생년월일: ${u['생년월일'] || '-'} | 응시일시: ${(u['응시일시'] || '').split('T')[0]}`;
             document.getElementById('u-total').innerText = total;
 
-            // Rank
-            const allScores = all.map(x => calc(x).total).sort((a, b) => b - a);
-            const rank = allScores.indexOf(total) + 1;
-            const pct = Math.round(rank / allScores.length * 100);
-
-            // [STRICT] Visual Requirements: White bg, Dark Green Text
-            document.getElementById('hero-rank').innerHTML = `상위 ${pct}% (종합 <span style="color:#2d3e1d">${total}점</span>)`;
+            // 상위 퍼센트 계산
+            const allScores = all.map(x => calcScores(x).total).sort((a, b) => b - a);
+            const pct = Math.round(((allScores.indexOf(total) + 1) / allScores.length) * 100);
+            document.getElementById('hero-rank').innerHTML = `상위 ${pct}% (종합 ${total}점)`;
 
             const ht = document.getElementById('hero-text');
-            if (total >= 90) ht.innerText = "조직의 핵심 인재로 성장이 기대되는 지원자입니다. 🚀";
-            else if (total >= 70) ht.innerText = "조직에 잘 녹아들 든든한 지원자입니다. 😊";
-            else if (total >= 50) ht.innerText = "직무 적합도에 대한 면밀한 검토가 필요합니다. 🤔";
-            else ht.innerText = "조직 적응에 어려움이 있을 수 있어 심층 면접이 필요합니다. 🧐";
+            ht.innerText = total >= 80 ? "핵심 인재로서 탁월한 조직 적합도를 보유한 지원자입니다." : (total >= 60 ? "균형 잡힌 역량을 바탕으로 조직에 안정적으로 기여할 인재입니다." : "특정 역량에 대한 면밀한 인터뷰를 통한 검증이 필요합니다.");
 
-            // Wave Animation Logic
-            // Calculate height mapped to 200px (SVG Height)
-            // 0 score -> 200 (full down)
-            // 100 score -> 0 (full up)
-            // Actually it's translated. 
-            // y=200 is bottom. y=0 is top.
-            // Wave path starts at y=0 relative to group.
-            // So we move the group up.
-            // Wait, I defined wave group transform translate(0, 200). That puts the wave top at y=200.
-            // To fill X%, we need to move it up by (200 * X/100).
-            // So new Y = 200 - (200 * score/100).
+            // 차트 및 강점/보완점
+            renderRadar(scores);
+            const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            document.getElementById('strength-list').innerHTML = sorted.slice(0, 2).map(x => `<div>• <strong>${x[0]}</strong> (${x[1]}점)</div>`).join('');
+            document.getElementById('weakness-list').innerHTML = sorted.slice(-2).reverse().map(x => `<div>• <strong>${x[0]}</strong> (${x[1]}점)</div>`).join('');
 
-            const fillH = (total / 100) * 200;
-            const targetY = 200 - fillH;
+            // PAGE 2: 심층 분석 생성
+            let deepHtml = "";
+            for (let [cap, info] of Object.entries(GUIDE_MAP)) {
+                const score = scores[cap];
+                const status = score >= 70 ? "긍정" : (score >= 40 ? "보통" : "주의");
+                const color = score >= 70 ? "#2b8a3e" : (score >= 40 ? "#e67700" : "#c92a2a");
 
-            const waveGroup = document.getElementById('wave-group');
-            if (waveGroup) {
-                // Animate transition
-                waveGroup.style.transition = "transform 1.5s ease-out";
-                setTimeout(() => {
-                    waveGroup.setAttribute('transform', `translate(0, ${targetY})`);
-                }, 100);
+                deepHtml += `
+                    <div class="analysis-box">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <strong>${cap} <span class="q-badge" style="background:${color}; color:white;">${status}</span></strong>
+                            <span style="font-weight:700; color:${color};">${score}점</span>
+                        </div>
+                        <div style="font-size:13.5px; color:#495057; word-break:keep-all;">${score < 70 ? info.analysis : "해당 역량에서 일관된 강점을 보이며, 조직의 방향성에 부합하는 행동 가치를 보유하고 있습니다."}</div>
+                        <div class="interview-guide-box">
+                            <div style="font-size:12px; font-weight:700; color:#343a40; margin-bottom:5px;">📋 추천 면접 질문</div>
+                            <ul class="interview-q">${info.questions.map(q => `<li>${q}</li>`).join('')}</ul>
+                        </div>
+                    </div>`;
             }
+            document.getElementById('deep-analysis-section').innerHTML = deepHtml;
 
-            // --- CHART LOGIC ---
-            const labels = Object.keys(scores);
-            const values = Object.values(scores);
+            // PAGE 3: 81-100 성향 분석
+            renderTendency(u, scores);
+
+            // 신뢰도
+            let rc = 0; for (let i = 1; i <= 20; i++) if (u['Q' + i] == u['Q' + (60 + i)]) rc++;
+            document.getElementById('rel-score').innerText = rc;
+            document.getElementById('rel-verdict').innerText = rc >= 18 ? "높음" : (rc >= 14 ? "보통" : "낮음");
+            document.getElementById('rel-verdict').style.color = rc >= 14 ? "var(--primary)" : "var(--danger)";
+
+            // 웨이브 애니메이션
+            document.getElementById('wave-group').setAttribute('transform', `translate(0, ${200 - (total * 2)})`);
+        }
+
+        function renderRadar(scores) {
             const ctx = document.getElementById('competencyChart').getContext('2d');
-
-            // Calc Min/Max for Coloring
-            const maxVal = Math.max(...values);
-            const minVal = Math.min(...values);
-
-            Chart.defaults.font.family = "'Noto Sans KR'";
-
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '역량 점수',
-                        data: values,
-                        backgroundColor: 'rgba(137, 162, 48, 0.2)', // #89a230
-                        borderColor: '#89a230',
-                        pointBackgroundColor: '#2d3e1d',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#2d3e1d'
-                    }]
+                    labels: Object.keys(scores),
+                    datasets: [{ data: Object.values(scores), backgroundColor: 'rgba(137, 162, 48, 0.2)', borderColor: '#89a230', pointBackgroundColor: '#2d3e1d' }]
                 },
-                options: {
-                    scales: {
-                        r: {
-                            min: 0,
-                            max: 100,
-                            pointLabels: {
-                                font: {
-                                    size: 16,
-                                    weight: '700',
-                                    family: "'Noto Sans KR'"
-                                },
-                                // [NEW] Conditional Color Logic
-                                color: function (context) {
-                                    const idx = context.index;
-                                    const val = values[idx];
-                                    if (val === maxVal) return '#ff4d4d'; // Red for Max
-                                    if (val === minVal) return '#4d79ff'; // Blue for Min
-                                    return '#000000'; // Black for others
-                                },
-                                // [NEW] Multi-line Callback & Padding
-                                padding: 15,
-                                callback: function (label, index) {
-                                    // Return array for multiline
-                                    return [label, values[index] + "점"];
-                                }
-                            },
-                            ticks: {
-                                display: false,
-                                stepSize: 20
-                            },
-                            grid: {
-                                color: '#e9ecef'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: true
-                        }
-                    },
-                    maintainAspectRatio: false
-                }
+                options: { scales: { r: { min: 0, max: 100, ticks: { display: false } } }, plugins: { legend: { display: false } } }
             });
+        }
 
-            // Lists
-            const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-            const sDiv = document.getElementById('strength-list');
-            const wDiv = document.getElementById('weakness-list');
-            sDiv.innerHTML = sorted.slice(0, 2).map(([k, v]) => `<div class="list-item"><strong>${k}</strong> (${v}점)</div>`).join('');
-            wDiv.innerHTML = sorted.slice(-2).reverse().map(([k, v]) => `<div class="list-item"><strong>${k}</strong> (${v}점)</div>`).join('');
+        function renderTendency(u, scores) {
+            // 81-100번 문항의 Best(1,2)와 Worst(3,4) 빈도 분석
+            let efficiencyCount = 0; // 효율/성과
+            let stabilityCount = 0;  // 안정/절차
 
-            // Page 2 Info
-            const rfDiv = document.getElementById('redflag-list');
-            rfDiv.innerHTML = redflags.length ? redflags.map(q => `<div class="list-item">문항 ${q}: 가치관 충돌</div>`).join('') : "<div class='list-item' style='color:#343a40'>✔ 발견되지 않음 (Clean)</div>";
-            const pxDiv = document.getElementById('paradox-list');
-            pxDiv.innerHTML = paradox.length ? paradox.map(k => `<div class="list-item"><strong>${k}</strong>: 이상/현실 불일치</div>`).join('') : "<div class='list-item'>✔ 일관된 성향</div>";
+            const efficiencyQs = [81, 83, 87, 90, 95];
+            const stabilityQs = [82, 86, 89, 94, 100];
 
-            const weak = sorted[sorted.length - 1][0];
-            document.getElementById('interview-guide').innerHTML = `<div class="list-item"><strong>${weak} 검증</strong>: 관련 경험 및 극복 노력 질문</div>`;
+            efficiencyQs.forEach(q => { if (u[`Q${q}_Best`] == 1) efficiencyCount++; });
+            stabilityQs.forEach(q => { if (u[`Q${q}_Best`] == 1) stabilityCount++; });
 
-            // Reliability
-            let rc = 0; for (let i = 1; i <= 20; i++)if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) rc++;
-            document.getElementById('rel-score').innerText = rc;
-            document.getElementById('rel-verdict').innerText = rc >= 18 ? "High" : (rc >= 14 ? "Mid" : "Low");
-            document.getElementById('rel-verdict').style.color = rc >= 14 ? "#0ca678" : "#fa5252";
+            let type = efficiencyCount >= stabilityCount ? "성과 중심 효율가(Efficiency-Driven)" : "안정적 절차 준수가(Process-Oriented)";
+            let desc = efficiencyCount >= stabilityCount
+                ? "빠른 실행력과 가시적인 성과 도출을 최우선으로 합니다. 불필요한 절차보다 실질적인 결과에 집중하는 타입입니다."
+                : "조직의 안정성과 정해진 원칙을 준수하는 데 강점이 있습니다. 리스크를 최소화하고 예측 가능한 결과를 만드는 타입입니다.";
+
+            document.getElementById('tendency-analysis').innerHTML = `
+                <div><strong>주요 성향: <span style="color:var(--primary)">${type}</span></strong></div>
+                <p style="margin-top:10px;">${desc}</p>
+                <div style="margin-top:10px; font-size:12px; color:#868e96;">* 81~100번 문항의 가치 선택 패턴을 분석한 결과입니다.</div>
+            `;
+
+            document.getElementById('final-interview-guide').innerHTML = `
+                <div class="analysis-box">
+                    <strong>📍 특장점</strong>
+                    <p style="margin-top:5px;">${type === "성과 중심 효율가" ? "변화하는 환경에 빠르게 적응하며 자원을 효율적으로 배분하는 능력이 탁월합니다." : "조직의 신뢰도를 높이고 체계적인 프로세스를 확립하는 데 기여도가 높습니다."}</p>
+                </div>
+                <div class="interview-guide-box">
+                    <strong>🎯 면접관 가이드 총평</strong>
+                    <p style="margin-top:5px; line-height:1.6;">본 지원자는 <strong>${type}</strong>의 성향이 뚜렷하게 나타납니다. 면접 시 ${type === "성과 중심 효율가" ? "성과를 위해 규정을 어겼던 적이 있는지" : "안정을 위해 도전적인 목표를 포기한 적이 있는지"}를 확인하여 조직의 유연성과 원칙 사이의 균형감을 검증하시길 권장합니다.</p>
+                </div>
+            `;
         }
 
         function downloadPDF() {
             const el = document.getElementById('report-content');
             const name = document.getElementById('u-name').innerText;
-            const safe = name.replace(/[^a-zA-Z가-힣0-9]/g, "");
-            const opt = { margin: 0, filename: `${safe}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+            const opt = { margin: 0, filename: `${name}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
             html2pdf().set(opt).from(el).save();
         }
 
