@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>GN-Fit 논리구조 최신판</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f0;padding:32px;color:#222;}
+h1{font-size:22px;font-weight:700;color:#2d3e1d;margin-bottom:6px;}
+.lead{font-size:14px;color:#666;margin-bottom:32px;}
+.section{background:#fff;border-radius:14px;padding:28px 32px;margin-bottom:24px;border:1px solid #e8ebe8;}
+.sec-title{font-size:17px;font-weight:700;color:#2d3e1d;border-left:5px solid #89a230;padding-left:12px;margin-bottom:20px;}
+.sub{font-size:13px;font-weight:600;color:#2d3e1d;margin:18px 0 8px;display:flex;align-items:center;gap:6px;}
+.sub::before{content:'';display:inline-block;width:4px;height:14px;background:#89a230;border-radius:2px;}
+.desc{font-size:13px;color:#555;line-height:1.75;}
+.formula{background:#f4f7ee;border:1px solid #c8d8a0;border-radius:8px;padding:14px 18px;font-family:monospace;font-size:12.5px;color:#2d3e1d;margin:10px 0;line-height:1.8;}
+.formula b{color:#89a230;}
+.formula .r{color:#e03131;font-weight:700;}
+.formula .warn{color:#f08c00;font-weight:700;}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;}
+th{background:#f4f7ee;padding:9px 12px;text-align:left;border-bottom:2px solid #c8d8a0;font-weight:600;color:#2d3e1d;font-size:12px;}
+td{padding:9px 12px;border-bottom:1px solid #f0f0f0;vertical-align:top;line-height:1.65;font-size:12.5px;}
+tr:last-child td{border-bottom:none;}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600;margin-right:4px;}
+.tag.g{background:#e8f5d0;color:#3b6d11;}
+.tag.r{background:#fde8e8;color:#a32d2d;}
+.tag.b{background:#e6f0fb;color:#185fa5;}
+.tag.a{background:#fef3e0;color:#854f0b;}
+.tag.gray{background:#f0f0f0;color:#555;}
+.tag.p{background:#f3e8ff;color:#6b2fa0;}
+.flow{display:flex;gap:0;align-items:stretch;margin:12px 0;flex-wrap:wrap;}
+.fstep{flex:1;min-width:120px;background:#f8faf4;border:1px solid #d4e0b0;border-radius:10px;padding:14px;font-size:12px;}
+.fstep .ft{font-weight:700;font-size:12.5px;color:#2d3e1d;margin-bottom:6px;}
+.fstep .fs{color:#555;line-height:1.6;}
+.farr{display:flex;align-items:center;padding:0 8px;color:#89a230;font-size:20px;font-weight:700;flex-shrink:0;}
+.box2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0;}
+.bitem{background:#f8faf4;border:1px solid #d4e0b0;border-radius:8px;padding:14px;}
+.bitem .bt{font-weight:600;font-size:13px;color:#2d3e1d;margin-bottom:6px;}
+.bitem .bd{font-size:12px;color:#555;line-height:1.65;}
+.warn-box{background:#fff8f0;border:1px solid #f0c080;border-radius:8px;padding:12px 16px;font-size:12.5px;color:#7a4500;margin:10px 0;}
+.warn-box b{color:#a05000;}
+.page-badge{display:inline-block;background:#2d3e1d;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-right:8px;vertical-align:middle;}
+
+
+.link-arrow{display:flex;align-items:center;gap:6px;font-size:12px;color:#555;background:#f8faf4;border:1px dashed #c8d8a0;border-radius:8px;padding:8px 12px;margin:6px 0;}
+.link-arrow .q{font-weight:700;color:#2d3e1d;background:#e8f5d0;padding:1px 7px;border-radius:4px;font-size:11px;}
+.link-arrow .arrow{color:#89a230;font-weight:700;}
+.link-arrow .dest{color:#185fa5;font-weight:600;}
+.score-band{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;}
+.band{flex:1;min-width:130px;border-radius:8px;padding:12px 14px;font-size:12px;}
+.band .bval{font-size:18px;font-weight:800;margin-bottom:4px;}
+.band .blabel{font-weight:600;font-size:13px;margin-bottom:4px;}
+.band .bdesc{color:#555;font-size:11px;line-height:1.5;}
+.gap-note{background:#fff5f5;border-left:4px solid #e03131;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#7a0000;margin:8px 0;}
+</style>
+</head>
+<body>
+
+<h1>GN-Fit 역량검사 — 점수·유형·리포트 논리구조 (최신판)</h1>
+<div class="lead">100문항 응답이 어떻게 점수가 되고, 유형이 되고, 3페이지 리포트가 되는지 전체 흐름을 정리한 문서입니다.<br>
+</div>
+
+<!-- ① 점수 계산 -->
+<div class="section">
+  <div class="sec-title">① 종합 점수(총점)는 어떻게 계산되나</div>
+
+  <div class="sub">전체 구조</div>
+  <div class="flow">
+    <div class="fstep"><div class="ft">PART1 (Q1~60)</div><div class="fs">역량별 본문항 10개씩<br>A=10점 / B=7점 / 무응답=0점<br>최대 100점</div></div>
+    <div class="farr">+</div>
+    <div class="fstep"><div class="ft">PART2 (Q81~100)</div><div class="fs">SJT Best/Worst 선택<br>Best①=+5 / Best③=-5<br>Worst②=+5 / Worst④=-5</div></div>
+    <div class="farr">→</div>
+    <div class="fstep"><div class="ft">역량별 점수</div><div class="fs">(P1 + P2 원점수)<br>÷ (P1 최대 + P2 최대)<br>× 100 → 0~100 클램핑</div></div>
+    <div class="farr">→</div>
+    <div class="fstep"><div class="ft">총점</div><div class="fs">6개 역량 점수<br>단순 평균<br>= 최종 총점</div></div>
+  </div>
+
+  <div class="sub">역량별 문항 구성 (MAP 기준)</div>
+  <table>
+    <tr><th>역량</th><th>PART1 본문항</th><th>심층 분석 트리거 문항</th><th>PART2 SJT</th></tr>
+    <tr>
+      <td><span class="tag g">주도적 능력</span></td>
+      <td>Q1~10</td>
+      <td><b>Q9</b> — A 선택 시 경고<br><span style="font-size:11px;color:#888;">보고 후 대기 vs 먼저 움직임</span></td>
+      <td>Q81, Q88</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">문제 해결 능력</span></td>
+      <td>Q11~20</td>
+      <td><b>Q12</b> — A 선택 시 경고<br><span style="font-size:11px;color:#888;">경험·직관 vs 데이터·수치</span></td>
+      <td>Q82, Q87, Q91, Q98</td>
+    </tr>
+    <tr>
+      <td><span class="tag a">목표 달성 능력</span></td>
+      <td>Q21~30</td>
+      <td><b>Q25</b> — A 선택 시 경고<br><span style="font-size:11px;color:#888;">목표 유연 조정 vs 끝까지 고수</span></td>
+      <td>Q83, Q90, Q95, Q97</td>
+    </tr>
+    <tr>
+      <td><span class="tag p">소속 내 영향력</span></td>
+      <td>Q31~40</td>
+      <td><b>Q34</b> — A 선택 시 경고<br><span style="font-size:11px;color:#888;">팀 방향 따르기 vs 끝까지 설득</span></td>
+      <td>Q84, Q93</td>
+    </tr>
+    <tr>
+      <td><span class="tag g">의사소통 능력</span></td>
+      <td>Q41~50</td>
+      <td><b>Q45</b> — <span class="r">B 선택 시 경고</span><br><span style="font-size:11px;color:#888;">논리 설득 vs 경청·정리 (이 역량만 B가 위험)</span></td>
+      <td>Q85, Q89, Q94, Q99</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">조직문화 형성 능력</span></td>
+      <td>Q51~60</td>
+      <td><b>Q56</b> — A 선택 시 경고<br><span style="font-size:11px;color:#888;">절차 축소 vs 절차 준수</span></td>
+      <td>Q86, Q96, Q100</td>
+    </tr>
+  </table>
+
+  <div class="warn-box">
+    <b>PART1 점수 구조 주의:</b> A=10점, B=7점은 "A가 정답"이 아니라 A 성향(절차·안정형)의 강도를 측정합니다. 두 방향 모두 점수가 나오며, 높은 점수 = 명확하게 한 방향으로 응답함을 의미합니다.
+    <br><br>
+    <b>의사소통 능력 트리거 주의:</b> Q45는 유일하게 B 선택이 경고 조건입니다. B(경청·정리)를 선택한 경우 "설득력 부족" 우려로 판정합니다.
+  </div>
+</div>
+
+<!-- ② 거울 문항 & 신뢰도 -->
+<div class="section">
+  <div class="sec-title">② 거울 문항과 신뢰도는 어떻게 계산되나 </div>
+
+  <div class="sub">거울 문항 구조 (Q61~Q79 + Q80)</div>
+  <div class="desc" style="margin-bottom:10px;">Q1~Q20의 같은 역량을 다른 표현으로 재질문한 문항입니다. 앞뒤 응답이 다르면 신뢰도 점수가 낮아집니다.</div>
+
+  <table>
+    <tr><th>역량</th><th>원본 문항</th><th>거울 문항</th><th>쌍 수</th></tr>
+    <tr><td><span class="tag g">주도적 능력</span></td><td>Q1, Q3, Q4</td><td>Q61(↔Q1), Q62(↔Q3), Q74(↔Q4)</td><td>3쌍</td></tr>
+    <tr><td><span class="tag b">문제 해결 능력</span></td><td>Q12, Q18, Q13</td><td>Q63(↔Q12), Q64(↔Q18), Q75(↔Q13)</td><td>3쌍</td></tr>
+    <tr><td><span class="tag a">목표 달성 능력</span></td><td>Q23, Q25, Q22</td><td>Q65(↔Q23), Q66(↔Q25), Q76(↔Q22)</td><td>3쌍</td></tr>
+    <tr><td><span class="tag p">소속 내 영향력</span></td><td>Q31, Q32, Q33</td><td>Q67(↔Q31), Q68(↔Q32), Q77(↔Q33)</td><td>3쌍</td></tr>
+    <tr><td><span class="tag g">의사소통 능력</span></td><td>Q42, Q41, Q45</td><td>Q69(↔Q42), Q70(↔Q41), Q78(↔Q45)</td><td>3쌍</td></tr>
+    <tr><td><span class="tag b">조직문화 형성</span></td><td>Q51, Q55, Q60, Q58</td><td>Q71(↔Q51), Q72(↔Q55), Q73(↔Q60), Q79(↔Q58)</td><td>4쌍</td></tr>
+    <tr><td><span class="tag r">신뢰도 함정</span></td><td colspan="2">Q80 — B 선택("절대 실수 안 함") = Fake-Good 탐지</td><td>1문항</td></tr>
+  </table>
+
+  <div class="sub">신뢰도 계산 공식</div>
+  <div class="formula">
+    현재 코드: Q1~Q20 각각과 Q61~Q80을 1:1 비교<br>
+    → Q1 == Q61이면 +1점, Q2 == Q62이면 +1점 ... Q20 == Q80이면 +1점<br>
+    → 최대 20점<br><br>
+    <b>판정 기준:</b><br>
+    18점 이상 → 매우 신뢰 (High) — 초록<br>
+    14~17점  → 양호 수준 (Mid)  — 노랑<br>
+    13점 이하 → 신뢰 불량 (Low)  — 빨강
+  </div>
+
+  <div class="sub">역량별 거울 문항 일치율 (PAGE 3 신규 표시) </div>
+  <div class="desc">report PAGE 3에서 역량별로 거울 문항 일치율을 막대로 시각화합니다. 100% = 모두 일치 / 67% 미만 = 주의 / 50% 미만 = 경고(빨강)</div>
+</div>
+
+<!-- ③ 유형 분류 -->
+<div class="section">
+  <div class="sec-title">③ 유형은 몇 가지이고 어떻게 결정되나</div>
+
+  <div class="sub">▶ admin.html — 4단계 총점 유형</div>
+  <div class="score-band">
+    <div class="band" style="background:#fde8e8;border:1px solid #f0b0b0;">
+      <div class="bval" style="color:#a32d2d;">0~40점</div>
+      <div class="blabel" style="color:#a32d2d;">보완형</div>
+      <div class="bdesc">조직 적합도 낮음. 심층 검증 필요.</div>
+    </div>
+    <div class="band" style="background:#fff8e8;border:1px solid #f0d090;">
+      <div class="bval" style="color:#854f0b;">41~60점</div>
+      <div class="blabel" style="color:#854f0b;">잠재형</div>
+      <div class="bdesc">일부 리스크 존재. 면접 심화 검증 권장.</div>
+    </div>
+    <div class="band" style="background:#e8f5d0;border:1px solid #a8d060;">
+      <div class="bval" style="color:#3b6d11;">61~80점</div>
+      <div class="blabel" style="color:#3b6d11;">성장형</div>
+      <div class="bdesc">조직 문화 융화, 무난한 역할 수행 가능.</div>
+    </div>
+    <div class="band" style="background:#d0f0e8;border:1px solid #80c8a8;">
+      <div class="bval" style="color:#0a6d50;">81~100점</div>
+      <div class="blabel" style="color:#0a6d50;">주도형</div>
+      <div class="bdesc">핵심 인재 후보. 빠른 성장 기대.</div>
+    </div>
+  </div>
+
+  <div class="sub">▶ report PAGE 3 — 4가지 행동 성향 유형 (PART2 기준) </div>
+  <div class="formula">
+    조건 1. 조직문화 P2점수 > 55%<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 주도적 P2 > 60% OR 목표달성 P2 > 60% → <b>실행 주도형</b> (구: 효율추구 성과가)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 그 외 → <b>관계 조율형</b> (구: 관계중심 협력가)<br><br>
+    조건 2. 조직문화 P2점수 ≤ 55%<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 문제해결 P2 > 60% OR 소속영향력 P2 > 60% → <b>분석 신중형</b> (구: 분석적 전략가)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 그 외 → <b>안정 실행형</b> (구: 안정적 절차 준수가)
+  </div>
+  <div class="warn-box"><b>중요:</b> admin의 4단계 유형(보완형/잠재형/성장형/주도형)은 <b>총점</b> 기준이고, report PAGE 3의 4가지 행동 성향 유형은 <b>PART2 SJT 점수</b> 기준입니다. 같은 총점이라도 다른 행동 유형이 나올 수 있습니다.</div>
+
+  <div class="sub">스펙트럼 바 위치 계산 </div>
+  <div class="formula">
+    Q1~Q60 중 A 응답 개수 / 전체 응답 개수 × 100 = A비율(%)<br>
+    마커 위치 = 100 - A비율<br><br>
+    <b>예시:</b> A를 60%로 선택했다면 → 마커는 40% 위치 (왼쪽, 절차·안정형 쪽)
+  </div>
+</div>
+
+<!-- ④ 리포트 3페이지 -->
+<div class="section">
+  <div class="sec-title">④ 리포트 3페이지 — 각각 무엇을 보여주나</div>
+
+  <div class="sub"><span class="page-badge">PAGE 1</span> 종합 요약 </div>
+  <div class="box2">
+    <div class="bitem"><div class="bt">총점 + 상위 % 순위 + 평균 대비 차이</div><div class="bd">전체 응시자 점수 내림차순 정렬 → 퍼센타일 표시. 전체 평균 대비 ±점수도 함께 표시.</div></div>
+    <div class="bitem"><div class="bt">물결 실루엣 + 6각형 레이더 차트 🔄</div><div class="bd">왼쪽: 총점만큼 물이 차오르는 실루엣 + 상위% 텍스트. 오른쪽: 6각형에 역량명과 점수 라벨 직접 표기. 최고점=빨강, 최저점=주황.</div></div>
+    <div class="bitem"><div class="bt">종합 의견 멘트 🔄 개인화</div><div class="bd">총점 구간 4가지 × 강점/약점 역량 조합 → 지원자마다 다른 멘트 생성. 유형명도 멘트에 포함.</div></div>
+    <div class="bitem"><div class="bt">PART1 vs PART2 갭 인디케이터</div><div class="bd">6개 역량 각각의 가치관(P1)과 실제행동(P2) 수치를 두 줄 바로 표시. 갭 20점 이상 시 빨간 바 + ⚠ 경고.</div></div>
+    <div class="bitem"><div class="bt">우수/보완 역량 카드 🔄</div><div class="bd">상위 2개 강점, 하위 2개 약점. 점수만이 아닌 역량별 한 줄 분석 코멘트 자동 표시.</div></div>
+  </div>
+
+  <div class="sub"><span class="page-badge">PAGE 2</span> 심층 분석 + 면접 가이드 </div>
+  <div class="box2">
+    <div class="bitem"><div class="bt">역량별 응답 패턴 테이블</div><div class="bd">6개 역량 × A/B 비율 계산 → 그라디언트 바로 시각화. 갭 20점↑이면 빨간 경고 문구 자동 삽입.</div></div>
+    <div class="bitem"><div class="bt">심층 분석 — 6개 역량 전체 표시 🔄</div><div class="bd">Q9·Q12·Q25·Q34·Q45·Q56 응답 체크. 이상 없으면 ✔ 표시, 경고는 ⚠, 위험은 🚨. 6개 역량 전부 2열 그리드로 표시해 페이지 빈 느낌 없앰.</div></div>
+    <div class="bitem"><div class="bt">면접관 체크리스트 🔄</div><div class="bd">기존: 약점 역량 질문만. <b>변경: 강점 2개(강점 확인용) + 약점 2개(심층 검증용) 좌우 2열로 분리.</b> 각 역량당 경험 검증 + 상황 압박 2문항.</div></div>
+    <div class="bitem"><div class="bt">패턴 분석 설명 자동 생성</div><div class="bd">A/B 우세 방향에 따라 다른 분석 코멘트 자동 생성. 예: A형 60% → "절차 준수 성향 60% — 지시 기다리는 경향" 등.</div></div>
+  </div>
+
+  <div class="sub"><span class="page-badge">PAGE 3</span> 행동 성향 + 신뢰도 + 채용 추천 </div>
+  <div class="box2">
+    <div class="bitem"><div class="bt">행동 성향 유형 + 스펙트럼 바</div><div class="bd">4가지 유형 중 하나 + 설명 + 장단점. 하단에 절차·안정형 ↔ 주도·혁신형 그라디언트 바에 마커 위치 표시.</div></div>
+    <div class="bitem"><div class="bt">Paradox 섹션 제거 🔄</div><div class="bd">기존 역설 경고 섹션 삭제. PAGE 1 갭 인디케이터, PAGE 2 심층 분석과 중복이어서 통합 제거.</div></div>
+    <div class="bitem"><div class="bt">신뢰도 — 역량별 일치율 상세 🔄</div><div class="bd">기존: 점수 숫자만. 변경: 왼쪽 점수 박스 + 오른쪽 역량별 거울 문항 일치율 막대. Fake-Good 배지도 신뢰도 섹션으로 통합.</div></div>
+    <div class="bitem"><div class="bt">종합 채용 추천 의견</div><div class="bd">총점·신뢰도·Fake-Good을 종합해서 3단계 자동 판정.<br>🟢 적극 추천: 총점 75↑ + Fake-Good 없음 + 신뢰도 14↑<br>🟡 조건부 추천: 총점 55↑ + Fake-Good 없음<br>🔴 보류 권장: 총점 55미만 OR Fake-Good 탐지 OR 신뢰도 13↓</div></div>
+  </div>
+
+  <div class="sub">종합 채용 추천 판정 로직 </div>
+  <div class="formula">
+    🟢 <b>적극 추천:</b> 총점 75점 이상 + Fake-Good 없음 + 신뢰도 14점 이상<br>
+    🟡 <b>조건부 추천:</b> 총점 55점 이상 + Fake-Good 없음 (신뢰도 조건 없음)<br>
+    🔴 <b>보류 권장:</b> 총점 55점 미만 OR Fake-Good 탐지 OR 신뢰도 13점 이하
+  </div>
+</div>
+
+<!-- ⑤ 전체 흐름 -->
+<div class="section">
+  <div class="sec-title">⑤ 전체 흐름 한눈에 보기 (최신판)</div>
+  <table>
+    <tr><th>단계</th><th>입력 데이터</th><th>처리 로직</th><th>출력 (어디서 보이나)</th></tr>
+    <tr>
+      <td><span class="tag g">1단계</span></td>
+      <td>Q1~60 A/B 응답</td>
+      <td>A=10점, B=7점. 역량별 합산.</td>
+      <td>역량별 PART1 원점수</td>
+    </tr>
+    <tr>
+      <td><span class="tag g">2단계</span></td>
+      <td>Q81~100 Best/Worst 번호</td>
+      <td>①Best=+5 / ③Best=-5 / ②Worst=+5 / ④Worst=-5 가감</td>
+      <td>역량별 PART2 원점수</td>
+    </tr>
+    <tr>
+      <td><span class="tag g">3단계</span></td>
+      <td>P1+P2 원점수</td>
+      <td>(P1+P2) ÷ (P1max+P2max) × 100. 0~100 클램핑.</td>
+      <td>역량별 점수 6개</td>
+    </tr>
+    <tr>
+      <td><span class="tag g">4단계</span></td>
+      <td>역량별 점수 6개</td>
+      <td>단순 평균</td>
+      <td>총점 (0~100)</td>
+    </tr>
+    <tr>
+      <td><span class="tag a">5단계</span></td>
+      <td>총점</td>
+      <td>≤40 보완형 / ≤60 잠재형 / ≤80 성장형 / 81+ 주도형</td>
+      <td>admin 목록 유형 배지</td>
+    </tr>
+    <tr>
+      <td><span class="tag a">6단계</span></td>
+      <td>PART2 역량별 점수</td>
+      <td>조직문화 P2 기준 분기 → 실행주도형/관계조율형/분석신중형/안정실행형</td>
+      <td>report PAGE 3 — 행동 성향 유형</td>
+    </tr>
+    <tr>
+      <td><span class="tag a">6-1단계</span> </td>
+      <td>Q1~60 A 응답 비율</td>
+      <td>A비율 계산 → 마커 위치 = 100 - A비율(%)</td>
+      <td>report PAGE 3 — 스펙트럼 바 마커</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">7단계</span></td>
+      <td>Q1~Q20 vs Q61~Q80</td>
+      <td>1:1 비교. 일치 개수 카운트 → 역량별 일치율 계산</td>
+      <td>report PAGE 3 — 신뢰도 점수 + 역량별 막대</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">8단계</span></td>
+      <td>Q9·Q12·Q25·Q34·Q45·Q56</td>
+      <td>A or B 선택 방향 체크 → ok/warn/danger 분류</td>
+      <td>report PAGE 2 — 심층 분석 6칸 그리드</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">8-1단계</span> </td>
+      <td>역량별 A/B 비율</td>
+      <td>A비율 vs B비율 계산 + 갭 20점↑ 체크</td>
+      <td>report PAGE 2 — 응답 패턴 테이블</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">9단계</span></td>
+      <td>강점 2개 + 약점 2개 역량명</td>
+      <td>INTERVIEW_DB에서 해당 역량 질문 조회</td>
+      <td>report PAGE 2 — 면접 체크리스트 좌우 2열</td>
+    </tr>
+    <tr>
+      <td><span class="tag r">10단계</span> </td>
+      <td>총점 + 신뢰도 + Paradox + Fake-Good</td>
+      <td>조건 판정: 적극추천(80↑·High·무이상) / 조건부(60↑·Mid) / 보류(그 외)</td>
+      <td>report PAGE 3 — 종합 채용 추천 의견</td>
+    </tr>
+    <tr>
+      <td><span class="tag r">11단계</span> </td>
+      <td>PART1↔PART2 역량별 갭</td>
+      <td>각 역량 P1% - P2% 계산. 20점↑ = 빨간 바 + ⚠</td>
+      <td>report PAGE 1 — 갭 인디케이터</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ⑥ 문항↔리포트 연계성 -->
+<div class="section">
+  <div class="sec-title">⑥ 검사 문항 → 리포트 연계 지도 </div>
+  <div class="desc" style="margin-bottom:12px;">각 문항이 리포트 어느 부분에 어떻게 연결되는지 추적합니다.</div>
+
+  <div class="sub">PART1 문항 → 리포트 연계</div>
+  <div class="link-arrow"><span class="q">Q1~Q60</span><span class="arrow">→</span><span class="dest">PAGE1 레이더 차트 점수 + 갭 인디케이터 P1 바</span></div>
+  <div class="link-arrow"><span class="q">Q1~Q60 A비율</span><span class="arrow">→</span><span class="dest">PAGE2 응답 패턴 테이블 성향 방향 바 + PAGE3 스펙트럼 마커</span></div>
+  <div class="link-arrow"><span class="q">Q9</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 주도성 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q12</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 데이터 기반 사고 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q25</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 목표 완수 의지 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q34</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 소속 영향력 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q45</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 설득력 점검 트리거 (<span style="color:#e03131;font-weight:700;">B 선택 시</span> 경고 — 유일한 B 트리거)</span></div>
+  <div class="link-arrow"><span class="q">Q56</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 원칙 준수 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q61~Q79</span><span class="arrow">→</span><span class="dest">PAGE3 신뢰도 역량별 일치율 막대 + 신뢰도 총점</span></div>
+  <div class="link-arrow"><span class="q">Q80</span><span class="arrow">→</span><span class="dest">PAGE3 신뢰도 — Fake-Good 배지 (B 선택 시 "탐지됨")</span></div>
+
+  <div class="sub" style="margin-top:16px;">PART2 문항 → 리포트 연계</div>
+  <div class="link-arrow"><span class="q">Q81~Q100 Best/Worst</span><span class="arrow">→</span><span class="dest">PAGE1 레이더 차트 점수 + 갭 인디케이터 P2 바</span></div>
+  <div class="link-arrow"><span class="q">Q81, Q88</span><span class="arrow">→</span><span class="dest">주도적 능력 PART2 점수 → PAGE3 행동 성향 유형 분류 기준</span></div>
+  <div class="link-arrow"><span class="q">Q86, Q96, Q100</span><span class="arrow">→</span><span class="dest">조직문화 형성 PART2 점수 → PAGE3 행동 성향 유형 1차 분기 기준</span></div>
+  <div class="link-arrow"><span class="q">전체 PART2 점수</span><span class="arrow">→</span><span class="dest">PAGE2 응답 패턴 테이블 갭 계산 + PAGE3 채용 추천 판정 입력값</span></div>
+
+  <div class="gap-note">
+    <b>신뢰도 계산 방식:</b><br>
+    신뢰도 총점과 역량별 일치율 모두 mirrorMap 기반 19쌍 정확 매핑으로 계산됩니다. 두 계산 방식이 동일한 기준을 사용하므로 신뢰도 지표의 정확성이 확보되어 있습니다.
+  </div>
+</div>
+
+</body>
+</html>

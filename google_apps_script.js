@@ -31,8 +31,10 @@ function doPost(e) {
 
         // 4. 데이터 매핑 (헤더 순서에 맞게 값 정렬)
         const rowData = updatedHeaders.map(header => {
-            // 데이터가 없으면 빈 문자열, 0이면 0 유지
-            return data[header] !== undefined ? data[header] : "";
+            if (data[header] === undefined) return "";
+            // 휴대폰번호는 앞의 0이 잘리지 않도록 텍스트 형식으로 저장
+            if (header === '휴대폰번호') return "'" + String(data[header]);
+            return data[header];
         });
 
         // 5. 시트에 행 추가

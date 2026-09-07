@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GN-Fit 역량검사 리포트</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{--primary:#89a230;--deep:#2d3e1d;--danger:#e03131;--warn:#f08c00;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#e9ecef;font-family:'Noto Sans KR',sans-serif;padding:40px;display:flex;flex-direction:column;align-items:center;}
+
+.page-container{width:794px;min-height:1123px;background:#fff;padding:40px 48px;box-shadow:0 5px 20px rgba(0,0,0,.06);margin-bottom:40px;display:flex;flex-direction:column;position:relative;}
+
+@media print{
+  @page{size:A4;margin:0;}
+  body{background:#fff;padding:0;display:block;}
+  .page-container{box-shadow:none;margin:0;width:100%;min-height:auto;page-break-after:always;padding:13mm 17mm;}
+  .no-print,.no-print-btn{display:none!important;}
+}
+
+/* 로딩 */
+#loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px;}
+.spinner{width:44px;height:44px;border:4px solid #e9ecef;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#loading-text{font-size:14px;color:#868e96;}
+
+.no-print-btn{position:fixed;bottom:30px;right:30px;background:var(--deep);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-family:'Noto Sans KR',sans-serif;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:100;}
+
+/* 공통 */
+.report-tag{font-size:9px;font-weight:700;color:#adb5bd;letter-spacing:1px;margin-bottom:4px;}
+.pg-header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid var(--deep);padding-bottom:12px;margin-bottom:14px;}
+.h-name{font-size:20px;font-weight:900;color:var(--deep);}
+.h-meta{font-size:11px;color:#868e96;margin-top:3px;}
+.pg-header-right{text-align:right;}
+.rank-pill{display:inline-block;background:var(--deep);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:4px;}
+.total-num{font-size:46px;font-weight:900;color:var(--primary);line-height:1;}
+.total-sub{font-size:10px;color:#adb5bd;}
+
+.sec-head{font-size:11px;font-weight:800;color:var(--deep);border-left:3px solid var(--primary);padding-left:8px;margin-bottom:9px;display:flex;align-items:center;gap:5px;}
+.sec-head.amber{border-left-color:var(--warn);}
+.sec-head.red{border-left-color:var(--danger);}
+.sec-note{font-size:10px;color:#adb5bd;font-weight:400;}
+
+footer{font-size:10px;color:#adb5bd;text-align:center;margin-top:auto;padding-top:12px;border-top:1px solid #f0f0f0;}
+
+/* ══════════════ PAGE 1 ══════════════ */
+
+/* 종합 의견 */
+.opinion-box{background:#f4f6f0;border-left:5px solid var(--primary);border-radius:0 10px 10px 0;padding:12px 16px;margin-bottom:13px;}
+.opinion-badges{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+.badge-score{background:var(--deep);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;}
+.badge-type{background:#fff;color:var(--primary);font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;border:1px solid var(--primary);}
+.opinion-text{font-size:11.5px;font-weight:600;color:var(--deep);line-height:1.65;word-break:keep-all;}
+.opinion-avg{font-size:10px;color:#868e96;margin-top:6px;text-align:right;}
+
+/* 행동 성향 — 가로 배치 (종합의견 바로 아래) */
+.persona-bar{background:#f4f6f0;border-radius:10px;padding:14px 18px;margin-bottom:13px;}
+.persona-bar-top{display:flex;align-items:flex-start;gap:20px;margin-bottom:10px;}
+.persona-main{flex:1;}
+.persona-label{font-size:10px;font-weight:700;color:#868e96;letter-spacing:.4px;margin-bottom:3px;}
+.persona-title{font-size:18px;font-weight:900;color:var(--deep);margin-bottom:5px;}
+.persona-desc{font-size:11px;color:#444;line-height:1.6;word-break:keep-all;}
+.persona-points{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:280px;}
+.pp-box{border-radius:8px;padding:9px 12px;font-size:10.5px;color:#555;line-height:1.55;}
+.pp-pro{background:#fff;border-left:3px solid var(--primary);}
+.pp-con{background:#fff;border-left:3px solid var(--warn);}
+.pp-box strong{display:block;font-size:10px;font-weight:800;margin-bottom:2px;}
+.pp-pro strong{color:var(--primary);}
+.pp-con strong{color:var(--warn);}
+.spectrum-wrap{margin-top:10px;}
+.spectrum-label{display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:#868e96;margin-bottom:4px;}
+.spectrum-track{height:8px;background:linear-gradient(90deg,#74c0fc,#dee2e6,#ff8787);border-radius:99px;position:relative;}
+.spectrum-marker{position:absolute;top:-3px;width:14px;height:14px;background:#2d3e1d;border:2px solid #fff;border-radius:50%;transform:translateX(-50%);box-shadow:0 2px 5px rgba(0,0,0,.2);}
+
+/* 2열: 실루엣+레이더 / 강점보완 */
+.p1-mid{display:grid;grid-template-columns:280px 1fr;gap:14px;margin-bottom:13px;}
+
+/* 왼쪽: 실루엣 + 레이더 */
+.sil-radar-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.sil-row{display:flex;align-items:center;gap:14px;}
+.sil-info{text-align:center;}
+.sil-rank-txt{font-size:10px;color:#868e96;line-height:1.5;}
+.sil-rank-txt strong{color:var(--primary);font-size:13px;display:block;}
+.sil-score-big{font-size:27px;font-weight:900;color:var(--primary);line-height:1;margin-top:2px;}
+.sil-score-sub{font-size:10px;color:#adb5bd;}
+.sil-avg-diff{font-size:10px;color:#868e96;margin-top:2px;}
+.radar-wrap{position:relative;height:190px;width:100%;}
+
+/* 오른쪽: 강점/보완 */
+.sw-col{display:flex;flex-direction:column;gap:8px;}
+.sw-card{border-radius:10px;padding:13px 14px;flex:1;}
+.sw-card.s{background:#f4f9ec;border:1px solid #c8dda0;}
+.sw-card.w{background:#fff8f0;border:1px solid #f5c6a0;}
+.sw-card-title{font-size:10px;font-weight:800;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:center;gap:4px;}
+.sw-card.s .sw-card-title{color:var(--primary);}
+.sw-card.w .sw-card-title{color:var(--warn);}
+.sw-item{padding:6px 0;border-bottom:1px dashed rgba(0,0,0,.07);}
+.sw-item:last-child{border-bottom:none;padding-bottom:0;}
+.sw-item-row{display:flex;justify-content:space-between;align-items:flex-start;}
+.sw-item-name{font-size:11.5px;font-weight:700;color:var(--deep);}
+.sw-item-desc{font-size:11px;color:#666;line-height:1.6;margin-top:3px;}
+.sw-item-score{font-size:22px;font-weight:900;flex-shrink:0;margin-left:8px;margin-top:1px;}
+.sw-card.s .sw-item-score{color:var(--primary);}
+.sw-card.w .sw-item-score{color:var(--warn);}
+
+/* 하단: 채용 추천 (가로) */
+.rec-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:0;}
+.rec-card-mini{border-radius:10px;padding:12px 14px;}
+.rec-card-mini.rec-a{background:#f4f9ec;border:1.5px solid #c8dda0;}
+.rec-card-mini.rec-b{background:#fff8f0;border:1.5px solid #f5c6a0;}
+.rec-card-mini.rec-c{background:#fff5f5;border:1.5px solid #f5b8b8;}
+.rec-top{display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid rgba(0,0,0,.07);}
+.rec-icon-sm{font-size:18px;}
+.rec-label-sm{font-size:9px;font-weight:700;color:#868e96;letter-spacing:.3px;}
+.rec-title-sm{font-size:14px;font-weight:900;color:var(--deep);}
+.rec-grounds-sm{display:flex;flex-direction:column;gap:4px;}
+.rec-ground-sm{font-size:10px;color:#555;display:flex;align-items:flex-start;gap:4px;line-height:1.5;}
+.status-row{display:flex;gap:6px;flex-wrap:wrap;}
+.status-pill{display:flex;align-items:center;gap:5px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:20px;padding:4px 10px;font-size:10px;color:#555;}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.status-dot.green{background:#2b8a3e;}
+.status-dot.yellow{background:#f59f00;}
+.status-dot.red{background:var(--danger);}
+
+/* ══════════════ PAGE 2/3 공통 ══════════════ */
+.pattern-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+.pattern-table th{background:#f4f6f0;color:var(--deep);font-weight:700;padding:7px 9px;text-align:left;border-bottom:2px solid #d0dab8;font-size:11px;}
+.pattern-table td{padding:7px 9px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+.pattern-table tr:last-child td{border-bottom:none;}
+.cat-name{font-weight:700;color:var(--deep);}
+.score-chip{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;min-width:38px;text-align:center;}
+.score-chip.high{background:#e8f5d0;color:#2d6a0a;}
+.score-chip.mid{background:#fff8e0;color:#7a5000;}
+.score-chip.low{background:#fde8e8;color:#a32d2d;}
+.tendency-bar{display:flex;align-items:center;gap:4px;font-size:10px;}
+.t-label{color:#185fa5;font-weight:600;width:52px;text-align:right;flex-shrink:0;}
+.t-label-b{color:#c0392b;font-weight:600;width:52px;flex-shrink:0;}
+.t-track{flex:1;height:7px;background:#f0f0f0;border-radius:99px;overflow:hidden;}
+.t-fill-a{height:100%;background:#74c0fc;border-radius:99px 0 0 99px;float:left;}
+.t-fill-b{height:100%;background:#ff8787;border-radius:0 99px 99px 0;float:right;}
+.p2-desc{font-size:10.5px;color:#555;line-height:1.5;}
+.p2-desc.warn{color:var(--danger);font-weight:500;}
+
+/* 심층분석 */
+.dive-list{display:flex;flex-direction:column;gap:8px;}
+.dive-grid6{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dive-item{border-radius:8px;padding:11px 13px;border:1px solid;}
+.dive-item.ok{background:#f4f9ec;border-color:#c8dda0;}
+.dive-item.warn{background:#fff8f0;border-color:#f5c6a0;}
+.dive-item.danger{background:#fff5f5;border-color:#f5b8b8;}
+.dive-head{display:flex;align-items:center;gap:5px;margin-bottom:4px;}
+.dive-icon{font-size:12px;}
+.dive-item.ok .dive-icon{color:#2b8a3e;}
+.dive-item.warn .dive-icon{color:#f08c00;}
+.dive-item.danger .dive-icon{color:#e03131;}
+.dive-title{font-size:10.5px;font-weight:700;color:var(--deep);}
+.dive-desc{font-size:10.5px;color:#555;line-height:1.5;}
+.dive-empty{font-size:11px;color:#2b8a3e;background:#f4f9ec;border:1px solid #c8dda0;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:6px;}
+
+/* 면접 체크리스트 */
+.interview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.iv-card{border-radius:10px;overflow:hidden;}
+.iv-card-head{padding:10px 14px;font-size:11px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:6px;}
+.iv-card-head.strength{background:#f4f9ec;color:#89a230;border-bottom:1px solid #c8dda0;}
+.iv-card-head.weakness{background:#fff5f5;color:#e03131;border-bottom:1px solid #f5b8b8;}
+.iv-body{background:#fff;border:1px solid #eee;border-top:none;border-radius:0 0 10px 10px;padding:12px 14px;}
+.iv-cat{font-size:12px;font-weight:700;color:var(--deep);margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed #eee;}
+.iv-q{padding:8px 0;border-bottom:1px dotted #f0f0f0;}
+.iv-q:last-child{border-bottom:none;padding-bottom:0;}
+.iv-q-type{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;margin-bottom:4px;}
+.iv-q-type.exp{background:#e8f5d0;color:#2d6a0a;}
+.iv-q-type.press{background:#fde8e8;color:#a32d2d;}
+.iv-q-text{font-size:11.5px;color:#333;line-height:1.6;}
+
+/* 신뢰도 상세 (PAGE 3) */
+.trust-grid-detail{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.trust-score-box{background:var(--deep);border-radius:12px;padding:18px 20px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;}
+.trust-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.5px;margin-bottom:6px;}
+.trust-num{font-size:42px;font-weight:900;color:#a9e34b;line-height:1;}
+.trust-denom{font-size:13px;font-weight:500;color:rgba(255,255,255,.4);margin-left:3px;}
+.trust-verdict{font-size:13px;font-weight:800;color:#a9e34b;margin-top:5px;}
+.trust-desc{font-size:10.5px;color:rgba(255,255,255,.65);line-height:1.55;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.15);}
+.trust-detail-box{background:#f8f9fa;border:1px solid #e9ecef;border-radius:12px;padding:14px 16px;}
+.trust-detail-title{font-size:11px;font-weight:700;color:var(--deep);margin-bottom:10px;}
+.mirror-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.mirror-label{font-size:11px;font-weight:600;color:var(--deep);width:90px;flex-shrink:0;}
+.mirror-track{flex:1;height:7px;background:#f0f0f0;border-radius:99px;overflow:hidden;}
+.mirror-fill{height:100%;border-radius:99px;}
+.mirror-fill.ok{background:#89a230;}
+.mirror-fill.warn{background:#f08c00;}
+.mirror-fill.bad{background:#e03131;}
+.mirror-val{font-size:11px;font-weight:700;width:34px;text-align:right;flex-shrink:0;}
+.mirror-val.ok{color:#2d6a0a;}
+.mirror-val.warn{color:#854f0b;}
+.mirror-val.bad{color:#a32d2d;}
+.fake-row{margin-top:9px;padding-top:9px;border-top:1px dashed #dee2e6;display:flex;align-items:center;gap:7px;font-size:11px;flex-wrap:wrap;}
+.fake-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;}
+.fake-badge.ok{background:#e8f5d0;color:#2d6a0a;}
+.fake-badge.bad{background:#fde8e8;color:#a32d2d;}
+
+        /* 갭 인디케이터 CSS */
+        .gap-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+        .gap-label{font-size:11px;font-weight:600;color:var(--deep);width:90px;flex-shrink:0;}
+        .gap-bars{flex:1;display:flex;flex-direction:column;gap:3px;}
+        .mini-track{height:6px;background:#f0f0f0;border-radius:99px;overflow:hidden;}
+        .mini-p1{height:100%;background:#89a230;border-radius:99px;opacity:.9;}
+        .mini-p2{height:100%;background:#74c0fc;border-radius:99px;opacity:.9;}
+        .mini-p2-bad{height:100%;background:#fa5252;border-radius:99px;opacity:.85;}
+        .gap-num{font-size:11px;font-weight:700;width:46px;text-align:right;flex-shrink:0;}
+        .gap-num.ok{color:#52a085;}
+        .gap-num.bad{color:var(--danger);}
+</style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <p id="loading-text">리포트를 불러오는 중입니다...</p>
+</div>
+
+<div id="report-wrap">
+
+<!-- ══════════════════════════════════════
+     PAGE 1 — 지원자 종합 리포트
+══════════════════════════════════════ -->
+<div class="page-container" id="page1">
+
+  <header class="pg-header">
+    <div>
+      <div class="report-tag">GOODNEIGHBORS · GN-FIT COMPETENCY REPORT</div>
+      <div class="h-name u-name">— 님 역량검사 결과</div>
+      <div class="h-meta u-meta">—</div>
+    </div>
+    <div class="pg-header-right">
+      <div class="rank-pill" id="rank-pill">상위 --%</div>
+      <div class="total-num" id="u-total">—</div>
+      <div class="total-sub">종합 점수 / 100점 만점</div>
+    </div>
+  </header>
+
+  <!-- ① 종합 의견 -->
+  <div class="opinion-box">
+    <div class="opinion-badges">
+      <span class="badge-score" id="badge-score-type">—</span>
+      <span class="badge-type" id="badge-behavior-type">—</span>
+    </div>
+    <div class="opinion-text" id="hero-text">분석 중...</div>
+    <div class="opinion-avg" id="hero-rank"></div>
+  </div>
+
+  <!-- ② 행동 성향 (가로 배치) -->
+  <div class="persona-bar">
+    <div class="persona-bar-top">
+      <div class="persona-main">
+        <div class="persona-label">조직 행동 성향 (Behavioral Persona)</div>
+        <div class="persona-title" id="profile-title">—</div>
+        <div class="persona-desc" id="profile-desc">—</div>
+      </div>
+      <div class="persona-points" id="pp-grid"></div>
+    </div>
+    <div class="spectrum-wrap">
+      <div class="spectrum-label"><span>절차·안정형</span><span>주도·혁신형</span></div>
+      <div class="spectrum-track">
+        <div class="spectrum-marker" id="spectrum-marker" style="left:50%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 2열: 실루엣+레이더 / 강점+보완 -->
+  <div class="p1-mid">
+    <!-- 왼쪽: 실루엣 + 레이더 -->
+    <div class="sil-radar-card">
+      <div class="sil-row">
+        <svg viewBox="0 0 120 200" width="78" height="130">
+          <defs><clipPath id="c1"><path d="M60,14 C71,14 80,23 80,34 C80,45 71,54 60,54 C49,54 40,45 40,34 C40,23 49,14 60,14 Z M28,63 Q60,53 92,63 Q102,68 102,88 V173 Q102,190 60,190 Q18,190 18,173 V88 Q18,68 28,63 Z"/></clipPath></defs>
+          <path d="M60,14 C71,14 80,23 80,34 C80,45 71,54 60,54 C49,54 40,45 40,34 C40,23 49,14 60,14 Z M28,63 Q60,53 92,63 Q102,68 102,88 V173 Q102,190 60,190 Q18,190 18,173 V88 Q18,68 28,63 Z" fill="#f1f3f5" stroke="#dee2e6" stroke-width="2"/>
+          <g clip-path="url(#c1)">
+            <g id="wave-group" transform="translate(0,200)">
+              <path fill="#89a230" opacity="0.85" d="M0,0 Q30,-8 60,0 T120,0 T180,0 V200 H0 Z"/>
+            </g>
+          </g>
+        </svg>
+        <div class="sil-info">
+          <div class="sil-rank-txt">전체 응시자 기준<strong id="sil-pct">상위 --%</strong></div>
+          <div class="sil-score-big" id="sil-score">—</div>
+          <div class="sil-score-sub">종합 점수</div>
+          <div class="sil-avg-diff" id="sil-avg-diff"></div>
+        </div>
+      </div>
+      <div class="radar-wrap">
+        <canvas id="competencyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 강점 + 보완 -->
+    <div class="sw-col">
+      <div class="sw-card s">
+        <div class="sw-card-title">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#89a230" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          우수 역량 TOP 2
+        </div>
+        <div id="strength-list"></div>
+      </div>
+      <div class="sw-card w">
+        <div class="sw-card-title">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#f08c00" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          보완 필요 역량 TOP 2
+        </div>
+        <div id="weakness-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 하단: 채용 추천 가로 배치 -->
+  <div class="rec-row" id="rec-row"></div>
+
+  <footer>GN-Fit Analysis Report [Page 1] — 지원자 종합 리포트 · Confidential</footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 2 — 역량 심층 분석
+══════════════════════════════════════ -->
+<div class="page-container" id="page2">
+  <header class="pg-header">
+    <div>
+      <div class="report-tag">GOODNEIGHBORS · GN-FIT COMPETENCY REPORT</div>
+      <div class="h-name u-name">— 님 역량 심층 분석</div>
+      <div class="h-meta">응답 패턴 분석 · 핵심 문항 이상 탐지 · 면접관 체크리스트</div>
+    </div>
+  </header>
+
+  <!-- ① 응답 패턴 테이블 -->
+  <div style="margin-bottom:16px;">
+    <div class="sec-head">📊 역량별 응답 패턴 요약
+      <span class="sec-note">— A형(절차·안정) ↔ B형(주도·혁신) 성향 방향</span>
+    </div>
+    <table class="pattern-table">
+      <thead>
+        <tr>
+          <th style="width:116px;">역량</th>
+          <th style="width:54px;">종합</th>
+          <th style="width:190px;">성향 방향</th>
+          <th>응답 패턴 분석</th>
+        </tr>
+      </thead>
+      <tbody id="pattern-table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- ② 면접관 체크리스트 -->
+  <div>
+    <div class="sec-head" style="margin-bottom:14px;">📋 면접관 체크리스트
+      <span class="sec-note">— 우수 역량은 강점 확인용, 보완 역량은 심층 검증용 질문입니다</span>
+    </div>
+    <div class="interview-grid" id="interview-guide-list"></div>
+  </div>
+
+  <footer>GN-Fit Analysis Report [Page 2] — 역량 심층 분석 및 면접관 가이드 · Confidential</footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 3 — 면접관 가이드 & 신뢰도
+══════════════════════════════════════ -->
+<div class="page-container" id="page3">
+  <header class="pg-header">
+    <div>
+      <div class="report-tag">GOODNEIGHBORS · GN-FIT COMPETENCY REPORT</div>
+      <div class="h-name u-name">— 님 심층 분석 및 신뢰도 검증</div>
+      <div class="h-meta">가치관 vs 실제행동 비교 · 핵심 문항 심층 분석 · 응답 신뢰도 검증</div>
+    </div>
+  </header>
+
+  <!-- ① 가치관 vs 실제행동 갭 비교 -->
+  <div style="margin-bottom:18px;">
+    <div class="sec-head">📊 가치관(PART1) vs 실제행동(PART2) 비교
+      <span class="sec-note">— 갭이 클수록 면접 검증이 필요합니다</span>
+    </div>
+    <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:10px;padding:13px 15px;">
+      <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#666;"><div style="width:10px;height:10px;border-radius:2px;background:#89a230;"></div>가치관 응답 (PART1)</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#666;"><div style="width:10px;height:10px;border-radius:2px;background:#74c0fc;"></div>실제 행동 (PART2)</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#666;"><div style="width:10px;height:10px;border-radius:2px;background:#fa5252;"></div>불일치 주의 (갭 20점↑)</div>
+      </div>
+      <div id="gap-list"></div>
+    </div>
+  </div>
+
+  <!-- ② 핵심 문항 심층 분석 -->
+  <div style="margin-bottom:18px;">
+    <div class="sec-head amber">🔍 핵심 문항 심층 분석
+      <span class="sec-note">— 점검이 필요한 역량만 표시합니다</span>
+    </div>
+    <div id="deep-dive-list"></div>
+  </div>
+
+  <!-- ③ 응답 신뢰도 상세 -->
+  <div>
+    <div class="sec-head">🔒 응답 신뢰도 검증 (Reliability)
+      <span class="sec-note">— 거울 문항 일치율 및 사회적 바람직성(Fake-Good) 검증</span>
+    </div>
+    <div class="trust-grid-detail">
+      <div class="trust-score-box">
+        <div>
+          <div class="trust-lbl">응답 신뢰도 점수</div>
+          <div>
+            <span id="rel-score" class="trust-num">—</span>
+            <span class="trust-denom">/ 19</span>
+          </div>
+          <div id="rel-verdict" class="trust-verdict"></div>
+        </div>
+        <div id="rel-msg" class="trust-desc"></div>
+      </div>
+      <div class="trust-detail-box">
+        <div class="trust-detail-title">역량별 거울 문항 일치율</div>
+        <div id="mirror-detail"></div>
+        <div class="fake-row">
+          <span style="font-weight:600;color:var(--deep);">사회적 바람직성 (Fake-Good)</span>
+          <span id="fake-badge"></span>
+          <span id="fake-msg" style="color:#868e96;font-size:10px;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>GN-Fit Analysis Report [Page 3] — 심층 분석 및 신뢰도 검증 · Confidential</footer>
+</div>
+
+</div><!-- /report-wrap -->
+
+<button class="no-print-btn no-print" onclick="savePdf()">PDF 저장</button>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxi91tiy8bDjGcpYUvWLZdehfvuSMQteQEIYzH6FucJoAydGfEM23qdUpLpfT8doZyr/exec";
+
+const MAP = {
+    "주도적 능력":        { r:[1,10],   s:[81,88] },
+    "문제 해결 능력":     { r:[11,20],  s:[82,87,91,98] },
+    "목표 달성 능력":     { r:[21,30],  s:[83,90,95,97] },
+    "소속 내 영향력":     { r:[31,40],  s:[84,93] },
+    "의사소통 능력":      { r:[41,50],  s:[85,89,94,99] },
+    "조직문화 형성 능력": { r:[51,60],  s:[86,96,100] }
+};
+
+// 역량별 2문항씩 (경험 검증 + 상황 압박)
+const INTERVIEW_DB = {
+    "주도적 능력": [
+        { type:"경험 검증", text:"누가 시키지 않았음에도 스스로 업무의 문제점을 발견하고 주도적으로 개선해 본 경험을 구체적으로 설명해주세요." },
+        { type:"상황 압박", text:"본인의 판단과 직속 상급자의 방향이 정면으로 충돌한다면 어떻게 하시겠습니까? 실제 유사 경험이 있다면 함께 말씀해주세요." }
+    ],
+    "문제 해결 능력": [
+        { type:"경험 검증", text:"지금까지 경험한 가장 복잡하고 어려운 문제를 어떻게 분석하고 해결했는지 논리적 접근 과정을 설명해주세요." },
+        { type:"상황 압박", text:"충분한 분석 시간 없이 즉각적인 판단과 결정이 요구되는 긴급 상황에서 어떻게 문제를 해결하시겠습니까?" }
+    ],
+    "목표 달성 능력": [
+        { type:"경험 검증", text:"목표 달성 과정에서 예상치 못한 치명적인 난관에 부딪혔을 때, 포기하지 않고 끝까지 성과를 이끌어낸 구체적인 경험을 말씀해주세요." },
+        { type:"상황 압박", text:"팀의 핵심 성과 목표를 지키기 위해 동료에게 불이익이 생길 수밖에 없는 상황이라면 어떤 선택을 하시겠습니까?" }
+    ],
+    "소속 내 영향력": [
+        { type:"경험 검증", text:"본인과 이견이 심한 팀원 또는 이해관계자를 논리와 리더십으로 설득하여 합의에 도달하게 만든 경험을 말씀해주세요." },
+        { type:"상황 압박", text:"본인이 확실히 옳다고 판단하는 사안에 대해 팀 전체 또는 조직이 반대할 때 어느 선까지 의견을 관철시키겠습니까?" }
+    ],
+    "의사소통 능력": [
+        { type:"경험 검증", text:"본인과 소통 스타일이 완전히 다른 동료 또는 이해관계자와 협업해야 했던 상황에서 어떻게 원활하게 소통을 이끌어냈나요?" },
+        { type:"상황 압박", text:"공개 석상에서 상대방이 비합리적인 주장을 지속하거나 감정적으로 대응할 때 어떻게 관계를 유지하면서 원칙을 지키겠습니까?" }
+    ],
+    "조직문화 형성 능력": [
+        { type:"경험 검증", text:"본인이 속했던 조직의 잘못된 관행이나 비효율적인 문화를 발견하고 더 나은 방향으로 변화를 이끌어낸 사례를 설명해주세요." },
+        { type:"상황 압박", text:"조직 문화를 저해하지만 성과는 가장 높은 팀원이 있다면 팀장으로서 어떻게 관리하겠습니까? 구체적인 접근 방식을 말씀해주세요." }
+    ]
+};
+
+// ── 데이터 로드 ───────────────────────────
+async function loadAndFetch() {
+    const params = new URLSearchParams(window.location.search);
+    let targetName = (params.get('name') || params.get('userName') || '').trim();
+    if (!targetName) {
+        targetName = prompt("리포트를 열람할 응시자의 이름을 입력해주세요.");
+        if (!targetName?.trim()) {
+            document.getElementById('loading-overlay').innerHTML = `<h3 style="color:#e03131;">이름 파라미터가 필요합니다.</h3><p>이름이 누락되어 리포트 생성을 취소하였습니다.</p><button onclick="location.reload()" style="margin-top:14px;padding:10px 20px;border-radius:8px;border:1px solid #ced4da;cursor:pointer;">다시 입력하기</button>`;
+            return;
+        }
+        targetName = targetName.trim();
+        const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?name=' + encodeURIComponent(targetName);
+        if (window.history.pushState) window.history.pushState({ path: newUrl }, '', newUrl);
+    }
+    try {
+        document.getElementById('loading-text').innerText = `[${targetName}]님의 데이터를 가져오는 중...`;
+        const res = await fetch(`${API_URL}?type=result`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        const allData = json.data || json;
+        const user = allData.find(u => (u['성명']||u['이름']||u['name']||'').toString().trim() === targetName);
+        if (user) {
+            document.getElementById('loading-text').innerText = '종합 분석 중...';
+            setTimeout(() => renderUI(user, allData), 100);
+        } else {
+            document.getElementById('loading-overlay').innerHTML = `<h3 style="color:#e03131;">'${targetName}'님을 찾을 수 없습니다.</h3><p>이름 오타 여부나 제출 상태를 확인해주세요.</p><button onclick="location.href='report_v4.html'" style="margin-top:14px;padding:10px 20px;border-radius:8px;cursor:pointer;">이름 다시 입력하기</button>`;
+        }
+    } catch(e) {
+        document.getElementById('loading-overlay').innerHTML = `<h3 style="color:#e03131;">서버 통신 실패</h3><p>${e.message}</p>`;
+    }
+}
+
+// ── 계산 함수 ─────────────────────────────
+function calcData(u) {
+    let stats={}, p2Scores={}, sum=0, paradoxDetails=[];
+    for (let [k,cfg] of Object.entries(MAP)) {
+        let p1=0,max1=0,p2=0,max2=0;
+        let highestQ_P1=cfg.r[0],lowestQ_P2=cfg.s[0],highestAnsP1Val=-1,lowestAnsP2Val=99;
+        for (let i=cfg.r[0];i<=cfg.r[1];i++) {
+            const ans=(u['Q'+i]||'').toString().toUpperCase();
+            let val=ans==='A'?10:ans==='B'?7:ans==='C'?3:0;
+            p1+=val; if(val>highestAnsP1Val){highestAnsP1Val=val;highestQ_P1=i;} max1+=10;
+        }
+        for (let qn of cfg.s) {
+            const b=parseInt(u[`Q${qn}_Best`]||0), w=parseInt(u[`Q${qn}_Worst`]||0);
+            let g=0; if(b===1)g+=5;if(b===3)g-=5;if(w===2)g+=5;if(w===4)g-=5;
+            p2+=g; if(g<lowestAnsP2Val){lowestAnsP2Val=g;lowestQ_P2=qn;} max2+=10;
+        }
+        const p1Pct=max1?(p1/max1*100):0, offset=cfg.s.length*5;
+        const p2Pct=max2?((p2+offset)/(max2+offset)*100):0;
+        if(p1Pct>=70&&p2Pct<=45) paradoxDetails.push({type:k,qNumHigh:highestQ_P1,qNumLow:lowestQ_P2});
+        const score=Math.max(0,Math.min(100,Math.round((p1+p2)/(max1+max2)*100)));
+        stats[k]=score; p2Scores[k]=p2Pct; sum+=score;
+    }
+    const total=Math.round(sum/Object.keys(MAP).length);
+
+    let deepDive=[];
+    if((u['Q9'] ||'').toUpperCase()==='A') deepDive.push({cat:"주도적 능력",        level:'warn',   title:"주도성 점검 필요",      desc:"예상치 못한 문제 발생 시 보고 후 지시를 기다리는 성향이 확인됩니다. 독립적으로 판단하고 행동한 경험을 면접에서 확인하십시오."});
+    if((u['Q12']||'').toUpperCase()==='A') deepDive.push({cat:"문제 해결 능력",      level:'warn',   title:"데이터 사고 점검 필요", desc:"경험과 직관에 의존하는 경향이 관찰됩니다. 데이터를 활용해 문제를 분석한 실제 사례를 면접에서 요구하십시오."});
+    if((u['Q25']||'').toUpperCase()==='A') deepDive.push({cat:"목표 달성 능력",      level:'warn',   title:"목표 완수 의지 점검",   desc:"상황 변화 시 목표를 유연하게 조정하는 경향이 감지됩니다. 난관에서도 목표를 완수한 경험을 면접에서 검증하십시오."});
+    if((u['Q34']||'').toUpperCase()==='A') deepDive.push({cat:"소속 내 영향력",      level:'warn',   title:"영향력 발휘 점검 필요", desc:"팀 방향과 충돌 시 설득보다 순응을 선택하는 경향이 보입니다. 소신 있게 의견을 관철한 경험을 면접에서 확인하십시오."});
+    if((u['Q45']||'').toUpperCase()==='B') deepDive.push({cat:"의사소통 능력",       level:'warn',   title:"설득력 점검 필요",      desc:"경청에 집중하는 반면 논리적 설득 역량이 상대적으로 약할 수 있습니다. 이해관계자를 설득한 경험을 확인하십시오."});
+    if((u['Q56']||'').toUpperCase()==='A') deepDive.push({cat:"조직문화 형성 능력",  level:'danger', title:"원칙 준수 점검 필요",   desc:"압박 상황에서 절차를 생략하는 경향이 감지됩니다. 투명성과 원칙 준수를 우선한 경험을 반드시 검증하십시오."});
+
+    // 신뢰도
+    const mirrorPairs=[
+        [1,61],[3,62],[4,74],[12,63],[18,64],[13,75],
+        [23,65],[25,66],[22,76],[31,67],[32,68],[33,77],
+        [42,69],[41,70],[45,78],[51,71],[55,72],[60,73],[58,79]
+    ];
+    let relScore=0;
+    for(const [q1,q2] of mirrorPairs) if(u['Q'+q1]&&u['Q'+q2]&&u['Q'+q1]===u['Q'+q2]) relScore++;
+    const fakingGood=(u['Q80']&&String(u['Q80']).toUpperCase()==='B')||(u['Q100_Best']==1);
+
+    // 행동 성향
+    let profile={};
+    if(p2Scores["조직문화 형성 능력"]>55){
+        if(p2Scores["주도적 능력"]>60||p2Scores["목표 달성 능력"]>60)
+            profile={title:"실행 주도형",desc:"목표를 높게 설정하고 주도적으로 밀어붙여 가시적인 성과를 만들어내는 유형입니다. 자율성이 보장된 환경에서 최고의 역량을 발휘합니다.",pros:"강한 실행력, 도전적 목표 몰입",cons:"성과 우선으로 절차 무시 가능"};
+        else
+            profile={title:"관계 조율형",desc:"팀 내 갈등을 사전에 방지하고 다양한 의견을 유연하게 조율하는 소통 능력이 뛰어난 유형입니다. 협업과 관계 형성이 중요한 현장에 강점을 발휘합니다.",pros:"뛰어난 조율·설득력, 팀 융화 기여",cons:"독자적 결단력 부족"};
+    } else {
+        if(p2Scores["문제 해결 능력"]>60||p2Scores["소속 내 영향력"]>60)
+            profile={title:"분석 신중형",desc:"복잡한 문제를 구조화하고 데이터와 근거에 기반하여 신중하게 의사결정을 내리는 유형입니다. 기획·분석 중심의 업무에 적합합니다.",pros:"철저한 리스크 분석, 높은 완성도",cons:"의사결정 속도 느릴 수 있음"};
+        else
+            profile={title:"안정 실행형",desc:"조직의 원칙과 체계를 존중하며 맡은 임무를 성실하게 수행하는 유형입니다. 운영·지원 업무와 신뢰 기반의 대민 서비스 현장에 적합합니다.",pros:"꼼꼼한 업무 처리, 원칙 준수",cons:"돌발 상황 대처 취약"};
+    }
+
+    return {scores:stats,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores};
+}
+
+// ── 렌더링 ────────────────────────────────
+function renderUI(u, allData) {
+    const ov=document.getElementById('loading-overlay');
+    ov.style.opacity=0; setTimeout(()=>ov.style.display='none',500);
+    const {scores,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores}=calcData(u);
+
+    // 공통
+    const userName=u['성명']||u['이름']||'---';
+    document.querySelectorAll('.u-name').forEach(el=>el.innerText=userName+'님 역량검사 결과');
+    document.querySelectorAll('.u-meta').forEach(el=>el.innerText=`생년월일: ${u['생년월일']||'-'} | 응시일시: ${(u['응시일시']||'').split('T')[0]}`);
+
+    const allScores=allData.map(x=>calcData(x).total).sort((a,b)=>b-a);
+    const rank=allScores.indexOf(total)+1;
+    const pct=Math.round(rank/allScores.length*100);
+    const avgScore=allScores.length?Math.round(allScores.reduce((a,b)=>a+b,0)/allScores.length):0;
+    const diff=total-avgScore;
+
+    document.getElementById('u-total').innerText=total;
+    document.getElementById('rank-pill').innerText=`전체 응시자 기준 상위 ${pct}%`;
+    document.getElementById('sil-pct').innerText=`상위 ${pct}%`;
+    document.getElementById('sil-score').innerText=total+'점';
+    document.getElementById('sil-avg-diff').innerHTML=`평균 대비 <strong style="color:var(--primary);">${diff>=0?'+':''}${diff}점</strong>`;
+    document.getElementById('hero-rank').innerHTML=`전체 평균 ${avgScore}점 &nbsp;|&nbsp; 본 지원자 ${total}점 &nbsp;|&nbsp; 평균 대비 <strong style="color:var(--primary);">${diff>=0?'+':''}${diff}점</strong>`;
+
+    // 실루엣
+    const targetY=200-(total/100*200);
+    const wg=document.getElementById('wave-group');
+    if(wg){wg.style.transition='transform 1.5s cubic-bezier(.2,.8,.2,1)';setTimeout(()=>wg.setAttribute('transform',`translate(0,${targetY})`),100);}
+
+    // 유형 배지
+    const scoreType=total>=81?'주도형 🚀':total>=61?'성장형 😊':total>=41?'잠재형 🤔':'보완형 🧐';
+    document.getElementById('badge-score-type').innerText=`${scoreType} ${total}점`;
+    document.getElementById('badge-behavior-type').innerText=profile.title||'—';
+
+    // 종합 의견
+    const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    const topCat=sorted[0][0], botCat=sorted[sorted.length-1][0];
+    const ht=document.getElementById('hero-text');
+    if(total>=90) ht.innerHTML=`<strong>${topCat}</strong> 역량이 가장 두드러집니다. 전반적인 역량 지표가 우수하며 굿네이버스 현장 업무에 즉각 기여할 수 있는 인재로 판단됩니다.`;
+    else if(total>=70) ht.innerHTML=`<strong>${topCat}</strong> 역량이 가장 두드러지며, <strong>${botCat}</strong> 역량은 추가 확인이 필요합니다. 조직 문화와 안정적으로 융화될 것으로 기대됩니다.`;
+    else if(total>=50) ht.innerHTML=`<strong>${topCat}</strong> 역량에서 잠재력이 확인되나, <strong>${botCat}</strong> 영역에서 리스크 요인이 관찰됩니다. 면접을 통해 실제 경험 사례를 구체적으로 검증하시기 바랍니다.`;
+    else ht.innerHTML=`<strong>${botCat}</strong>을 포함한 핵심 역량에서 조직 가치와의 충돌 가능성이 관찰됩니다. 심층 면접을 통한 추가 검증이 반드시 필요합니다.`;
+
+    // 행동 성향
+    document.getElementById('profile-title').innerText=profile.title;
+    document.getElementById('profile-desc').innerText=profile.desc;
+    document.getElementById('pp-grid').innerHTML=`
+        <div class="pp-box pp-pro"><strong>👍 기대 효과 (장점)</strong>${profile.pros}</div>
+        <div class="pp-box pp-con"><strong>👎 우려 사항 (단점)</strong>${profile.cons}</div>`;
+    let totalA=0,totalAns=0;
+    for(let i=1;i<=60;i++){const a=(u['Q'+i]||'').toUpperCase();if(a==='A')totalA++;if(a)totalAns++;}
+    const markerLeft=totalAns?Math.round((1-totalA/totalAns)*100):50;
+    document.getElementById('spectrum-marker').style.left=markerLeft+'%';
+
+    // 레이더
+    const labels=Object.keys(scores), vals=Object.values(scores);
+    const maxV=Math.max(...vals), minV=Math.min(...vals);
+    Chart.defaults.font.family="'Noto Sans KR'";
+    new Chart(document.getElementById('competencyChart').getContext('2d'),{
+        type:'radar',
+        data:{labels,datasets:[{data:vals,backgroundColor:'rgba(137,162,48,.2)',borderColor:'#89a230',borderWidth:2,pointBackgroundColor:'#2d3e1d',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:4}]},
+        options:{scales:{r:{min:0,max:100,pointLabels:{font:{size:10,weight:'700'},color:c=>vals[c.index]===maxV?'#e03131':vals[c.index]===minV?'#f08c00':'#2d3e1d',padding:8,callback:(lb,idx)=>[lb,vals[idx]+'점']},ticks:{display:false},grid:{color:'rgba(0,0,0,.06)'},angleLines:{color:'rgba(0,0,0,.07)'}}},plugins:{legend:{display:false}},maintainAspectRatio:false}
+    });
+
+    // 강점/약점
+    const swDescMap={
+        "주도적 능력":        {
+            s:"스스로 판단하고 먼저 실행하는 성향이 강하며, 불확실한 상황에서도 적극적으로 방향을 만들어 나가는 패턴이 일관되게 확인됨.",
+            w:"지시를 기다리거나 역할 범위 내에 머무르는 경향이 관찰됨. 지시 없이 독립적으로 문제를 정의하고 행동해 본 경험을 면접에서 구체적으로 확인하십시오."
+        },
+        "문제 해결 능력":     {
+            s:"데이터와 구조적 사고를 바탕으로 문제를 분석하는 패턴이 일관되게 나타나며, 복잡한 상황에서도 냉정하게 대안을 탐색하는 강점이 확인됨.",
+            w:"경험과 직관에 의존하는 경향이 관찰됨. 데이터를 활용해 문제를 분석하고 대안을 도출한 실제 사례를 면접에서 반드시 요구하십시오."
+        },
+        "목표 달성 능력":     {
+            s:"도전적인 목표를 설정하고 끝까지 완수하려는 의지가 강하며, 외부 인정보다 내재적 성취감에서 동기를 얻는 패턴이 확인됨.",
+            w:"가치관 수준과 실제 행동 간 갭이 관찰됨. 목표 압박 상황에서 실행 의지가 약해지는 패턴 — 난관 극복 경험을 면접에서 집중 검증하십시오."
+        },
+        "소속 내 영향력":     {
+            s:"팀 발전을 위해 소신 있게 의견을 내고 동료의 어려움에 적극적으로 개입하는 영향력 발휘 패턴이 일관되게 확인됨.",
+            w:"팀 화합을 위해 주장을 굽히는 경향이 강함. 다수 의견에 맞서 소신 있게 의견을 관철한 경험을 면접에서 확인하십시오."
+        },
+        "의사소통 능력":      {
+            s:"논리적 전달과 공감적 경청이 균형 잡혀 있으며, 갈등 상황에서도 원칙을 지키며 소통하는 패턴이 일관되게 확인됨.",
+            w:"설득보다 경청에 집중하는 경향이 강함. 이해관계자를 설득해 방향을 이끌어낸 경험을 면접에서 확인하십시오."
+        },
+        "조직문화 형성 능력": {
+            s:"조직의 원칙과 자율 사이에서 유연하게 적응하며, 팀 문화 조성에 긍정적으로 기여할 성향이 일관되게 나타남.",
+            w:"압박 상황에서 절차를 생략하는 경향이 감지됨. 속도보다 정확성·원칙 준수를 우선한 경험을 면접에서 반드시 검증하십시오."
+        }
+    };
+    const swHtml=(arr,type)=>arr.map(([k,v])=>`
+        <div class="sw-item">
+            <div class="sw-item-row">
+                <div class="sw-item-name">${k}</div>
+                <div class="sw-item-score">${v}</div>
+            </div>
+            <div class="sw-item-desc">${swDescMap[k]?.[type]||''}</div>
+        </div>`).join('');
+    document.getElementById('strength-list').innerHTML=swHtml(sorted.slice(0,2),'s');
+    document.getElementById('weakness-list').innerHTML=swHtml(sorted.slice(-2).reverse(),'w');
+
+    // 채용 추천 (가로 3분할)
+    const lowTrust=relScore<14;
+    const avgScore2=allData.length?Math.round(allData.map(x=>calcData(x).total).reduce((a,b)=>a+b,0)/allData.length):0;
+    const diffSign=total>=avgScore2?'+':'';
+    let recIcon,recLabel,recTitle,recGrounds,recCls;
+    if(total>=75&&!fakingGood&&relScore>=14){
+        recIcon='🟢';recLabel='STRONG RECOMMENDATION';recTitle='적극 추천';recCls='rec-a';
+        recGrounds=[{icon:'✔',color:'var(--primary)',text:`종합 ${total}점 (평균 대비 ${diffSign}${total-avgScore2}점)`},{icon:'✔',color:'var(--primary)',text:`${topCat} 우수 역량 확인`},{icon:'✔',color:'var(--primary)',text:'응답 신뢰도 양호'}];
+    } else if(total>=55&&!fakingGood){
+        recIcon='🟡';recLabel='CONDITIONAL RECOMMENDATION';recTitle='조건부 추천';recCls='rec-b';
+        recGrounds=[{icon:'✔',color:'var(--primary)',text:`종합 ${total}점 (평균 대비 ${diffSign}${total-avgScore2}점)`},{icon:'⚠',color:'var(--warn)',text:`${botCat} 면접 집중 확인 권장`},{icon:lowTrust?'⚠':'✔',color:lowTrust?'var(--warn)':'var(--primary)',text:`응답 신뢰도 ${lowTrust?'주의':'양호'}`}];
+    } else {
+        recIcon='🔴';recLabel='HOLD FOR REVIEW';recTitle='보류 권장';recCls='rec-c';
+        recGrounds=[{icon:'⚠',color:'var(--danger)',text:`종합 ${total}점 (평균 대비 ${diffSign}${total-avgScore2}점)`},{icon:'⚠',color:'var(--danger)',text:fakingGood?'Fake-Good 탐지됨':`신뢰도 불량 (${relScore}/19)`},{icon:'⚠',color:'var(--danger)',text:`${botCat} 핵심 역량 보완 필요`}];
+    }
+
+    // 신뢰도 status pill
+    const relV=relScore>=18?{dot:'green',text:'매우 신뢰'}:relScore>=14?{dot:'green',text:'양호'}:{dot:'yellow',text:'주의'};
+    const fgV=fakingGood?{dot:'red',text:'탐지됨'}:{dot:'green',text:'탐지 없음'};
+
+    document.getElementById('rec-row').innerHTML=`
+        <div class="rec-card-mini ${recCls}">
+            <div class="rec-top">
+                <div class="rec-icon-sm">${recIcon}</div>
+                <div><div class="rec-label-sm">${recLabel}</div><div class="rec-title-sm">${recTitle}</div></div>
+            </div>
+            <div class="rec-grounds-sm">${recGrounds.map(g=>`<div class="rec-ground-sm"><span style="color:${g.color};flex-shrink:0;">${g.icon}</span>${g.text}</div>`).join('')}</div>
+        </div>
+        <div class="rec-card-mini" style="background:#f8f9fa;border:1px solid #e9ecef;">
+            <div style="font-size:10px;font-weight:800;color:var(--deep);margin-bottom:8px;">🔒 응답 검증 상태</div>
+            <div class="status-row" style="flex-direction:column;gap:6px;">
+                <div class="status-pill"><div class="status-dot ${relV.dot}"></div>응답 신뢰도 &nbsp;<strong>${relV.text}</strong></div>
+                <div class="status-pill"><div class="status-dot ${fgV.dot}"></div>응답 왜곡 &nbsp;<strong>${fgV.text}</strong></div>
+            </div>
+        </div>
+        <div class="rec-card-mini" style="background:#f8f9fa;border:1px solid #e9ecef;">
+            <div style="font-size:10px;font-weight:800;color:var(--deep);margin-bottom:8px;">📋 면접 확인 우선순위</div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                ${sorted.slice(-2).reverse().map(([k,v])=>`<div style="font-size:10.5px;color:#444;display:flex;justify-content:space-between;"><span>⚠ ${k}</span><span style="font-weight:700;color:var(--warn);">${v}점</span></div>`).join('')}
+                ${deepDive.length>0?`<div style="font-size:10px;color:#868e96;margin-top:4px;padding-top:4px;border-top:1px dashed #eee;">심층 분석 ${deepDive.length}개 항목 확인 필요</div>`:'<div style="font-size:10px;color:#2b8a3e;margin-top:4px;">특이 패턴 없음 ✔</div>'}
+            </div>
+        </div>`;
+
+    // ══ PAGE 2 ══
+    // 응답 패턴 테이블
+    const patternDesc={
+        "주도적 능력":        {a:"절차 준수",b:"자율 주도",textA:"지시 대기 경향. 자발적 행동 사례 면접 확인.",textB:"먼저 판단하고 실행하는 패턴이 일관되게 확인됨."},
+        "문제 해결 능력":     {a:"경험·직관",b:"데이터·분석",textA:"직관 의존 경향. 데이터 분석 사례 요구 필요.",textB:"데이터 기반 구조적 접근. 냉정한 대안 탐색 패턴."},
+        "목표 달성 능력":     {a:"안정·조화",b:"도전·몰입",textA:"압박 시 타협 선택 경향. 목표 완수 경험 집중 검증.",textB:"도전적 목표 설정과 끝까지 완수하는 의지가 확인됨."},
+        "소속 내 영향력":     {a:"팀 화합",b:"소신 발언",textA:"순응 경향. 소신 관철 경험 면접 확인 필요.",textB:"팀 발전을 위해 반대 의견도 내는 성향. 적극 개입 패턴."},
+        "의사소통 능력":      {a:"논리·격식",b:"공감·유연",textA:"논리 우선. 다양한 소통 스타일 적응 경험 확인.",textB:"경청과 공감 중심. 갈등 상황에서도 원칙 준수 패턴."},
+        "조직문화 형성 능력": {a:"규율·안정",b:"자율·혁신",textA:"기존 체계 존중. 압박 상황 절차 준수 경험 확인.",textB:"변화와 혁신 선호. 관행 개선 사례와 원칙 준수 패턴."}
+    };
+    let patHtml='';
+    for(const [cat,score] of sorted){
+        const cfg=MAP[cat], pd=patternDesc[cat]||{a:'A형',b:'B형',textA:'',textB:''};
+        let aCount=0,bCount=0;
+        for(let i=cfg.r[0];i<=cfg.r[1];i++){const a=(u['Q'+i]||'').toUpperCase();if(a==='A')aCount++;else if(a==='B')bCount++;}
+        const tot2=aCount+bCount||1, aPct=Math.round(aCount/tot2*100), bPct=100-aPct;
+        const isADom=aPct>=bPct;
+        let p1v=0,max1v=0,p2v=0,max2v=0;
+        for(let i=cfg.r[0];i<=cfg.r[1];i++){const a=(u['Q'+i]||'').toUpperCase();if(a==='A')p1v+=10;else if(a==='B')p1v+=7;max1v+=10;}
+        for(let qn of cfg.s){const b2=parseInt(u[`Q${qn}_Best`]||0),w2=parseInt(u[`Q${qn}_Worst`]||0);if(b2===1)p2v+=5;if(b2===3)p2v-=5;if(w2===2)p2v+=5;if(w2===4)p2v-=5;max2v+=10;}
+        const p1p=max1v?Math.round(p1v/max1v*100):0, off=cfg.s.length*5;
+        const p2p=max2v?Math.max(0,Math.min(100,Math.round((p2v+off)/(max2v+off)*100))):0;
+        const hasGap=(p1p-p2p)>=20;
+        const chipCls=score>=80?'high':score>=65?'mid':'low';
+        const desc=isADom?(hasGap?`⚠ A형(${pd.a}) ${aPct}% — 가치관↔행동 갭 감지. ${pd.textA}`:`A형(${pd.a}) ${aPct}% — ${pd.textA}`):`B형(${pd.b}) ${bPct}% — ${pd.textB}`;
+        patHtml+=`<tr>
+            <td class="cat-name">${cat}</td>
+            <td><span class="score-chip ${chipCls}">${score}점</span></td>
+            <td><div class="tendency-bar">
+                <div class="t-label">${pd.a}</div>
+                <div class="t-track"><div class="t-fill-a" style="width:${aPct}%"></div><div class="t-fill-b" style="width:${bPct}%"></div></div>
+                <div class="t-label-b">${pd.b}</div>
+            </div></td>
+            <td class="p2-desc${hasGap?' warn':''}">${desc}</td>
+        </tr>`;
+    }
+    document.getElementById('pattern-table-body').innerHTML=patHtml;
+
+    // 심층 분석 — 6개 역량 전부 표시 (PAGE2용, deep-dive-list 없으면 skip)
+    if(document.getElementById('deep-dive-list')){
+        // 이 블록은 PAGE3에서 처리하므로 스킵
+    }
+
+    // 면접관 체크리스트 빌더
+    const strongest2=sorted.slice(0,2).map(e=>e[0]);
+    const weakest2=sorted.slice(-2).reverse().map(e=>e[0]);
+
+    const buildCard=(cats,type)=>{
+        const isStr=type==='strength';
+        const headClass=isStr?'strength':'weakness';
+        const icon=isStr
+            ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#89a230" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`
+            : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#e03131" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+        const label=isStr?'우수 역량 강점 확인 질문':'보완 역량 심층 검증 질문';
+        let bodyHtml='';
+        cats.forEach(cat=>{
+            const catScore=scores[cat]||0;
+            const qs=INTERVIEW_DB[cat]||[];
+            bodyHtml+=`<div class="iv-cat">${cat} (${catScore}점)${!isStr&&catScore<65?' ⚠':''}</div>`;
+            qs.forEach(q=>{
+                const isPressure=q.type==='상황 압박';
+                const typeClass=isPressure?'press':'exp';
+                const typeLabel=isPressure?'상황 압박':(isStr?'강점 심화':'경험 검증');
+                bodyHtml+=`
+                    <div class="iv-q">
+                        <div class="iv-q-type ${typeClass}">${typeLabel}</div>
+                        <div class="iv-q-text">${q.text}</div>
+                    </div>`;
+            });
+        });
+        return `<div class="iv-card">
+            <div class="iv-card-head ${headClass}">${icon} ${label}</div>
+            <div class="iv-body">${bodyHtml}</div>
+        </div>`;
+    };
+
+    const ivList=document.getElementById('interview-guide-list');
+    if(ivList){
+        ivList.innerHTML=buildCard(strongest2,'strength')+buildCard(weakest2,'weakness');
+    }
+
+    // ══ PAGE 3: 갭 인디케이터 ══
+    const catKeys3=Object.keys(MAP), catNames3=Object.keys(scores);
+    let gapHtml='';
+    for(let ki=0;ki<catKeys3.length;ki++){
+        const k=catKeys3[ki],name=catNames3[ki],cfg=MAP[k];
+        let p1=0,max1=0,p2=0,max2=0;
+        for(let i=cfg.r[0];i<=cfg.r[1];i++){const a=(u['Q'+i]||'').toUpperCase();if(a==='A')p1+=10;else if(a==='B')p1+=7;max1+=10;}
+        for(let qn of cfg.s){const b=parseInt(u[`Q${qn}_Best`]||0),w=parseInt(u[`Q${qn}_Worst`]||0);if(b===1)p2+=5;if(b===3)p2-=5;if(w===2)p2+=5;if(w===4)p2-=5;max2+=10;}
+        const p1p=max1?Math.round(p1/max1*100):0;
+        const off=cfg.s.length*5;
+        const p2p=max2?Math.max(0,Math.min(100,Math.round((p2+off)/(max2+off)*100))):0;
+        const gap=p1p-p2p, isBad=gap>=20;
+        const p2cls=isBad?'mini-p2-bad':'mini-p2';
+        const nc=isBad?'bad':'ok';
+        const ar=gap>0?'▼':'▲';
+        gapHtml+=`<div class="gap-row">
+            <div class="gap-label">${name}</div>
+            <div class="gap-bars">
+                <div class="mini-track"><div class="mini-p1" style="width:${p1p}%"></div></div>
+                <div class="mini-track"><div class="${p2cls}" style="width:${p2p}%"></div></div>
+            </div>
+            <div class="gap-num ${nc}">${ar} ${Math.abs(gap)}${isBad?' ⚠':''}</div>
+        </div>`;
+    }
+    document.getElementById('gap-list').innerHTML=gapHtml;
+
+    // ══ PAGE 3: 심층분석 — 6개 역량 전부 표시 ══
+    const diveStatusMap={};
+    deepDive.forEach(d=>{ diveStatusMap[d.cat]={level:d.level,title:d.title,desc:d.desc}; });
+    const diveDefault={
+        "주도적 능력":        {level:'ok', title:'이상 없음', desc:'예상치 못한 상황에서 먼저 움직이는 성향이 확인됩니다. 자발적 행동 패턴이 일관되게 나타납니다.'},
+        "문제 해결 능력":     {level:'ok', title:'이상 없음', desc:'분석적 접근과 실행력이 균형 잡혀 있습니다. 특이한 위험 패턴이 발견되지 않았습니다.'},
+        "목표 달성 능력":     {level:'ok', title:'이상 없음', desc:'목표 설정과 완수 의지가 일관되게 나타납니다. 특이한 위험 패턴이 발견되지 않았습니다.'},
+        "소속 내 영향력":     {level:'ok', title:'이상 없음', desc:'팀 방향 충돌 시 설득을 시도하는 소신 있는 패턴이 확인됩니다.'},
+        "의사소통 능력":      {level:'ok', title:'이상 없음', desc:'경청과 설득이 균형 잡혀 있으며 갈등 상황에서도 원칙을 지키는 패턴이 나타납니다.'},
+        "조직문화 형성 능력": {level:'ok', title:'이상 없음', desc:'마감 압박 상황에서도 절차를 준수하는 원칙 중심의 패턴이 확인됩니다.'}
+    };
+    const allCats=Object.keys(MAP);
+    const diveHtml6=allCats.map(cat=>{
+        const st=diveStatusMap[cat]||diveDefault[cat];
+        const lv=st.level;
+        const icon=lv==='ok'?'✔':lv==='danger'?'🚨':'⚠';
+        return `<div class="dive-item ${lv}">
+            <div class="dive-head"><span class="dive-icon">${icon}</span><div class="dive-title">${cat} — ${st.title}</div></div>
+            <div class="dive-desc">${st.desc}</div>
+        </div>`;
+    }).join('');
+    document.getElementById('deep-dive-list').innerHTML=`<div class="dive-grid6">${diveHtml6}</div>`;
+
+    // ══ PAGE 3: 신뢰도 상세 ══
+    document.getElementById('rel-score').innerText=relScore;
+    const rv=document.getElementById('rel-verdict'), rm=document.getElementById('rel-msg');
+    if(relScore>=18){rv.innerText='매우 신뢰 (High)';rv.style.color='#a9e34b';rm.innerText='전체 문항 응답의 앞뒤 일관성이 매우 뛰어나 본 검사 결과의 모든 지표를 크게 신뢰할 수 있습니다.';}
+    else if(relScore>=14){rv.innerText='양호 수준 (Mid)';rv.style.color='#ffd43b';rm.innerText='대체로 결과값을 신뢰할 만하나 일부 문항에서 앞뒤 논리가 흔들린 흔적이 있습니다. 큰 틀의 성향 분석용으로 활용하십시오.';}
+    else{rv.innerText='신뢰 불량 (Low)';rv.style.color='#ffa8a8';rm.innerText='응답 일관성이 크게 결여되어 있어 본 검사 결과를 전적으로 신뢰하기 어렵습니다. 면접 질문을 통해 직접 확인해야 합니다.';}
+
+    const mirrorMap={
+        "주도적 능력":  [[1,61],[3,62],[4,74]],
+        "문제 해결":    [[12,63],[18,64],[13,75]],
+        "목표 달성":    [[23,65],[25,66],[22,76]],
+        "소속 영향력":  [[31,67],[32,68],[33,77]],
+        "의사소통":     [[42,69],[41,70],[45,78]],
+        "조직문화":     [[51,71],[55,72],[60,73],[58,79]]
+    };
+    let mirrorHtml='';
+    for(const [cat,pairs] of Object.entries(mirrorMap)){
+        let match=0; pairs.forEach(([q1,q2])=>{if((u['Q'+q1]||'')===(u['Q'+q2]||'')&&u['Q'+q1])match++;});
+        const tot3=pairs.length, pct3=Math.round(match/tot3*100);
+        const cls3=pct3===100?'ok':pct3>=67?'warn':'bad';
+        mirrorHtml+=`<div class="mirror-row">
+            <div class="mirror-label">${cat}</div>
+            <div class="mirror-track"><div class="mirror-fill ${cls3}" style="width:${pct3}%"></div></div>
+            <div class="mirror-val ${cls3}">${match}/${tot3}</div>
+        </div>`;
+    }
+    document.getElementById('mirror-detail').innerHTML=mirrorHtml;
+
+    const fb=document.getElementById('fake-badge'), fm=document.getElementById('fake-msg');
+    if(fakingGood){fb.innerHTML='<span class="fake-badge bad">⚠ 탐지됨</span>';fm.innerText='Q80 B선택 — 면접 시 솔직한 응답 집중 검증 필요';}
+    else{fb.innerHTML='<span class="fake-badge ok">✔ 탐지되지 않음</span>';fm.innerText='Q80 정상 응답 확인';}
+}
+
+function savePdf(){
+    html2pdf().set({
+        margin:0, filename:'GNFit_리포트.pdf',
+        image:{type:'jpeg',quality:0.98},
+        html2canvas:{scale:2,useCORS:true},
+        jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+        pagebreak:{mode:['avoid-all','css','legacy']}
+    }).from(document.getElementById('report-wrap')).save();
+}
+
+window.addEventListener('load', loadAndFetch);
+</script>
+</body>
+</html>

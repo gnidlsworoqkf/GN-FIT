@@ -181,6 +181,144 @@
             text-align: center;
         }
 
+        /* ── 비밀번호 잠금 화면 ── */
+        #lock-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(145deg, #1a2a0a 0%, #2d4a10 40%, #89a230 100%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+        }
+        .lock-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 24px;
+            padding: 50px 44px 44px;
+            width: 360px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+            text-align: center;
+            animation: lockIn 0.5s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes lockIn {
+            from { opacity:0; transform: translateY(32px) scale(0.96); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
+        }
+        .lock-logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #89a230, #5a7a10);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(137,162,48,0.4);
+        }
+        .lock-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .lock-subtitle {
+            font-size: 13px;
+            color: #868e96;
+            margin-bottom: 28px;
+        }
+        .lock-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 18px;
+            letter-spacing: 6px;
+            text-align: center;
+            font-family: 'Noto Sans KR', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .lock-input:focus {
+            border-color: #89a230;
+            box-shadow: 0 0 0 4px rgba(137,162,48,0.15);
+        }
+        .lock-input.error {
+            border-color: #e03131;
+            animation: shake 0.35s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%,60% { transform: translateX(-6px); }
+            40%,80% { transform: translateX(6px); }
+        }
+        .lock-err {
+            color: #e03131;
+            font-size: 13px;
+            min-height: 20px;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+        .btn-unlock {
+            width: 100%;
+            padding: 14px;
+            margin-top: 18px;
+            background: linear-gradient(135deg, #89a230, #6b8a22);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 6px 18px rgba(137,162,48,0.35);
+        }
+        .btn-unlock:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(137,162,48,0.45);
+        }
+        .btn-unlock:active { transform: translateY(0); }
+        .lock-footer {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            margin-top: 28px;
+        }
+
+        /* ── 정렬/필터 드롭다운 ── */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background: #f8f9fa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2389a230'/%3E%3C/svg%3E") no-repeat right 10px center;
+            border: 1.5px solid #dee2e6;
+            border-radius: 8px;
+            padding: 7px 30px 7px 12px;
+            font-size: 13px;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #495057;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .filter-select:focus {
+            border-color: #89a230;
+            box-shadow: 0 0 0 3px rgba(137,162,48,0.15);
+        }
+        .filter-label {
+            font-size: 12px;
+            color: #adb5bd;
+            margin-right: -4px;
+        }
+
         /* Modal */
         #modal {
             display: none;
@@ -222,6 +360,23 @@
 </head>
 
 <body>
+
+    <!-- 비밀번호 잠금 화면 -->
+    <div id="lock-screen">
+        <div class="lock-card">
+            <div class="lock-logo">🔒</div>
+            <div class="lock-title">관리자 인증</div>
+            <div class="lock-subtitle">GN-Fit 관리자 시스템에 접근하려면<br>비밀번호를 입력하세요.</div>
+            <input type="password" class="lock-input" id="lock-input"
+                placeholder="••••"
+                maxlength="20"
+                onkeydown="if(event.key==='Enter') checkPassword()">
+            <div class="lock-err" id="lock-err"></div>
+            <button class="btn-unlock" onclick="checkPassword()">확인</button>
+        </div>
+        <div class="lock-footer">© Good Neighbors International · GN-Fit Admin</div>
+    </div>
+
     <header>
         <div style="display:flex; align-items:center; gap:15px;">
             <img src="gn_logo.jpg" alt="Logo" style="height: 40px;">
@@ -255,8 +410,35 @@
     </div>
 
     <div class="table-container">
-        <div class="action-bar">
-            <strong>지원자 목록</strong>
+        <div class="action-bar" style="flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <strong>지원자 목록</strong>
+                <div class="filter-bar">
+                    <span class="filter-label">정렬</span>
+                    <select class="filter-select" id="sel-sort" onchange="applyFilter()">
+                        <option value="score-desc">총점 높은순</option>
+                        <option value="score-asc">총점 낮은순</option>
+                        <option value="date-desc">응시일시 최신순</option>
+                        <option value="date-asc">응시일시 오래된순</option>
+                        <option value="name-asc">이름 가나다순</option>
+                    </select>
+                    <span class="filter-label">유형</span>
+                    <select class="filter-select" id="sel-type" onchange="applyFilter()">
+                        <option value="">전체</option>
+                        <option value="주도형">주도형만 보기</option>
+                        <option value="성장형">성장형만 보기</option>
+                        <option value="잠재형">잠재형만 보기</option>
+                        <option value="보완형">보완형만 보기</option>
+                    </select>
+                    <span class="filter-label">신뢰도</span>
+                    <select class="filter-select" id="sel-trust" onchange="applyFilter()">
+                        <option value="">전체</option>
+                        <option value="High">High만 보기</option>
+                        <option value="Mid">Mid만 보기</option>
+                        <option value="Low">Low만 보기</option>
+                    </select>
+                </div>
+            </div>
             <div class="btn-zip">
                 <button class="btn-csv" onclick="downloadCSV()">📊 명단 Excel 다운로드</button>
                 <button class="btn-bulk" id="btn-bulk" onclick="bulkDownload()">📄 선택 항목 PDF 일괄 저장</button>
@@ -269,7 +451,7 @@
                     <th>성명</th>
                     <th>연락처</th>
                     <th>총점</th>
-                    <th>유형</th>
+                    <th>종합 유형 (총점 기준)</th>
                     <th>신뢰도</th>
                     <th>응시일시</th>
                     <th>관리</th>
@@ -280,7 +462,7 @@
     </div>
 
     <!-- Hidden Iframe for Bulk Print -->
-    <iframe id="report-frame" src="report.html"
+    <iframe id="report-frame" src="report_v4.html"
         style="position:fixed; top:-9999px; width:794px; height:1123px; border:none;"></iframe>
 
     <div id="modal">
@@ -295,14 +477,32 @@
     </div>
 
     <script>
+        /* ── 비밀번호 잠금 ── */
+        function checkPassword() {
+            const input = document.getElementById('lock-input');
+            const errEl = document.getElementById('lock-err');
+            if (input.value === '1234') {
+                document.getElementById('lock-screen').style.display = 'none';
+            } else {
+                errEl.textContent = '비밀번호가 올바르지 않습니다.';
+                input.classList.add('error');
+                input.value = '';
+                setTimeout(() => input.classList.remove('error'), 400);
+                input.focus();
+            }
+        }
+
         // [FINAL API URL]
-        const API_URL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxi91tiy8bDjGcpYUvWLZdehfvuSMQteQEIYzH6FucJoAydGfEM23qdUpLpfT8doZyr/exec";
         let db = [], processedDB = [], stop = false;
 
         const CATS = {
-            "C1": { r: [1, 10], s: [81, 88] }, "C2": { r: [11, 20], s: [82, 87, 91, 98] },
-            "C3": { r: [21, 30], s: [84, 93] }, "C4": { r: [31, 40], s: [83, 90, 95, 97] },
-            "C5": { r: [41, 50], s: [86, 96, 100] }, "C6": { r: [51, 60], s: [85, 89, 94, 99] }
+            "C1": { r: [1,  10], s: [81, 88] },
+            "C2": { r: [11, 20], s: [82, 87, 91, 98] },
+            "C3": { r: [21, 30], s: [83, 90, 95, 97] },
+            "C4": { r: [31, 40], s: [84, 93] },
+            "C5": { r: [41, 50], s: [85, 89, 94, 99] },
+            "C6": { r: [51, 60], s: [86, 96, 100] }
         };
 
         function calc(u) {
@@ -355,14 +555,43 @@
             const avg = processedDB.length ? Math.round(processedDB.reduce((a, b) => a + b.stats.s, 0) / processedDB.length) : 0;
             document.getElementById('avg-score').innerText = avg + "점";
 
+            applyFilter();
+        }
+
+        function applyFilter() {
+            if (!processedDB.length) return;
+            const sortVal  = (document.getElementById('sel-sort')  || {}).value || 'score-desc';
+            const typeVal  = (document.getElementById('sel-type')  || {}).value || '';
+            const trustVal = (document.getElementById('sel-trust') || {}).value || '';
+
+            // 필터링
+            let list = processedDB.filter(p => {
+                if (typeVal  && p.stats.t !== typeVal)  return false;
+                if (trustVal && p.stats.r !== trustVal) return false;
+                return true;
+            });
+
+            // 정렬
+            list.sort((a, b) => {
+                if (sortVal === 'score-desc') return b.stats.s - a.stats.s;
+                if (sortVal === 'score-asc')  return a.stats.s - b.stats.s;
+                if (sortVal === 'date-desc')  return (b.응시일시 || '').localeCompare(a.응시일시 || '');
+                if (sortVal === 'date-asc')   return (a.응시일시 || '').localeCompare(b.응시일시 || '');
+                if (sortVal === 'name-asc')   return (a.성명 || '').localeCompare(b.성명 || '', 'ko');
+                return 0;
+            });
+
             const tb = document.getElementById('tbody'); tb.innerHTML = "";
-            processedDB.forEach((p, i) => {
+            list.forEach((p, i) => {
                 const tr = document.createElement('tr');
-                let tc = "#0ca678"; if (p.stats.t == "보완형") tc = "#adb5bd"; if (p.stats.t == "잠재형") tc = "#fab005";
-                let rc = "black"; if (p.stats.r == "Low") rc = "#e03131";
+                let tc = "#0ca678";
+                if (p.stats.t === "성장형") tc = "#89a230";
+                if (p.stats.t === "잠재형") tc = "#fab005";
+                if (p.stats.t === "보완형") tc = "#adb5bd";
+                let rc = "black"; if (p.stats.r === "Low") rc = "#e03131";
 
                 tr.innerHTML = `
-                    <td><input type="checkbox" class="chk" value="${i}" onchange="chk()"></td>
+                    <td><input type="checkbox" class="chk" value="${processedDB.indexOf(p)}" onchange="chk()"></td>
                     <td><b>${p.성명}</b></td>
                     <td>${p.휴대폰번호}</td>
                     <td><strong style="color:var(--primary); font-size:16px;">${p.stats.s}</strong></td>
@@ -375,7 +604,7 @@
             });
         }
 
-        function goReport(n, p) { window.open(`report.html?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}`, '_blank'); }
+        function goReport(n, p) { window.open(`report_v4.html?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}`, '_blank'); }
         function chk() { const n = document.querySelectorAll('.chk:checked').length; const b = document.getElementById('btn-bulk'); n > 0 ? b.classList.add('active') : b.classList.remove('active'); }
         function toggleAll(el) { document.querySelectorAll('.chk').forEach(c => c.checked = el.checked); chk(); }
 
