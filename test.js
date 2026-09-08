@@ -1,6 +1,6 @@
 // test.js - Final Full Version (No Omissions)
 // 수정사항: 화면 튕김 방지, 제출 버튼 디자인 통일, 100문항 전체 포함
-const scriptURL = "https://script.google.com/macros/s/AKfycbxfByKA4Cch3bbWJ3MwHPwjvuORpVVnPgYmuPR3wzXSi5ZPa2gO4AY3Hg0RMTVI1Ik/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbxi91tiy8bDjGcpYUvWLZdehfvuSMQteQEIYzH6FucJoAydGfEM23qdUpLpfT8doZyr/exec";
 
 // [THEME CONFIG]
 const SECTIONS = [
@@ -322,7 +322,7 @@ function submitTest() {
         "휴대폰번호": localStorage.getItem('applicantPhone'),
         "생년월일": localStorage.getItem('applicantBirthdate'),
         "정보동의여부": localStorage.getItem('applicantAgree'),
-        "타임스탬프": new Date().toLocaleString(),
+        "응시일시": new Date().toISOString(),
         "소요시간(초)": Math.floor((Date.now() - (parseInt(localStorage.getItem('gnFit_startTime')) || Date.now())) / 1000)
     };
     for (let i = 1; i <= 80; i++) formData[`Q${i}`] = userAnswers[i] || "";
