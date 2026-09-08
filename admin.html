@@ -525,7 +525,7 @@
             let t = "주도형"; if (s <= 40) t = "보완형"; else if (s <= 60) t = "잠재형"; else if (s <= 80) t = "성장형";
 
             let r = 0; for (let i = 1; i <= 20; i++) if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) r++;
-            return { s, t, r: r >= 18 ? "High" : (r >= 14 ? "Mid" : "Low") };
+            return { s, t, r: r >= 15 ? "High" : (r >= 10 ? "Mid" : "Low") };
         }
 
         // [Strictly use "성명"]

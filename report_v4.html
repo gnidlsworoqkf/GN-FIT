@@ -668,11 +668,11 @@ function renderUI(u, allData) {
     document.getElementById('weakness-list').innerHTML=swHtml(sorted.slice(-2).reverse(),'w');
 
     // 채용 추천 (가로 3분할)
-    const lowTrust=relScore<14;
+    const lowTrust=relScore<10;
     const avgScore2=allData.length?Math.round(allData.map(x=>calcData(x).total).reduce((a,b)=>a+b,0)/allData.length):0;
     const diffSign=total>=avgScore2?'+':'';
     let recIcon,recLabel,recTitle,recGrounds,recCls;
-    if(total>=75&&!fakingGood&&relScore>=14){
+    if(total>=75&&!fakingGood&&relScore>=10){
         recIcon='🟢';recLabel='STRONG RECOMMENDATION';recTitle='적극 추천';recCls='rec-a';
         recGrounds=[{icon:'✔',color:'var(--primary)',text:`종합 ${total}점 (평균 대비 ${diffSign}${total-avgScore2}점)`},{icon:'✔',color:'var(--primary)',text:`${topCat} 우수 역량 확인`},{icon:'✔',color:'var(--primary)',text:'응답 신뢰도 양호'}];
     } else if(total>=55&&!fakingGood){
@@ -684,7 +684,7 @@ function renderUI(u, allData) {
     }
 
     // 신뢰도 status pill
-    const relV=relScore>=18?{dot:'green',text:'매우 신뢰'}:relScore>=14?{dot:'green',text:'양호'}:{dot:'yellow',text:'주의'};
+    const relV=relScore>=15?{dot:'green',text:'매우 신뢰'}:relScore>=10?{dot:'green',text:'양호'}:{dot:'yellow',text:'주의'};
     const fgV=fakingGood?{dot:'red',text:'탐지됨'}:{dot:'green',text:'탐지 없음'};
 
     document.getElementById('rec-row').innerHTML=`
@@ -842,8 +842,8 @@ function renderUI(u, allData) {
     // ══ PAGE 3: 신뢰도 상세 ══
     document.getElementById('rel-score').innerText=relScore;
     const rv=document.getElementById('rel-verdict'), rm=document.getElementById('rel-msg');
-    if(relScore>=18){rv.innerText='매우 신뢰 (High)';rv.style.color='#a9e34b';rm.innerText='전체 문항 응답의 앞뒤 일관성이 매우 뛰어나 본 검사 결과의 모든 지표를 크게 신뢰할 수 있습니다.';}
-    else if(relScore>=14){rv.innerText='양호 수준 (Mid)';rv.style.color='#ffd43b';rm.innerText='대체로 결과값을 신뢰할 만하나 일부 문항에서 앞뒤 논리가 흔들린 흔적이 있습니다. 큰 틀의 성향 분석용으로 활용하십시오.';}
+    if(relScore>=15){rv.innerText='매우 신뢰 (High)';rv.style.color='#a9e34b';rm.innerText='전체 문항 응답의 앞뒤 일관성이 매우 뛰어나 본 검사 결과의 모든 지표를 크게 신뢰할 수 있습니다.';}
+    else if(relScore>=10){rv.innerText='양호 수준 (Mid)';rv.style.color='#ffd43b';rm.innerText='대체로 결과값을 신뢰할 만하나 일부 문항에서 앞뒤 논리가 흔들린 흔적이 있습니다. 큰 틀의 성향 분석용으로 활용하십시오.';}
     else{rv.innerText='신뢰 불량 (Low)';rv.style.color='#ffa8a8';rm.innerText='응답 일관성이 크게 결여되어 있어 본 검사 결과를 전적으로 신뢰하기 어렵습니다. 면접 질문을 통해 직접 확인해야 합니다.';}
 
     const mirrorMap={
