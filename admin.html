@@ -509,7 +509,11 @@
             let sum = 0;
             for (let k in CATS) {
                 let p1 = 0, max1 = 0, p2 = 0, max2 = 0;
-                for (let i = CATS[k].r[0]; i <= CATS[k].r[1]; i++) { if (u['Q' + i] == 'A') p1 += 10; max1 += 10; }
+                for (let i = CATS[k].r[0]; i <= CATS[k].r[1]; i++) {
+                    const ans = (u['Q' + i] || '').toString().toUpperCase();
+                    p1 += ans === 'A' ? 10 : ans === 'B' ? 7 : ans === 'C' ? 3 : 0;
+                    max1 += 10;
+                }
                 for (let q of CATS[k].s) {
                     const b = parseInt(u['Q' + q + '_Best'] || 0), w = parseInt(u['Q' + q + '_Worst'] || 0);
                     if (b == 1) p2 += 5; if (b == 3) p2 -= 5; if (w == 2) p2 += 5; if (w == 4) p2 -= 5;
