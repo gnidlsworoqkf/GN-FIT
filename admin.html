@@ -505,6 +505,19 @@
             "C6": { r: [51, 60], s: [86, 96, 100] }
         };
 
+        // 거울 문항 19쌍. rev:true는 선택지가 서로 반대로 배치되어 있어
+        // 같은 글자가 아니라 반대 글자를 골라야 일관된 응답으로 인정됨(straight-lining 방지).
+        // report_v4.html의 MIRROR_PAIRS와 동일해야 함.
+        const MIRROR_PAIRS = [
+            { q: 1,  m: 61, rev: false }, { q: 3,  m: 62, rev: false }, { q: 4,  m: 74, rev: true },
+            { q: 12, m: 63, rev: false }, { q: 18, m: 64, rev: true },  { q: 13, m: 75, rev: true },
+            { q: 23, m: 65, rev: false }, { q: 25, m: 66, rev: true },  { q: 22, m: 76, rev: true },
+            { q: 31, m: 67, rev: false }, { q: 32, m: 68, rev: true },  { q: 33, m: 77, rev: true },
+            { q: 42, m: 69, rev: false }, { q: 41, m: 70, rev: false }, { q: 45, m: 78, rev: true },
+            { q: 51, m: 71, rev: false }, { q: 55, m: 72, rev: true },  { q: 60, m: 73, rev: false },
+            { q: 58, m: 79, rev: true }
+        ];
+
         function calc(u) {
             let sum = 0;
             for (let k in CATS) {
@@ -524,7 +537,12 @@
             const s = Math.round(sum / 6);
             let t = "주도형"; if (s <= 40) t = "보완형"; else if (s <= 60) t = "잠재형"; else if (s <= 80) t = "성장형";
 
-            let r = 0; for (let i = 1; i <= 20; i++) if (u['Q' + i] && u['Q' + (60 + i)] && u['Q' + i] == u['Q' + (60 + i)]) r++;
+            let r = 0;
+            for (const p of MIRROR_PAIRS) {
+                const a = u['Q' + p.q], b = u['Q' + p.m];
+                if (!a || !b) continue;
+                if (p.rev ? (a !== b) : (a === b)) r++;
+            }
             return { s, t, r: r >= 15 ? "High" : (r >= 10 ? "Mid" : "Low") };
         }
 
