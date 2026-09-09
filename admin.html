@@ -452,6 +452,7 @@
                     <th>연락처</th>
                     <th>총점</th>
                     <th>종합 유형 (총점 기준)</th>
+                    <th>추천직무</th>
                     <th>신뢰도</th>
                     <th>응시일시</th>
                     <th>관리</th>
@@ -497,13 +498,31 @@
         let db = [], processedDB = [], stop = false;
 
         const CATS = {
-            "C1": { r: [1,  10], s: [81, 88] },
-            "C2": { r: [11, 20], s: [82, 87, 91, 98] },
-            "C3": { r: [21, 30], s: [83, 90, 95, 97] },
-            "C4": { r: [31, 40], s: [84, 93] },
-            "C5": { r: [41, 50], s: [85, 89, 94, 99] },
-            "C6": { r: [51, 60], s: [86, 96, 100] }
+            "주도적 능력":        { r: [1,  10], s: [81, 88] },
+            "문제 해결 능력":     { r: [11, 20], s: [82, 87, 91, 98] },
+            "목표 달성 능력":     { r: [21, 30], s: [83, 90, 95, 97] },
+            "소속 내 영향력":     { r: [31, 40], s: [84, 93] },
+            "의사소통 능력":      { r: [41, 50], s: [85, 89, 94, 99] },
+            "조직문화 형성 능력": { r: [51, 60], s: [86, 96, 100] }
         };
+
+        // 직무 적합도: report_v4.html의 JOB_FIT과 동일한 가중치 (역량가이드북 4개 핵심직무 기준).
+        const JOB_FIT_WEIGHTS = {
+            "국내사업": { "목표 달성 능력": 0.35, "문제 해결 능력": 0.30, "의사소통 능력": 0.35 },
+            "국제사업": { "목표 달성 능력": 0.35, "문제 해결 능력": 0.35, "소속 내 영향력": 0.30 },
+            "마케팅":   { "목표 달성 능력": 0.33, "주도적 능력": 0.34, "문제 해결 능력": 0.33 },
+            "회원관리": { "의사소통 능력": 0.35, "조직문화 형성 능력": 0.35, "문제 해결 능력": 0.30 }
+        };
+        function topJobFit(catScores) {
+            let best = null;
+            for (const [job, weights] of Object.entries(JOB_FIT_WEIGHTS)) {
+                let score = 0;
+                for (const [cat, w] of Object.entries(weights)) score += (catScores[cat] || 0) * w;
+                if (!best || score > best.score) best = { job, score };
+            }
+            best.score = Math.round(best.score);
+            return best;
+        }
 
         // 거울 문항 19쌍. rev:true는 선택지가 서로 반대로 배치되어 있어
         // 같은 글자가 아니라 반대 글자를 골라야 일관된 응답으로 인정됨(straight-lining 방지).
@@ -520,6 +539,7 @@
 
         function calc(u) {
             let sum = 0;
+            const catScores = {};
             for (let k in CATS) {
                 let p1 = 0, max1 = 0, p2 = 0, max2 = 0;
                 for (let i = CATS[k].r[0]; i <= CATS[k].r[1]; i++) {
@@ -532,7 +552,9 @@
                     if (b == 1) p2 += 5; if (b == 3) p2 -= 5; if (w == 2) p2 += 5; if (w == 4) p2 -= 5;
                     max2 += 10;
                 }
-                sum += Math.max(0, Math.round((p1 + p2) / (max1 + max2) * 100));
+                const catScore = Math.max(0, Math.round((p1 + p2) / (max1 + max2) * 100));
+                catScores[k] = catScore;
+                sum += catScore;
             }
             const s = Math.round(sum / 6);
             let t = "주도형"; if (s <= 40) t = "보완형"; else if (s <= 60) t = "잠재형"; else if (s <= 80) t = "성장형";
@@ -543,7 +565,8 @@
                 if (!a || !b) continue;
                 if (p.rev ? (a !== b) : (a === b)) r++;
             }
-            return { s, t, r: r >= 15 ? "High" : (r >= 10 ? "Mid" : "Low") };
+            const job = topJobFit(catScores);
+            return { s, t, r: r >= 15 ? "High" : (r >= 10 ? "Mid" : "Low"), job: job.job, jobScore: job.score };
         }
 
         // [Strictly use "성명"]
@@ -618,6 +641,7 @@
                     <td>${p.휴대폰번호}</td>
                     <td><strong style="color:var(--primary); font-size:16px;">${p.stats.s}</strong></td>
                     <td><span class="t-badge" style="background:${tc}">${p.stats.t}</span></td>
+                    <td>${p.stats.job} <span style="color:#adb5bd;font-size:11px;">(${p.stats.jobScore})</span></td>
                     <td style="color:${rc}; font-weight:700;">${p.stats.r}</td>
                     <td>${(p.응시일시 || '').split('T')[0]}</td>
                     <td><button class="btn-small" onclick="goReport('${p.성명}','${p.휴대폰번호}')">상세보기</button></td>
@@ -632,8 +656,8 @@
 
         function downloadCSV() {
             if (!processedDB.length) return;
-            let csv = "\uFEFF성명,휴대폰번호,생년월일,총점,유형,신뢰도,응시일시\n";
-            processedDB.forEach(p => csv += `${p.성명},${p.휴대폰번호},${p.생년월일},${p.stats.s},${p.stats.t},${p.stats.r},${p.응시일시}\n`);
+            let csv = "\uFEFF성명,휴대폰번호,생년월일,총점,유형,추천직무,신뢰도,응시일시\n";
+            processedDB.forEach(p => csv += `${p.성명},${p.휴대폰번호},${p.생년월일},${p.stats.s},${p.stats.t},${p.stats.job},${p.stats.r},${p.응시일시}\n`);
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `GN_Fit_명단.csv`;

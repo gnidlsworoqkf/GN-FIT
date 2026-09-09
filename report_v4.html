@@ -212,6 +212,20 @@ footer{font-size:10px;color:#adb5bd;text-align:center;margin-top:auto;padding-to
         .gap-num{font-size:11px;font-weight:700;width:46px;text-align:right;flex-shrink:0;}
         .gap-num.ok{color:#52a085;}
         .gap-num.bad{color:var(--danger);}
+
+        /* 직무 적합도 CSS */
+        .jobfit-row{border:1px solid #eee;border-radius:9px;padding:9px 12px;margin-bottom:7px;background:#fff;}
+        .jobfit-row.top{border-color:var(--primary);background:#f7faf0;}
+        .jobfit-top-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+        .jobfit-rank{font-size:10px;font-weight:800;color:#fff;background:#adb5bd;border-radius:99px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .jobfit-row.top .jobfit-rank{background:var(--primary);}
+        .jobfit-name{font-size:12.5px;font-weight:800;color:var(--deep);flex-shrink:0;width:74px;}
+        .jobfit-track{flex:1;height:8px;background:#f0f0f0;border-radius:99px;overflow:hidden;}
+        .jobfit-fill{height:100%;background:#c9d6ab;border-radius:99px;}
+        .jobfit-row.top .jobfit-fill{background:var(--primary);}
+        .jobfit-score{font-size:12px;font-weight:800;color:var(--deep);width:38px;text-align:right;flex-shrink:0;}
+        .jobfit-desc{font-size:10.5px;color:#666;line-height:1.5;padding-left:26px;}
+        .jobfit-desc b{color:var(--deep);}
 </style>
 </head>
 <body>
@@ -246,6 +260,7 @@ footer{font-size:10px;color:#adb5bd;text-align:center;margin-top:auto;padding-to
     <div class="opinion-badges">
       <span class="badge-score" id="badge-score-type">—</span>
       <span class="badge-type" id="badge-behavior-type">—</span>
+      <span class="badge-type" id="badge-job-fit">—</span>
     </div>
     <div class="opinion-text" id="hero-text">분석 중...</div>
     <div class="opinion-avg" id="hero-rank"></div>
@@ -351,7 +366,16 @@ footer{font-size:10px;color:#adb5bd;text-align:center;margin-top:auto;padding-to
     </table>
   </div>
 
-  <!-- ② 면접관 체크리스트 -->
+  <!-- ② 추천 직무 적합도 -->
+  <div style="margin-bottom:16px;">
+    <div class="sec-head">🎯 직무 적합도 추천
+      <span class="sec-note">— 굿네이버스 4개 핵심직무 역량가이드북 기준 매칭 점수</span>
+    </div>
+    <div id="jobfit-list"></div>
+    <div style="font-size:9.5px;color:#adb5bd;margin-top:4px;">※ 참고용 지표입니다. 본인 희망 직무 및 면접 결과와 함께 종합적으로 고려하십시오.</div>
+  </div>
+
+  <!-- ③ 면접관 체크리스트 -->
   <div>
     <div class="sec-head" style="margin-bottom:14px;">📋 면접관 체크리스트
       <span class="sec-note">— 우수 역량은 강점 확인용, 보완 역량은 심층 검증용 질문입니다</span>
@@ -476,6 +500,35 @@ function isMirrorMatch(u, p) {
     return p.rev ? (a !== b) : (a === b);
 }
 
+// 직무 적합도: 굿네이버스 「역량가이드북」의 4개 핵심직무 역량 정의를 기준으로
+// 기존 6개 역량 점수를 가중합하여 매칭한다 (전용 문항 없이 기존 점수 재활용).
+// weights의 각 항목은 [해당 직무의 실제 핵심역량명, 매칭한 6역량, 가중치] 순.
+const JOB_FIT = {
+    "국내사업": {
+        weights: { "목표 달성 능력":0.35, "문제 해결 능력":0.30, "의사소통 능력":0.35 },
+        desc: "지역사회 캠페인·모금 <b>사업기획및추진력</b>, 우선순위 변화에 대응하는 <b>체계적업무관리능력</b>, 지역 네트워크를 넓히는 <b>효과적커뮤니케이션능력</b>이 핵심입니다."
+    },
+    "국제사업": {
+        weights: { "목표 달성 능력":0.35, "문제 해결 능력":0.35, "소속 내 영향력":0.30 },
+        desc: "해외사업 제안과 성과지표 관리를 위한 <b>사업기획력·프로젝트관리능력</b>, 정책 변화를 이끄는 <b>영향력과설득력</b>이 핵심입니다."
+    },
+    "마케팅": {
+        weights: { "목표 달성 능력":0.33, "주도적 능력":0.34, "문제 해결 능력":0.33 },
+        desc: "후원자 여정을 기획하는 <b>통합적사고력·컨텐츠기획력</b>, 성과 데이터로 판단하는 <b>데이터기반의사결정능력</b>이 핵심입니다."
+    },
+    "회원관리": {
+        weights: { "의사소통 능력":0.35, "조직문화 형성 능력":0.35, "문제 해결 능력":0.30 },
+        desc: "회원 중심으로 생각하는 <b>서비스기획력</b>, 꼼꼼하고 안전한 <b>정확한업무처리능력</b>, 시스템을 다루는 <b>디지털활용능력</b>이 핵심입니다."
+    }
+};
+function calcJobFit(stats) {
+    return Object.entries(JOB_FIT).map(([job, cfg]) => {
+        let score = 0;
+        for (const [cat, w] of Object.entries(cfg.weights)) score += (stats[cat] || 0) * w;
+        return { job, score, desc: cfg.desc };
+    }).sort((a, b) => b.score - a.score).map(j => ({ ...j, score: Math.round(j.score) }));
+}
+
 // 역량별 2문항씩 (경험 검증 + 상황 압박)
 const INTERVIEW_DB = {
     "주도적 능력": [
@@ -587,14 +640,15 @@ function calcData(u) {
             profile={title:"안정 실행형",desc:"조직의 원칙과 체계를 존중하며 맡은 임무를 성실하게 수행하는 유형입니다. 운영·지원 업무와 신뢰 기반의 대민 서비스 현장에 적합합니다.",pros:"꼼꼼한 업무 처리, 원칙 준수",cons:"돌발 상황 대처 취약"};
     }
 
-    return {scores:stats,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores};
+    const jobFit = calcJobFit(stats);
+    return {scores:stats,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores,jobFit};
 }
 
 // ── 렌더링 ────────────────────────────────
 function renderUI(u, allData) {
     const ov=document.getElementById('loading-overlay');
     ov.style.opacity=0; setTimeout(()=>ov.style.display='none',500);
-    const {scores,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores}=calcData(u);
+    const {scores,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores,jobFit}=calcData(u);
 
     // 공통
     const userName=u['성명']||u['이름']||'---';
@@ -623,6 +677,7 @@ function renderUI(u, allData) {
     const scoreType=total>=81?'주도형 🚀':total>=61?'성장형 😊':total>=41?'잠재형 🤔':'보완형 🧐';
     document.getElementById('badge-score-type').innerText=`${scoreType} ${total}점`;
     document.getElementById('badge-behavior-type').innerText=profile.title||'—';
+    document.getElementById('badge-job-fit').innerText='🎯 추천직무: '+(jobFit[0]?.job||'—');
 
     // 종합 의견
     const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
@@ -772,6 +827,20 @@ function renderUI(u, allData) {
         </tr>`;
     }
     document.getElementById('pattern-table-body').innerHTML=patHtml;
+
+    // 직무 적합도 추천
+    const maxFit=Math.max(...jobFit.map(j=>j.score),1);
+    const jobfitHtml=jobFit.map((j,idx)=>`
+        <div class="jobfit-row${idx===0?' top':''}">
+            <div class="jobfit-top-row">
+                <div class="jobfit-rank">${idx+1}</div>
+                <div class="jobfit-name">${j.job}</div>
+                <div class="jobfit-track"><div class="jobfit-fill" style="width:${Math.round(j.score/maxFit*100)}%"></div></div>
+                <div class="jobfit-score">${j.score}점</div>
+            </div>
+            <div class="jobfit-desc">${j.desc}</div>
+        </div>`).join('');
+    document.getElementById('jobfit-list').innerHTML=jobfitHtml;
 
     // 심층 분석 — 6개 역량 전부 표시 (PAGE2용, deep-dive-list 없으면 skip)
     if(document.getElementById('deep-dive-list')){
