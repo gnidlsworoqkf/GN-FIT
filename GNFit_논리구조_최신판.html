@@ -52,12 +52,16 @@ tr:last-child td{border-bottom:none;}
 .band .blabel{font-weight:600;font-size:13px;margin-bottom:4px;}
 .band .bdesc{color:#555;font-size:11px;line-height:1.5;}
 .gap-note{background:#fff5f5;border-left:4px solid #e03131;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#7a0000;margin:8px 0;}
+.rev-note{background:#f3f0ff;border-left:4px solid #6b2fa0;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#4a2170;margin:8px 0;}
+.updated{background:#e8f5d0;border:1px solid #a8d060;border-radius:6px;padding:2px 10px;font-size:11px;font-weight:700;color:#3b6d11;display:inline-block;margin-left:8px;}
+.priority-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:99px;background:#89a230;color:#fff;font-size:11px;font-weight:800;margin-right:6px;flex-shrink:0;}
 </style>
 </head>
 <body>
 
 <h1>GN-Fit 역량검사 — 점수·유형·리포트 논리구조 (최신판)</h1>
-<div class="lead">100문항 응답이 어떻게 점수가 되고, 유형이 되고, 3페이지 리포트가 되는지 전체 흐름을 정리한 문서입니다.<br>
+<div class="lead">100문항 응답이 어떻게 점수·유형·직무추천이 되고, 3페이지 리포트가 되는지 전체 흐름을 정리한 문서입니다. <span class="updated">2026-09-09 업데이트</span><br>
+이번 업데이트: 거울문항 신뢰도 검사 개편(straight-lining 방지), PART2 정규화 공식 수정, 신뢰도 판정 기준 완화, <b>직무 적합도 추천 기능 신규 추가</b>.
 </div>
 
 <!-- ① 점수 계산 -->
@@ -74,6 +78,7 @@ tr:last-child td{border-bottom:none;}
     <div class="farr">→</div>
     <div class="fstep"><div class="ft">총점</div><div class="fs">6개 역량 점수<br>단순 평균<br>= 최종 총점</div></div>
   </div>
+  <div class="desc">admin.html의 총점과 report_v4.html의 총점은 동일한 공식(A=10/B=7 가중치)을 공유하도록 통일되어 있어, 같은 응시자라면 어디서 봐도 같은 총점이 나옵니다.</div>
 
   <div class="sub">역량별 문항 구성 (MAP 기준)</div>
   <table>
@@ -125,42 +130,73 @@ tr:last-child td{border-bottom:none;}
 
 <!-- ② 거울 문항 & 신뢰도 -->
 <div class="section">
-  <div class="sec-title">② 거울 문항과 신뢰도는 어떻게 계산되나 </div>
+  <div class="sec-title">② 거울 문항과 신뢰도는 어떻게 계산되나 <span class="updated">개편됨</span></div>
 
-  <div class="sub">거울 문항 구조 (Q61~Q79 + Q80)</div>
-  <div class="desc" style="margin-bottom:10px;">Q1~Q20의 같은 역량을 다른 표현으로 재질문한 문항입니다. 앞뒤 응답이 다르면 신뢰도 점수가 낮아집니다.</div>
+  <div class="sub">거울 문항 19쌍 — 왜 "역방향" 쌍이 생겼나</div>
+  <div class="desc" style="margin-bottom:10px;">
+    거울 문항은 Q1~Q60의 같은 역량을 다른 표현으로 재질문한 문항입니다. 기존에는 19쌍 전부 "같은 글자를 고르면 일치"였는데, 이 경우 <b>한쪽 버튼(예: 전부 B)만 계속 누르는 성의 없는 응답도 자동으로 전부 일치 처리</b>되어 신뢰도가 만점(19/19)으로 나오는 허점이 있었습니다.
+    이를 막기 위해 19쌍 중 10쌍을 <b>역방향(rev)</b> 쌍으로 재배치했습니다. 역방향 쌍은 두 문항의 선택지 순서가 서로 반대라서, 진짜 일관된 응답자는 <b>같은 글자가 아니라 반대 글자</b>를 골라야 "일치"로 인정됩니다.
+  </div>
 
   <table>
-    <tr><th>역량</th><th>원본 문항</th><th>거울 문항</th><th>쌍 수</th></tr>
-    <tr><td><span class="tag g">주도적 능력</span></td><td>Q1, Q3, Q4</td><td>Q61(↔Q1), Q62(↔Q3), Q74(↔Q4)</td><td>3쌍</td></tr>
-    <tr><td><span class="tag b">문제 해결 능력</span></td><td>Q12, Q18, Q13</td><td>Q63(↔Q12), Q64(↔Q18), Q75(↔Q13)</td><td>3쌍</td></tr>
-    <tr><td><span class="tag a">목표 달성 능력</span></td><td>Q23, Q25, Q22</td><td>Q65(↔Q23), Q66(↔Q25), Q76(↔Q22)</td><td>3쌍</td></tr>
-    <tr><td><span class="tag p">소속 내 영향력</span></td><td>Q31, Q32, Q33</td><td>Q67(↔Q31), Q68(↔Q32), Q77(↔Q33)</td><td>3쌍</td></tr>
-    <tr><td><span class="tag g">의사소통 능력</span></td><td>Q42, Q41, Q45</td><td>Q69(↔Q42), Q70(↔Q41), Q78(↔Q45)</td><td>3쌍</td></tr>
-    <tr><td><span class="tag b">조직문화 형성</span></td><td>Q51, Q55, Q60, Q58</td><td>Q71(↔Q51), Q72(↔Q55), Q73(↔Q60), Q79(↔Q58)</td><td>4쌍</td></tr>
-    <tr><td><span class="tag r">신뢰도 함정</span></td><td colspan="2">Q80 — B 선택("절대 실수 안 함") = Fake-Good 탐지</td><td>1문항</td></tr>
+    <tr><th>역량</th><th>원본 문항</th><th>거울 문항 (괄호 안이 원본)</th><th>쌍 수</th></tr>
+    <tr><td><span class="tag g">주도적 능력</span></td><td>Q1, Q3, Q4</td><td>Q61(↔Q1), Q62(↔Q3), <b class="r">Q74(↔Q4) [역방향]</b></td><td>3쌍 (역방향 1)</td></tr>
+    <tr><td><span class="tag b">문제 해결 능력</span></td><td>Q12, Q18, Q13</td><td>Q63(↔Q12), <b class="r">Q64(↔Q18) [역방향]</b>, <b class="r">Q75(↔Q13) [역방향]</b></td><td>3쌍 (역방향 2)</td></tr>
+    <tr><td><span class="tag a">목표 달성 능력</span></td><td>Q23, Q25, Q22</td><td>Q65(↔Q23), <b class="r">Q66(↔Q25) [역방향]</b>, <b class="r">Q76(↔Q22) [역방향]</b></td><td>3쌍 (역방향 2)</td></tr>
+    <tr><td><span class="tag p">소속 내 영향력</span></td><td>Q31, Q32, Q33</td><td>Q67(↔Q31), <b class="r">Q68(↔Q32) [역방향]</b>, <b class="r">Q77(↔Q33) [역방향]</b></td><td>3쌍 (역방향 2)</td></tr>
+    <tr><td><span class="tag g">의사소통 능력</span></td><td>Q42, Q41, Q45</td><td>Q69(↔Q42), Q70(↔Q41), <b class="r">Q78(↔Q45) [역방향]</b></td><td>3쌍 (역방향 1)</td></tr>
+    <tr><td><span class="tag b">조직문화 형성</span></td><td>Q51, Q55, Q60, Q58</td><td>Q71(↔Q51), <b class="r">Q72(↔Q55) [역방향]</b>, Q73(↔Q60), <b class="r">Q79(↔Q58) [역방향]</b></td><td>4쌍 (역방향 2)</td></tr>
+    <tr><td><span class="tag r">신뢰도 함정</span></td><td colspan="2">Q80 — B 선택("절대 실수 안 함") = Fake-Good 탐지 (거울쌍이 아닌 별도 문항)</td><td>1문항</td></tr>
   </table>
+
+  <div class="rev-note">
+    <b>역방향 쌍이 만들어진 방법:</b> Q64·Q66·Q68·Q72·Q74·Q76·Q77·Q79는 test.js에서 선택지(A/B) 텍스트 순서를 실제로 서로 바꿔 배치했습니다. Q13↔Q75, Q45↔Q78 두 쌍은 원래 문항 내용상 이미 반대 방향으로 작성되어 있던 것을 발견하여 그대로 역방향으로 지정했습니다.
+    <br><br>
+    <b>Q61~Q80은 총점 계산에 쓰이지 않는 순수 신뢰도 검증 전용 문항</b>이라서, 선택지 순서를 바꿔도 PART1 총점에는 전혀 영향이 없습니다.
+  </div>
 
   <div class="sub">신뢰도 계산 공식</div>
   <div class="formula">
-    현재 코드: Q1~Q20 각각과 Q61~Q80을 1:1 비교<br>
-    → Q1 == Q61이면 +1점, Q2 == Q62이면 +1점 ... Q20 == Q80이면 +1점<br>
-    → 최대 20점<br><br>
-    <b>판정 기준:</b><br>
-    18점 이상 → 매우 신뢰 (High) — 초록<br>
-    14~17점  → 양호 수준 (Mid)  — 노랑<br>
-    13점 이하 → 신뢰 불량 (Low)  — 빨강
+    각 쌍(q, m, rev)에 대해:<br>
+    &nbsp;&nbsp;rev = false (정방향, 9쌍) → Q[q] === Q[m] 이면 +1점<br>
+    &nbsp;&nbsp;rev = true &nbsp;(역방향, 10쌍) → Q[q] !== Q[m] 이면 +1점<br>
+    → 최대 19점<br><br>
+    <b>판정 기준 (완화됨):</b><br>
+    15점 이상 → 매우 신뢰 (High) — 초록<br>
+    10~14점  → 양호 수준 (Mid)  — 노랑<br>
+    9점 이하 → 신뢰 불량 (Low)  — 빨강
   </div>
+  <div class="desc">기존 기준(18/14)이 지나치게 엄격하다는 피드백에 따라 15/10으로 완화했습니다. admin.html과 report_v4.html이 완전히 동일한 19쌍·기준으로 계산하도록 통일되어 있습니다.</div>
 
-  <div class="sub">역량별 거울 문항 일치율 (PAGE 3 신규 표시) </div>
-  <div class="desc">report PAGE 3에서 역량별로 거울 문항 일치율을 막대로 시각화합니다. 100% = 모두 일치 / 67% 미만 = 주의 / 50% 미만 = 경고(빨강)</div>
+  <div class="sub">역량별 거울 문항 일치율 (report PAGE 3)</div>
+  <div class="desc">report PAGE 3에서 역량별로 거울 문항 일치율을 막대로 시각화합니다. 100% = 모두 일치 / 67% 미만 = 주의 / 50% 미만 = 경고(빨강). 역방향 쌍이 포함된 역량도 동일한 rev 판정 규칙을 적용해 계산합니다.</div>
 </div>
 
-<!-- ③ 유형 분류 -->
+<!-- ③ PART2 정규화 공식 -->
 <div class="section">
-  <div class="sec-title">③ 유형은 몇 가지이고 어떻게 결정되나</div>
+  <div class="sec-title">③ PART2(실제행동) 점수는 어떻게 0~100%로 환산되나 <span class="updated">오류 수정됨</span></div>
 
-  <div class="sub">▶ admin.html — 4단계 총점 유형</div>
+  <div class="desc" style="margin-bottom:10px;">
+    PART2(Q81~100 최고/최저 선택)의 원점수는 문항 수에 따라 <b>-max2 ~ +max2</b> 범위를 가집니다. 이걸 0~100% 백분율로 정규화해야 "가치관(PART1) vs 실제행동(PART2) 비교", "조직 행동 성향 분류", "응답 패턴 테이블"에 쓸 수 있습니다.
+  </div>
+
+  <div class="formula">
+    <span class="r">기존 (오류):</span> p2Pct = (원점수 + 문항수×5) ÷ (최대점수 + 문항수×5) × 100<br>
+    &nbsp;&nbsp;→ 오프셋이 최대점수의 절반만 적용되어, <b>아무 신호 없는 중립 응답이 33% 부근으로 계산됨</b><br>
+    &nbsp;&nbsp;→ PART1은 정상적으로 0~100%를 쓰는데 PART2만 구조적으로 낮게 나와서, 거의 모든 응시자에게 "가치관·행동 갭"이 과장되게 표시되던 버그<br><br>
+    <b>수정 후:</b> p2Pct = (원점수 + 최대점수) ÷ (최대점수 × 2) × 100<br>
+    &nbsp;&nbsp;→ 중립 응답(원점수 0) = <b>정확히 50%</b><br>
+    &nbsp;&nbsp;→ 최고점(+최대점수) = 100%, 최저점(-최대점수) = 0%로 대칭적으로 정규화
+  </div>
+
+  <div class="desc">이 수정으로 "가치관 vs 실제행동" 갭 인디케이터가 실제로 차이가 큰 역량만 골라서 경고(⚠)를 표시하게 되었습니다 (수정 전에는 거의 모든 역량이 항상 경고로 표시됨). calcData(), PAGE2 응답 패턴 테이블, PAGE3 갭 인디케이터 세 곳 모두 동일한 공식을 사용합니다.</div>
+</div>
+
+<!-- ④ 유형 분류 -->
+<div class="section">
+  <div class="sec-title">④ 유형은 몇 가지이고 어떻게 결정되나</div>
+
+  <div class="sub">▶ 종합 유형 — 4단계 총점 기준 (admin.html + report PAGE1 배지)</div>
   <div class="score-band">
     <div class="band" style="background:#fde8e8;border:1px solid #f0b0b0;">
       <div class="bval" style="color:#a32d2d;">0~40점</div>
@@ -184,65 +220,165 @@ tr:last-child td{border-bottom:none;}
     </div>
   </div>
 
-  <div class="sub">▶ report PAGE 3 — 4가지 행동 성향 유형 (PART2 기준) </div>
+  <div class="sub">▶ 조직 행동 성향 — 4가지 유형 (report PAGE1, PART2 기준)</div>
   <div class="formula">
-    조건 1. 조직문화 P2점수 > 55%<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;└ 주도적 P2 > 60% OR 목표달성 P2 > 60% → <b>실행 주도형</b> (구: 효율추구 성과가)<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;└ 그 외 → <b>관계 조율형</b> (구: 관계중심 협력가)<br><br>
+    조건 1. 조직문화 P2점수(정규화 후) &gt; 55%<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 주도적 P2 &gt; 60% OR 목표달성 P2 &gt; 60% → <b>실행 주도형</b><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 그 외 → <b>관계 조율형</b><br><br>
     조건 2. 조직문화 P2점수 ≤ 55%<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;└ 문제해결 P2 > 60% OR 소속영향력 P2 > 60% → <b>분석 신중형</b> (구: 분석적 전략가)<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;└ 그 외 → <b>안정 실행형</b> (구: 안정적 절차 준수가)
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 문제해결 P2 &gt; 60% OR 소속영향력 P2 &gt; 60% → <b>분석 신중형</b><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└ 그 외 → <b>안정 실행형</b>
   </div>
-  <div class="warn-box"><b>중요:</b> admin의 4단계 유형(보완형/잠재형/성장형/주도형)은 <b>총점</b> 기준이고, report PAGE 3의 4가지 행동 성향 유형은 <b>PART2 SJT 점수</b> 기준입니다. 같은 총점이라도 다른 행동 유형이 나올 수 있습니다.</div>
+  <div class="warn-box"><b>중요:</b> 종합 유형(보완/잠재/성장/주도형)은 <b>PART1+PART2 혼합 총점</b> 기준이고, 조직 행동 성향(실행주도/관계조율/분석신중/안정실행)은 <b>PART2(SJT) 단독 점수</b> 기준입니다. 같은 총점이라도 다른 행동 성향이 나올 수 있습니다.</div>
 
-  <div class="sub">스펙트럼 바 위치 계산 </div>
+  <div class="sub">스펙트럼 바 위치 계산</div>
   <div class="formula">
-    Q1~Q60 중 A 응답 개수 / 전체 응답 개수 × 100 = A비율(%)<br>
+    Q1~Q60 중 A 응답 개수 ÷ 전체 응답 개수 × 100 = A비율(%)<br>
     마커 위치 = 100 - A비율<br><br>
     <b>예시:</b> A를 60%로 선택했다면 → 마커는 40% 위치 (왼쪽, 절차·안정형 쪽)
   </div>
 </div>
 
-<!-- ④ 리포트 3페이지 -->
+<!-- ⑤ 직무 적합도 추천 -->
 <div class="section">
-  <div class="sec-title">④ 리포트 3페이지 — 각각 무엇을 보여주나</div>
+  <div class="sec-title">⑤ 직무 적합도 추천은 어떻게 계산되나 <span class="updated">신규 추가</span></div>
 
-  <div class="sub"><span class="page-badge">PAGE 1</span> 종합 요약 </div>
-  <div class="box2">
-    <div class="bitem"><div class="bt">총점 + 상위 % 순위 + 평균 대비 차이</div><div class="bd">전체 응시자 점수 내림차순 정렬 → 퍼센타일 표시. 전체 평균 대비 ±점수도 함께 표시.</div></div>
-    <div class="bitem"><div class="bt">물결 실루엣 + 6각형 레이더 차트 🔄</div><div class="bd">왼쪽: 총점만큼 물이 차오르는 실루엣 + 상위% 텍스트. 오른쪽: 6각형에 역량명과 점수 라벨 직접 표기. 최고점=빨강, 최저점=주황.</div></div>
-    <div class="bitem"><div class="bt">종합 의견 멘트 🔄 개인화</div><div class="bd">총점 구간 4가지 × 강점/약점 역량 조합 → 지원자마다 다른 멘트 생성. 유형명도 멘트에 포함.</div></div>
-    <div class="bitem"><div class="bt">PART1 vs PART2 갭 인디케이터</div><div class="bd">6개 역량 각각의 가치관(P1)과 실제행동(P2) 수치를 두 줄 바로 표시. 갭 20점 이상 시 빨간 바 + ⚠ 경고.</div></div>
-    <div class="bitem"><div class="bt">우수/보완 역량 카드 🔄</div><div class="bd">상위 2개 강점, 하위 2개 약점. 점수만이 아닌 역량별 한 줄 분석 코멘트 자동 표시.</div></div>
+  <div class="desc" style="margin-bottom:10px;">
+    굿네이버스 「역량가이드북」에 정의된 4개 핵심직무(국내사업/국제사업/마케팅/회원관리)의 실제 핵심역량을 기준으로, <b>기존 6개 검사 역량 점수(종합 유형과 같은 PART1+PART2 혼합 점수)</b>를 직무별 가중치로 재조합합니다. 전용 문항을 새로 만들지 않고 기존 점수를 재활용하는 방식이라 응시 시간이 늘어나지 않습니다.
   </div>
 
-  <div class="sub"><span class="page-badge">PAGE 2</span> 심층 분석 + 면접 가이드 </div>
-  <div class="box2">
-    <div class="bitem"><div class="bt">역량별 응답 패턴 테이블</div><div class="bd">6개 역량 × A/B 비율 계산 → 그라디언트 바로 시각화. 갭 20점↑이면 빨간 경고 문구 자동 삽입.</div></div>
-    <div class="bitem"><div class="bt">심층 분석 — 6개 역량 전체 표시 🔄</div><div class="bd">Q9·Q12·Q25·Q34·Q45·Q56 응답 체크. 이상 없으면 ✔ 표시, 경고는 ⚠, 위험은 🚨. 6개 역량 전부 2열 그리드로 표시해 페이지 빈 느낌 없앰.</div></div>
-    <div class="bitem"><div class="bt">면접관 체크리스트 🔄</div><div class="bd">기존: 약점 역량 질문만. <b>변경: 강점 2개(강점 확인용) + 약점 2개(심층 검증용) 좌우 2열로 분리.</b> 각 역량당 경험 검증 + 상황 압박 2문항.</div></div>
-    <div class="bitem"><div class="bt">패턴 분석 설명 자동 생성</div><div class="bd">A/B 우세 방향에 따라 다른 분석 코멘트 자동 생성. 예: A형 60% → "절차 준수 성향 60% — 지시 기다리는 경향" 등.</div></div>
-  </div>
+  <table>
+    <tr><th>직무</th><th>가이드북 핵심역량 3가지</th><th>매칭한 검사 6역량 가중치</th></tr>
+    <tr>
+      <td><span class="tag g">국내사업</span></td>
+      <td>사업기획및추진력 · 체계적업무관리능력 · 효과적커뮤니케이션능력</td>
+      <td>목표달성능력 35% + 문제해결능력 30% + 의사소통능력 35%</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">국제사업</span></td>
+      <td>사업기획력 · 프로젝트관리능력 · 영향력과설득력</td>
+      <td>목표달성능력 35% + 문제해결능력 35% + 소속내영향력 30%</td>
+    </tr>
+    <tr>
+      <td><span class="tag a">마케팅</span></td>
+      <td>통합적사고력 · 컨텐츠기획력 · 데이터기반의사결정능력</td>
+      <td>목표달성능력 33% + 주도적능력 34% + 문제해결능력 33%</td>
+    </tr>
+    <tr>
+      <td><span class="tag p">회원관리</span></td>
+      <td>서비스기획력 · 정확한업무처리능력 · 디지털활용능력</td>
+      <td>의사소통능력 35% + 조직문화형성능력 35% + 문제해결능력 30%</td>
+    </tr>
+  </table>
 
-  <div class="sub"><span class="page-badge">PAGE 3</span> 행동 성향 + 신뢰도 + 채용 추천 </div>
-  <div class="box2">
-    <div class="bitem"><div class="bt">행동 성향 유형 + 스펙트럼 바</div><div class="bd">4가지 유형 중 하나 + 설명 + 장단점. 하단에 절차·안정형 ↔ 주도·혁신형 그라디언트 바에 마커 위치 표시.</div></div>
-    <div class="bitem"><div class="bt">Paradox 섹션 제거 🔄</div><div class="bd">기존 역설 경고 섹션 삭제. PAGE 1 갭 인디케이터, PAGE 2 심층 분석과 중복이어서 통합 제거.</div></div>
-    <div class="bitem"><div class="bt">신뢰도 — 역량별 일치율 상세 🔄</div><div class="bd">기존: 점수 숫자만. 변경: 왼쪽 점수 박스 + 오른쪽 역량별 거울 문항 일치율 막대. Fake-Good 배지도 신뢰도 섹션으로 통합.</div></div>
-    <div class="bitem"><div class="bt">종합 채용 추천 의견</div><div class="bd">총점·신뢰도·Fake-Good을 종합해서 3단계 자동 판정.<br>🟢 적극 추천: 총점 75↑ + Fake-Good 없음 + 신뢰도 14↑<br>🟡 조건부 추천: 총점 55↑ + Fake-Good 없음<br>🔴 보류 권장: 총점 55미만 OR Fake-Good 탐지 OR 신뢰도 13↓</div></div>
-  </div>
-
-  <div class="sub">종합 채용 추천 판정 로직 </div>
   <div class="formula">
-    🟢 <b>적극 추천:</b> 총점 75점 이상 + Fake-Good 없음 + 신뢰도 14점 이상<br>
-    🟡 <b>조건부 추천:</b> 총점 55점 이상 + Fake-Good 없음 (신뢰도 조건 없음)<br>
-    🔴 <b>보류 권장:</b> 총점 55점 미만 OR Fake-Good 탐지 OR 신뢰도 13점 이하
+    직무 점수 = Σ (해당 직무 가중치 × 매칭 역량의 총점) &nbsp;→&nbsp; 4개 직무 점수를 <b>원점수 기준으로 비교</b>해 순위 결정 → 순위 확정 후에만 반올림
+  </div>
+  <div class="warn-box">
+    <b>동점 처리 주의:</b> 4개 직무 점수가 반올림하면 같아 보여도 원점수는 미세하게 다를 수 있습니다. admin.html과 report_v4.html 모두 <b>반올림 전 원점수로 비교 → 승자 확정 후 반올림</b>하는 방식으로 통일해, 근소한 차이의 응시자에게 서로 다른 직무를 추천하던 버그를 해결했습니다.
+  </div>
+
+  <div class="sub">화면 표현 방식 — 점수 숫자는 표시하지 않음</div>
+  <div class="desc">
+    처음에는 "76점" 같은 숫자를 함께 보여줬으나, 총점(0~100점 만점, 예: 69점)과 나란히 보이면 같은 척도로 오해하기 쉽다는 문제가 있었습니다 (직무 적합도 점수는 6개 역량 중 3개만 가중합한 값이라 총점과 척도 자체가 다름). 그래서 <b>숫자를 없애고 순위(①②③④) + 막대 길이(상대 비교) + 1위 항목의 "가장 적합" 태그</b>로만 표현하도록 변경했습니다.
   </div>
 </div>
 
-<!-- ⑤ 전체 흐름 -->
+<!-- ⑥ 세 지표 비교와 인재선발 활용 로직 -->
 <div class="section">
-  <div class="sec-title">⑤ 전체 흐름 한눈에 보기 (최신판)</div>
+  <div class="sec-title">⑥ 종합유형 · 조직 행동 성향 · 직무 적합도 — 무엇이 다르고 어떻게 같이 쓰나</div>
+
+  <div class="desc" style="margin-bottom:10px;">
+    세 지표는 <b>같은 원본 답변에서 나오지만, 서로 다른 부분만 골라서 계산</b>하기 때문에 각자 다른 것을 말해줍니다. 대체재가 아니라 순서대로 걸러야 하는 필터입니다.
+  </div>
+
+  <table>
+    <tr><th>지표</th><th>계산 재료</th><th>계산 방식</th><th>무엇을 보는 지표인가</th></tr>
+    <tr>
+      <td><span class="tag g">종합유형</span><br><span style="font-size:11px;color:#888;">보완/잠재/성장/주도형</span></td>
+      <td>PART1(양자택일) + PART2(최고/최저) 전부 합산</td>
+      <td>6개 역량 각각 "PART1+PART2 혼합점수"를 구하고 6개 평균</td>
+      <td><b>전반적 역량 수준</b> — "이 사람이 전체적으로 얼마나 잘하는가"</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">조직 행동 성향</span><br><span style="font-size:11px;color:#888;">실행주도/관계조율/분석신중/안정실행</span></td>
+      <td>PART2(최고/최저, SJT)만 사용</td>
+      <td>조직문화형성 PART2점수&gt;55 → 주도적/목표달성 PART2점수&gt;60이면 실행주도형, 아니면 관계조율형 / 55 이하면 문제해결·소속영향력 PART2&gt;60이면 분석신중형, 아니면 안정실행형</td>
+      <td><b>실제 행동 스타일</b> — "위기·선택 상황에서 실제로 어떻게 움직이는 사람인가" (가치관 답변이 아니라 강제선택 문항 기반이라 꾸며내기 어려움)</td>
+    </tr>
+    <tr>
+      <td><span class="tag a">직무 적합도</span><br><span style="font-size:11px;color:#888;">국내/국제/마케팅/회원관리</span></td>
+      <td>종합유형과 같은 "PART1+PART2 혼합점수" 중 직무별로 관련 있는 3개 역량만 가중합</td>
+      <td>예: 마케팅 = 목표달성33%+주도적34%+문제해결33%</td>
+      <td><b>어느 직무에 더 맞는 프로필인가</b> — 전체 수준이 아니라 "역량의 조합·방향"을 봄</td>
+    </tr>
+  </table>
+
+  <div class="sub">실제 예시로 보면 (이소연님 데이터)</div>
+  <div class="desc" style="margin-bottom:8px;">
+    6역량(종합용): 주도적92 · 문제해결86 · 목표달성<b>51</b> · 소속영향력58 · 의사소통52 · 조직문화75 → 평균 <b>69점, 성장형</b><br>
+    PART2단독(행동성향용): 조직문화75(&gt;55) → 주도적75(&gt;60) → <b>실행 주도형</b><br>
+    직무적합도: 마케팅 = 51×0.33 + 92×0.34 + 86×0.33 = <b>1위(마케팅)</b>
+  </div>
+  <div class="gap-note">
+    이소연님은 <b>목표달성 능력(51점)이 가장 약한 영역</b>인데도 마케팅이 1위로 나옵니다. 직무 적합도는 "약점이 없는 사람"을 찾는 지표가 아니라 <b>"그 직무가 요구하는 조합에 가까운 사람"</b>을 찾는 지표라는 뜻입니다. 세 지표가 서로 다른 방향을 가리키는 게 정상이며, 오히려 그 차이 자체가 면접에서 짚어야 할 정보입니다.
+  </div>
+
+  <div class="sub">인재선발 활용 순서</div>
+  <div class="flow">
+    <div class="fstep">
+      <div class="ft"><span class="priority-num">1</span>신뢰도</div>
+      <div class="fs">19점 만점 중 신뢰도부터 확인. Low면 아래 세 지표를 사실상 신뢰하지 말고 재검사·면접에서 직접 검증</div>
+    </div>
+    <div class="farr">→</div>
+    <div class="fstep">
+      <div class="ft"><span class="priority-num">2</span>종합유형</div>
+      <div class="fs">1차 커트라인. "다음 단계로 넘길 최소 역량이 되는가"를 스크리닝하는 합격선 용도</div>
+    </div>
+    <div class="farr">→</div>
+    <div class="fstep">
+      <div class="ft"><span class="priority-num">3</span>직무 적합도</div>
+      <div class="fs">합격선을 넘은 사람들 중, 지금 뽑으려는 직무와 역량 조합이 가장 가까운 사람을 배치 우선순위로</div>
+    </div>
+    <div class="farr">→</div>
+    <div class="fstep">
+      <div class="ft"><span class="priority-num">4</span>행동 성향</div>
+      <div class="fs">강점/보완 역량 + 면접관 체크리스트와 함께, 조직문화·팀 궁합을 최종 면접에서 검증하는 포인트로 활용</div>
+    </div>
+  </div>
+  <div class="desc">즉 <b>종합유형=합격선, 직무적합도=배치 우선순위, 행동성향=면접에서 검증할 포인트</b>로 역할이 나뉩니다. 종합유형은 높은데 행동성향이 그 직무의 조직문화와 안 맞아 보이면, 그게 바로 면접에서 짚어야 할 리스크 신호입니다.</div>
+</div>
+
+<!-- ⑦ 리포트 3페이지 -->
+<div class="section">
+  <div class="sec-title">⑦ 리포트 3페이지 — 각각 무엇을 보여주나 <span class="updated">구성 변경됨</span></div>
+
+  <div class="sub"><span class="page-badge">PAGE 1</span> 종합 요약</div>
+  <div class="box2">
+    <div class="bitem"><div class="bt">종합 의견 배지 3종</div><div class="bd">총점유형 배지 + 조직 행동 성향 배지 + <b>🎯 추천직무 배지(신규)</b>. 총점 구간별 자동 생성 종합 의견 텍스트, 전체 평균 대비 ±점수 함께 표시.</div></div>
+    <div class="bitem"><div class="bt">조직 행동 성향 + 스펙트럼 바</div><div class="bd">4가지 유형 중 하나 + 설명 + 장단점. 하단에 절차·안정형 ↔ 주도·혁신형 그라디언트 바에 마커 위치 표시.</div></div>
+    <div class="bitem"><div class="bt">물결 실루엣 + 6각형 레이더 차트</div><div class="bd">왼쪽: 총점만큼 물이 차오르는 실루엣 + 상위% 텍스트. 오른쪽: 6각형에 역량명과 점수 라벨 직접 표기.</div></div>
+    <div class="bitem"><div class="bt">우수/보완 역량 카드 + 채용 추천</div><div class="bd">상위 2개 강점, 하위 2개 약점 + 역량별 한 줄 코멘트. 하단에 총점·신뢰도·Fake-Good 기반 3단계 채용 추천 카드.</div></div>
+  </div>
+
+  <div class="sub"><span class="page-badge">PAGE 2</span> 직무 적합도 + 응답 패턴 + 면접 가이드</div>
+  <div class="box2">
+    <div class="bitem"><div class="bt">🎯 직무 적합도 추천 (최상단, 신규)</div><div class="bd">4개 직무를 순위·막대로 표시, 가이드북 근거 문구 포함. 숫자 점수는 표시하지 않음.</div></div>
+    <div class="bitem"><div class="bt">역량별 응답 패턴 테이블</div><div class="bd">6개 역량 × A/B 비율 계산 → 그라디언트 바로 시각화. PART1↔PART2 갭 20점↑이면 빨간 경고 문구 자동 삽입.</div></div>
+    <div class="bitem"><div class="bt">면접관 체크리스트</div><div class="bd">강점 2개(강점 확인용) + 약점 2개(심층 검증용) 좌우 2열. 각 역량당 경험 검증 + 상황 압박 2문항.</div></div>
+  </div>
+
+  <div class="sub"><span class="page-badge">PAGE 3</span> 가치관·행동 비교 + 심층 분석 + 신뢰도</div>
+  <div class="box2">
+    <div class="bitem"><div class="bt">가치관(PART1) vs 실제행동(PART2) 비교</div><div class="bd">6개 역량 각각 P1%·P2%를 두 줄 막대로 표시. 갭 20점 이상만 빨간 바 + ⚠ 경고 (정규화 수정 후 과도 경고 해소).</div></div>
+    <div class="bitem"><div class="bt">핵심 문항 심층 분석</div><div class="bd">Q9·Q12·Q25·Q34·Q45·Q56 응답 체크. 이상 없으면 ✔, 경고는 ⚠, 위험은 🚨. 6개 역량 전부 2열 그리드로 표시.</div></div>
+    <div class="bitem"><div class="bt">응답 신뢰도 검증</div><div class="bd">신뢰도 점수(19점 만점) + 역량별 거울 문항 일치율 막대(역방향 쌍 반영) + Fake-Good 배지.</div></div>
+  </div>
+</div>
+
+<!-- ⑧ 전체 흐름 -->
+<div class="section">
+  <div class="sec-title">⑧ 전체 흐름 한눈에 보기</div>
   <table>
     <tr><th>단계</th><th>입력 데이터</th><th>처리 로직</th><th>출력 (어디서 보이나)</th></tr>
     <tr>
@@ -261,97 +397,122 @@ tr:last-child td{border-bottom:none;}
       <td><span class="tag g">3단계</span></td>
       <td>P1+P2 원점수</td>
       <td>(P1+P2) ÷ (P1max+P2max) × 100. 0~100 클램핑.</td>
-      <td>역량별 점수 6개</td>
+      <td>역량별 점수 6개 (종합유형·직무적합도 공통 재료)</td>
     </tr>
     <tr>
       <td><span class="tag g">4단계</span></td>
       <td>역량별 점수 6개</td>
       <td>단순 평균</td>
-      <td>총점 (0~100)</td>
+      <td>총점 (0~100) → admin·report 공통</td>
     </tr>
     <tr>
       <td><span class="tag a">5단계</span></td>
       <td>총점</td>
       <td>≤40 보완형 / ≤60 잠재형 / ≤80 성장형 / 81+ 주도형</td>
-      <td>admin 목록 유형 배지</td>
+      <td>종합 유형 배지</td>
     </tr>
     <tr>
       <td><span class="tag a">6단계</span></td>
-      <td>PART2 역량별 점수</td>
-      <td>조직문화 P2 기준 분기 → 실행주도형/관계조율형/분석신중형/안정실행형</td>
-      <td>report PAGE 3 — 행동 성향 유형</td>
+      <td>PART2 원점수</td>
+      <td>(원점수+최대) ÷ (최대×2) × 100 → 중립=50%로 정규화</td>
+      <td>p2Scores — 갭 인디케이터·행동성향·응답패턴의 공통 재료</td>
     </tr>
     <tr>
-      <td><span class="tag a">6-1단계</span> </td>
+      <td><span class="tag a">7단계</span></td>
+      <td>p2Scores (역량별)</td>
+      <td>조직문화 P2 기준 1차 분기 → 주도적/목표달성 또는 문제해결/소속영향력 P2 기준 2차 분기</td>
+      <td>report PAGE 1 — 행동 성향 유형</td>
+    </tr>
+    <tr>
+      <td><span class="tag a">7-1단계</span></td>
       <td>Q1~60 A 응답 비율</td>
       <td>A비율 계산 → 마커 위치 = 100 - A비율(%)</td>
-      <td>report PAGE 3 — 스펙트럼 바 마커</td>
+      <td>report PAGE 1 — 스펙트럼 바 마커</td>
     </tr>
     <tr>
-      <td><span class="tag b">7단계</span></td>
-      <td>Q1~Q20 vs Q61~Q80</td>
-      <td>1:1 비교. 일치 개수 카운트 → 역량별 일치율 계산</td>
-      <td>report PAGE 3 — 신뢰도 점수 + 역량별 막대</td>
-    </tr>
-    <tr>
-      <td><span class="tag b">8단계</span></td>
-      <td>Q9·Q12·Q25·Q34·Q45·Q56</td>
-      <td>A or B 선택 방향 체크 → ok/warn/danger 분류</td>
-      <td>report PAGE 2 — 심층 분석 6칸 그리드</td>
-    </tr>
-    <tr>
-      <td><span class="tag b">8-1단계</span> </td>
-      <td>역량별 A/B 비율</td>
-      <td>A비율 vs B비율 계산 + 갭 20점↑ 체크</td>
-      <td>report PAGE 2 — 응답 패턴 테이블</td>
+      <td><span class="tag p">8단계</span></td>
+      <td>역량별 점수 6개</td>
+      <td>직무별 3개 역량 가중합(국내/국제/마케팅/회원관리) → 원점수 비교 후 반올림</td>
+      <td>report PAGE 2 · admin 목록 — 🎯 직무 적합도 추천</td>
     </tr>
     <tr>
       <td><span class="tag b">9단계</span></td>
+      <td>19개 거울 문항 쌍 (10개 역방향)</td>
+      <td>정방향은 일치 시 +1, 역방향은 불일치 시 +1 → 합산 → 15/10 기준 판정</td>
+      <td>report PAGE 3 — 신뢰도 점수 + 역량별 막대</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">10단계</span></td>
+      <td>Q9·Q12·Q25·Q34·Q45·Q56</td>
+      <td>A or B 선택 방향 체크 → ok/warn/danger 분류</td>
+      <td>report PAGE 3 — 심층 분석 6칸 그리드</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">10-1단계</span></td>
+      <td>역량별 A/B 비율 + p2Scores</td>
+      <td>A비율 vs B비율 계산 + PART1↔PART2 갭 20점↑ 체크</td>
+      <td>report PAGE 2 — 응답 패턴 테이블</td>
+    </tr>
+    <tr>
+      <td><span class="tag b">11단계</span></td>
       <td>강점 2개 + 약점 2개 역량명</td>
       <td>INTERVIEW_DB에서 해당 역량 질문 조회</td>
       <td>report PAGE 2 — 면접 체크리스트 좌우 2열</td>
     </tr>
     <tr>
-      <td><span class="tag r">10단계</span> </td>
-      <td>총점 + 신뢰도 + Paradox + Fake-Good</td>
-      <td>조건 판정: 적극추천(80↑·High·무이상) / 조건부(60↑·Mid) / 보류(그 외)</td>
-      <td>report PAGE 3 — 종합 채용 추천 의견</td>
+      <td><span class="tag r">12단계</span></td>
+      <td>총점 + Fake-Good + 신뢰도</td>
+      <td>① 총점75↑·Fake-Good없음·신뢰도10↑ → 적극추천 / ② 총점55↑·Fake-Good없음 → 조건부추천 / ③ 그 외 → 보류 (순서대로 판정)</td>
+      <td>report PAGE 1 — 종합 채용 추천 의견</td>
     </tr>
     <tr>
-      <td><span class="tag r">11단계</span> </td>
-      <td>PART1↔PART2 역량별 갭</td>
-      <td>각 역량 P1% - P2% 계산. 20점↑ = 빨간 바 + ⚠</td>
-      <td>report PAGE 1 — 갭 인디케이터</td>
+      <td><span class="tag r">13단계</span></td>
+      <td>역량별 P1%·P2%</td>
+      <td>P1% - P2% 계산. 20점↑ = 빨간 바 + ⚠</td>
+      <td>report PAGE 3 — 가치관 vs 실제행동 갭 인디케이터</td>
     </tr>
   </table>
+
+  <div class="sub">종합 채용 추천 판정 로직 (순서대로 평가)</div>
+  <div class="formula">
+    🟢 <b>적극 추천:</b> 총점 75점 이상 AND Fake-Good 미탐지 AND 신뢰도 10점 이상<br>
+    🟡 <b>조건부 추천:</b> (위 조건 미충족 시) 총점 55점 이상 AND Fake-Good 미탐지<br>
+    🔴 <b>보류 권장:</b> 위 두 조건 모두 미충족 — 총점 부족, Fake-Good 탐지, 또는 신뢰도 부족
+  </div>
 </div>
 
-<!-- ⑥ 문항↔리포트 연계성 -->
+<!-- ⑨ 문항↔리포트 연계성 -->
 <div class="section">
-  <div class="sec-title">⑥ 검사 문항 → 리포트 연계 지도 </div>
+  <div class="sec-title">⑨ 검사 문항 → 리포트 연계 지도</div>
   <div class="desc" style="margin-bottom:12px;">각 문항이 리포트 어느 부분에 어떻게 연결되는지 추적합니다.</div>
 
   <div class="sub">PART1 문항 → 리포트 연계</div>
-  <div class="link-arrow"><span class="q">Q1~Q60</span><span class="arrow">→</span><span class="dest">PAGE1 레이더 차트 점수 + 갭 인디케이터 P1 바</span></div>
-  <div class="link-arrow"><span class="q">Q1~Q60 A비율</span><span class="arrow">→</span><span class="dest">PAGE2 응답 패턴 테이블 성향 방향 바 + PAGE3 스펙트럼 마커</span></div>
-  <div class="link-arrow"><span class="q">Q9</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 주도성 점검 트리거 (A 선택 시 경고)</span></div>
-  <div class="link-arrow"><span class="q">Q12</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 데이터 기반 사고 점검 트리거 (A 선택 시 경고)</span></div>
-  <div class="link-arrow"><span class="q">Q25</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 목표 완수 의지 점검 트리거 (A 선택 시 경고)</span></div>
-  <div class="link-arrow"><span class="q">Q34</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 소속 영향력 점검 트리거 (A 선택 시 경고)</span></div>
-  <div class="link-arrow"><span class="q">Q45</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 설득력 점검 트리거 (<span style="color:#e03131;font-weight:700;">B 선택 시</span> 경고 — 유일한 B 트리거)</span></div>
-  <div class="link-arrow"><span class="q">Q56</span><span class="arrow">→</span><span class="dest">PAGE2 심층 분석 — 원칙 준수 점검 트리거 (A 선택 시 경고)</span></div>
-  <div class="link-arrow"><span class="q">Q61~Q79</span><span class="arrow">→</span><span class="dest">PAGE3 신뢰도 역량별 일치율 막대 + 신뢰도 총점</span></div>
-  <div class="link-arrow"><span class="q">Q80</span><span class="arrow">→</span><span class="dest">PAGE3 신뢰도 — Fake-Good 배지 (B 선택 시 "탐지됨")</span></div>
+  <div class="link-arrow"><span class="q">Q1~Q60</span><span class="arrow">→</span><span class="dest">PAGE1 레이더 차트 점수 + PAGE3 갭 인디케이터 P1 바 + PAGE2 직무 적합도 원재료</span></div>
+  <div class="link-arrow"><span class="q">Q1~Q60 A비율</span><span class="arrow">→</span><span class="dest">PAGE2 응답 패턴 테이블 성향 방향 바 + PAGE1 스펙트럼 마커</span></div>
+  <div class="link-arrow"><span class="q">Q9</span><span class="arrow">→</span><span class="dest">PAGE3 심층 분석 — 주도성 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q12</span><span class="arrow">→</span><span class="dest">PAGE3 심층 분석 — 데이터 기반 사고 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q25</span><span class="arrow">→</span><span class="dest">PAGE3 심층 분석 — 목표 완수 의지 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q34</span><span class="arrow">→</span><span class="dest">PAGE3 심층 분석 — 소속 영향력 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q45</span><span class="arrow">→</span><span class="dest">PAGE3 심층 분석 — 설득력 점검 트리거 (<span style="color:#e03131;font-weight:700;">B 선택 시</span> 경고 — 유일한 B 트리거) + 거울문항 Q78과 역방향 쌍</span></div>
+  <div class="link-arrow"><span class="q">Q56</span><span class="arrow">→</span><span class="dest">PAGE3 심층 분석 — 원칙 준수 점검 트리거 (A 선택 시 경고)</span></div>
+  <div class="link-arrow"><span class="q">Q61~Q79 (19쌍, 10쌍 역방향)</span><span class="arrow">→</span><span class="dest">PAGE3 신뢰도 역량별 일치율 막대 + 신뢰도 총점(19점 만점)</span></div>
+  <div class="link-arrow"><span class="q">Q80</span><span class="arrow">→</span><span class="dest">PAGE3 신뢰도 — Fake-Good 배지 (B 선택 시 "탐지됨", 거울쌍 아님)</span></div>
 
   <div class="sub" style="margin-top:16px;">PART2 문항 → 리포트 연계</div>
-  <div class="link-arrow"><span class="q">Q81~Q100 Best/Worst</span><span class="arrow">→</span><span class="dest">PAGE1 레이더 차트 점수 + 갭 인디케이터 P2 바</span></div>
-  <div class="link-arrow"><span class="q">Q81, Q88</span><span class="arrow">→</span><span class="dest">주도적 능력 PART2 점수 → PAGE3 행동 성향 유형 분류 기준</span></div>
-  <div class="link-arrow"><span class="q">Q86, Q96, Q100</span><span class="arrow">→</span><span class="dest">조직문화 형성 PART2 점수 → PAGE3 행동 성향 유형 1차 분기 기준</span></div>
-  <div class="link-arrow"><span class="q">전체 PART2 점수</span><span class="arrow">→</span><span class="dest">PAGE2 응답 패턴 테이블 갭 계산 + PAGE3 채용 추천 판정 입력값</span></div>
+  <div class="link-arrow"><span class="q">Q81~Q100 Best/Worst</span><span class="arrow">→</span><span class="dest">PAGE1 레이더 차트 점수 + PAGE3 갭 인디케이터 P2 바 + PAGE2 직무 적합도 원재료</span></div>
+  <div class="link-arrow"><span class="q">Q81, Q88</span><span class="arrow">→</span><span class="dest">주도적 능력 PART2 점수 → PAGE1 행동 성향 유형 분류 기준</span></div>
+  <div class="link-arrow"><span class="q">Q86, Q96, Q100</span><span class="arrow">→</span><span class="dest">조직문화 형성 PART2 점수 → PAGE1 행동 성향 유형 1차 분기 기준</span></div>
+  <div class="link-arrow"><span class="q">전체 PART2 점수</span><span class="arrow">→</span><span class="dest">PAGE2 응답 패턴 테이블 갭 계산 + PAGE1 채용 추천 판정 입력값</span></div>
+
+  <div class="sub" style="margin-top:16px;">직무 적합도 → 리포트 연계</div>
+  <div class="link-arrow"><span class="q">목표달성·주도적·문제해결 (총점용 6역량)</span><span class="arrow">→</span><span class="dest">마케팅 적합도 (33%+34%+33% 가중합)</span></div>
+  <div class="link-arrow"><span class="q">목표달성·문제해결·의사소통</span><span class="arrow">→</span><span class="dest">국내사업 적합도 (35%+30%+35% 가중합)</span></div>
+  <div class="link-arrow"><span class="q">목표달성·문제해결·소속영향력</span><span class="arrow">→</span><span class="dest">국제사업 적합도 (35%+35%+30% 가중합)</span></div>
+  <div class="link-arrow"><span class="q">의사소통·조직문화형성·문제해결</span><span class="arrow">→</span><span class="dest">회원관리 적합도 (35%+35%+30% 가중합)</span></div>
 
   <div class="gap-note">
     <b>신뢰도 계산 방식:</b><br>
-    신뢰도 총점과 역량별 일치율 모두 mirrorMap 기반 19쌍 정확 매핑으로 계산됩니다. 두 계산 방식이 동일한 기준을 사용하므로 신뢰도 지표의 정확성이 확보되어 있습니다.
+    신뢰도 총점과 역량별 일치율 모두 동일한 19쌍 MIRROR_PAIRS(rev 플래그 포함) 기반으로 계산됩니다. admin.html과 report_v4.html이 완전히 같은 배열과 판정 규칙을 공유하므로, 두 화면에서 같은 응시자의 신뢰도가 항상 일치합니다.
   </div>
 </div>
 
