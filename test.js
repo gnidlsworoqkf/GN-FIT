@@ -130,7 +130,6 @@ let timerInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     startTimer();
-    injectCheatButtons();
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
     document.getElementById('prev-btn').addEventListener('click', goPrevSection);
     document.getElementById('next-btn').addEventListener('click', goNextSection);
@@ -138,30 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sBtn) { sBtn.addEventListener('click', submitTest); sBtn.classList.add('nav-btn', 'submit'); }
     renderSection(0);
 });
-
-function injectCheatButtons() {
-    const d = document.createElement('div');
-    d.style.position = 'fixed'; d.style.top = '10px'; d.style.left = '50%';
-    d.style.transform = 'translateX(-50%)'; d.style.zIndex = '9999';
-    d.style.display = 'flex'; d.style.gap = '10px'; d.style.opacity = '0.5';
-    d.onmouseenter = () => d.style.opacity = '1'; d.onmouseleave = () => d.style.opacity = '0.5';
-    const b = document.createElement('button');
-    b.innerText = "[TEST] Fill All";
-    b.style.padding = '5px 10px'; b.style.background = '#333'; b.style.color = 'white';
-    b.onclick = (e) => { e.preventDefault(); cheatFill('A'); };
-    d.appendChild(b); document.body.appendChild(d);
-}
-
-function cheatFill(c) {
-    if (!confirm(`Q1~Q80은 '${c}'로, Q81~Q100은 1번=Best / 4번=Worst로 자동 선택할까요?`)) return;
-    // 파트1: Q1~Q80 모두 A 선택
-    for (let i = 1; i <= 80; i++) userAnswers[i] = c;
-    // 파트2: Q81~Q100 각 문항의 1번=Best, 4번=Worst 선택
-    for (let i = 81; i <= 100; i++) {
-        userAnswers[i] = { best: 1, worst: 4 };
-    }
-    currentSectionIdx = 10; renderSection(currentSectionIdx);
-}
 
 function startTimer() {
     const d = document.getElementById('timer-display');
