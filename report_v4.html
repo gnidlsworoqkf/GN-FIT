@@ -500,6 +500,16 @@ function isMirrorMatch(u, p) {
     return p.rev ? (a !== b) : (a === b);
 }
 
+// PART1(양자택일) 응답 방향별 서술 — PART1은 채점하지 않고 성향(A/B 방향) 설명에만 사용
+const patternDesc={
+    "주도적 능력":        {a:"절차 준수",b:"자율 주도",textA:"지시 대기 경향. 자발적 행동 사례 면접 확인.",textB:"먼저 판단하고 실행하는 패턴이 일관되게 확인됨."},
+    "문제 해결 능력":     {a:"경험·직관",b:"데이터·분석",textA:"직관 의존 경향. 데이터 분석 사례 요구 필요.",textB:"데이터 기반 구조적 접근. 냉정한 대안 탐색 패턴."},
+    "목표 달성 능력":     {a:"안정·조화",b:"도전·몰입",textA:"압박 시 타협 선택 경향. 목표 완수 경험 집중 검증.",textB:"도전적 목표 설정과 끝까지 완수하는 의지가 확인됨."},
+    "소속 내 영향력":     {a:"팀 화합",b:"소신 발언",textA:"순응 경향. 소신 관철 경험 면접 확인 필요.",textB:"팀 발전을 위해 반대 의견도 내는 성향. 적극 개입 패턴."},
+    "의사소통 능력":      {a:"논리·격식",b:"공감·유연",textA:"논리 우선. 다양한 소통 스타일 적응 경험 확인.",textB:"경청과 공감 중심. 갈등 상황에서도 원칙 준수 패턴."},
+    "조직문화 형성 능력": {a:"규율·안정",b:"자율·혁신",textA:"기존 체계 존중. 압박 상황 절차 준수 경험 확인.",textB:"변화와 혁신 선호. 관행 개선 사례와 원칙 준수 패턴."}
+};
+
 // 직무 적합도: 굿네이버스 「역량가이드북」의 4개 핵심직무 역량 정의를 기준으로
 // 기존 6개 역량 점수를 가중합하여 매칭한다 (전용 문항 없이 기존 점수 재활용).
 // weights의 각 항목은 [해당 직무의 실제 핵심역량명, 매칭한 6역량, 가중치] 순.
@@ -591,25 +601,26 @@ async function loadAndFetch() {
 
 // ── 계산 함수 ─────────────────────────────
 function calcData(u) {
-    let stats={}, p2Scores={}, sum=0, paradoxDetails=[];
+    let stats={}, p2Scores={}, p1Profile={}, sum=0;
     for (let [k,cfg] of Object.entries(MAP)) {
-        let p1=0,max1=0,p2=0,max2=0;
-        let highestQ_P1=cfg.r[0],lowestQ_P2=cfg.s[0],highestAnsP1Val=-1,lowestAnsP2Val=99;
+        // PART1: 채점하지 않고 A/B 응답 비율(성향)만 집계
+        let aCount=0,bCount=0;
         for (let i=cfg.r[0];i<=cfg.r[1];i++) {
             const ans=(u['Q'+i]||'').toString().toUpperCase();
-            let val=ans==='A'?10:ans==='B'?7:ans==='C'?3:0;
-            p1+=val; if(val>highestAnsP1Val){highestAnsP1Val=val;highestQ_P1=i;} max1+=10;
+            if(ans==='A')aCount++; else if(ans==='B')bCount++;
         }
+        const totA=aCount+bCount||1, aPct=Math.round(aCount/totA*100), bPct=100-aPct;
+        p1Profile[k]={aCount,bCount,aPct,bPct};
+
+        // 총점·역량별 점수는 PART2(SJT)만으로 산출
+        let p2=0,max2=0;
         for (let qn of cfg.s) {
             const b=parseInt(u[`Q${qn}_Best`]||0), w=parseInt(u[`Q${qn}_Worst`]||0);
             let g=0; if(b===1)g+=5;if(b===3)g-=5;if(w===2)g+=5;if(w===4)g-=5;
-            p2+=g; if(g<lowestAnsP2Val){lowestAnsP2Val=g;lowestQ_P2=qn;} max2+=10;
+            p2+=g; max2+=10;
         }
-        const p1Pct=max1?(p1/max1*100):0;
         const p2Pct=max2?Math.max(0,Math.min(100,Math.round((p2+max2)/(max2*2)*100))):0;
-        if(p1Pct>=70&&p2Pct<=45) paradoxDetails.push({type:k,qNumHigh:highestQ_P1,qNumLow:lowestQ_P2});
-        const score=Math.max(0,Math.min(100,Math.round((p1+p2)/(max1+max2)*100)));
-        stats[k]=score; p2Scores[k]=p2Pct; sum+=score;
+        stats[k]=p2Pct; p2Scores[k]=p2Pct; sum+=p2Pct;
     }
     const total=Math.round(sum/Object.keys(MAP).length);
 
@@ -641,14 +652,14 @@ function calcData(u) {
     }
 
     const jobFit = calcJobFit(stats);
-    return {scores:stats,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores,jobFit};
+    return {scores:stats,total,p1Profile,deepDive,profile,relScore,fakingGood,p2Scores,jobFit};
 }
 
 // ── 렌더링 ────────────────────────────────
 function renderUI(u, allData) {
     const ov=document.getElementById('loading-overlay');
     ov.style.opacity=0; setTimeout(()=>ov.style.display='none',500);
-    const {scores,total,paradoxDetails,deepDive,profile,relScore,fakingGood,p2Scores,jobFit}=calcData(u);
+    const {scores,total,p1Profile,deepDive,profile,relScore,fakingGood,p2Scores,jobFit}=calcData(u);
 
     // 공통
     const userName=u['성명']||u['이름']||'---';
@@ -709,43 +720,22 @@ function renderUI(u, allData) {
         options:{scales:{r:{min:0,max:100,pointLabels:{font:{size:10,weight:'700'},color:c=>vals[c.index]===maxV?'#e03131':vals[c.index]===minV?'#f08c00':'#2d3e1d',padding:8,callback:(lb,idx)=>[lb,vals[idx]+'점']},ticks:{display:false},grid:{color:'rgba(0,0,0,.06)'},angleLines:{color:'rgba(0,0,0,.07)'}}},plugins:{legend:{display:false}},maintainAspectRatio:false}
     });
 
-    // 강점/약점
-    const swDescMap={
-        "주도적 능력":        {
-            s:"스스로 판단하고 먼저 실행하는 성향이 강하며, 불확실한 상황에서도 적극적으로 방향을 만들어 나가는 패턴이 일관되게 확인됨.",
-            w:"지시를 기다리거나 역할 범위 내에 머무르는 경향이 관찰됨. 지시 없이 독립적으로 문제를 정의하고 행동해 본 경험을 면접에서 구체적으로 확인하십시오."
-        },
-        "문제 해결 능력":     {
-            s:"데이터와 구조적 사고를 바탕으로 문제를 분석하는 패턴이 일관되게 나타나며, 복잡한 상황에서도 냉정하게 대안을 탐색하는 강점이 확인됨.",
-            w:"경험과 직관에 의존하는 경향이 관찰됨. 데이터를 활용해 문제를 분석하고 대안을 도출한 실제 사례를 면접에서 반드시 요구하십시오."
-        },
-        "목표 달성 능력":     {
-            s:"도전적인 목표를 설정하고 끝까지 완수하려는 의지가 강하며, 외부 인정보다 내재적 성취감에서 동기를 얻는 패턴이 확인됨.",
-            w:"가치관 수준과 실제 행동 간 갭이 관찰됨. 목표 압박 상황에서 실행 의지가 약해지는 패턴 — 난관 극복 경험을 면접에서 집중 검증하십시오."
-        },
-        "소속 내 영향력":     {
-            s:"팀 발전을 위해 소신 있게 의견을 내고 동료의 어려움에 적극적으로 개입하는 영향력 발휘 패턴이 일관되게 확인됨.",
-            w:"팀 화합을 위해 주장을 굽히는 경향이 강함. 다수 의견에 맞서 소신 있게 의견을 관철한 경험을 면접에서 확인하십시오."
-        },
-        "의사소통 능력":      {
-            s:"논리적 전달과 공감적 경청이 균형 잡혀 있으며, 갈등 상황에서도 원칙을 지키며 소통하는 패턴이 일관되게 확인됨.",
-            w:"설득보다 경청에 집중하는 경향이 강함. 이해관계자를 설득해 방향을 이끌어낸 경험을 면접에서 확인하십시오."
-        },
-        "조직문화 형성 능력": {
-            s:"조직의 원칙과 자율 사이에서 유연하게 적응하며, 팀 문화 조성에 긍정적으로 기여할 성향이 일관되게 나타남.",
-            w:"압박 상황에서 절차를 생략하는 경향이 감지됨. 속도보다 정확성·원칙 준수를 우선한 경험을 면접에서 반드시 검증하십시오."
-        }
-    };
-    const swHtml=(arr,type)=>arr.map(([k,v])=>`
+    // 강점/약점 — 순위는 PART2 점수 기준, 설명은 PART1 성향 방향(A/B) 기준으로 서술
+    const swHtml=(arr)=>arr.map(([k,v])=>{
+        const {aPct,bPct}=p1Profile[k]||{aPct:50,bPct:50};
+        const isADom=aPct>=bPct;
+        const pd=patternDesc[k]||{textA:'',textB:''};
+        return `
         <div class="sw-item">
             <div class="sw-item-row">
                 <div class="sw-item-name">${k}</div>
                 <div class="sw-item-score">${v}</div>
             </div>
-            <div class="sw-item-desc">${swDescMap[k]?.[type]||''}</div>
-        </div>`).join('');
-    document.getElementById('strength-list').innerHTML=swHtml(sorted.slice(0,2),'s');
-    document.getElementById('weakness-list').innerHTML=swHtml(sorted.slice(-2).reverse(),'w');
+            <div class="sw-item-desc">${isADom?pd.textA:pd.textB}</div>
+        </div>`;
+    }).join('');
+    document.getElementById('strength-list').innerHTML=swHtml(sorted.slice(0,2));
+    document.getElementById('weakness-list').innerHTML=swHtml(sorted.slice(-2).reverse());
 
     // 채용 추천 (가로 3분할)
     const lowTrust=relScore<10;
@@ -791,30 +781,17 @@ function renderUI(u, allData) {
         </div>`;
 
     // ══ PAGE 2 ══
-    // 응답 패턴 테이블
-    const patternDesc={
-        "주도적 능력":        {a:"절차 준수",b:"자율 주도",textA:"지시 대기 경향. 자발적 행동 사례 면접 확인.",textB:"먼저 판단하고 실행하는 패턴이 일관되게 확인됨."},
-        "문제 해결 능력":     {a:"경험·직관",b:"데이터·분석",textA:"직관 의존 경향. 데이터 분석 사례 요구 필요.",textB:"데이터 기반 구조적 접근. 냉정한 대안 탐색 패턴."},
-        "목표 달성 능력":     {a:"안정·조화",b:"도전·몰입",textA:"압박 시 타협 선택 경향. 목표 완수 경험 집중 검증.",textB:"도전적 목표 설정과 끝까지 완수하는 의지가 확인됨."},
-        "소속 내 영향력":     {a:"팀 화합",b:"소신 발언",textA:"순응 경향. 소신 관철 경험 면접 확인 필요.",textB:"팀 발전을 위해 반대 의견도 내는 성향. 적극 개입 패턴."},
-        "의사소통 능력":      {a:"논리·격식",b:"공감·유연",textA:"논리 우선. 다양한 소통 스타일 적응 경험 확인.",textB:"경청과 공감 중심. 갈등 상황에서도 원칙 준수 패턴."},
-        "조직문화 형성 능력": {a:"규율·안정",b:"자율·혁신",textA:"기존 체계 존중. 압박 상황 절차 준수 경험 확인.",textB:"변화와 혁신 선호. 관행 개선 사례와 원칙 준수 패턴."}
-    };
+    // 응답 패턴 테이블 — 종합점수는 PART2 기준, 성향 방향 바는 PART1 A/B 비율, 분석 텍스트는 둘의 조합
     let patHtml='';
     for(const [cat,score] of sorted){
-        const cfg=MAP[cat], pd=patternDesc[cat]||{a:'A형',b:'B형',textA:'',textB:''};
-        let aCount=0,bCount=0;
-        for(let i=cfg.r[0];i<=cfg.r[1];i++){const a=(u['Q'+i]||'').toUpperCase();if(a==='A')aCount++;else if(a==='B')bCount++;}
-        const tot2=aCount+bCount||1, aPct=Math.round(aCount/tot2*100), bPct=100-aPct;
+        const pd=patternDesc[cat]||{a:'A형',b:'B형',textA:'',textB:''};
+        const {aPct,bPct}=p1Profile[cat]||{aPct:50,bPct:50};
         const isADom=aPct>=bPct;
-        let p1v=0,max1v=0,p2v=0,max2v=0;
-        for(let i=cfg.r[0];i<=cfg.r[1];i++){const a=(u['Q'+i]||'').toUpperCase();if(a==='A')p1v+=10;else if(a==='B')p1v+=7;max1v+=10;}
-        for(let qn of cfg.s){const b2=parseInt(u[`Q${qn}_Best`]||0),w2=parseInt(u[`Q${qn}_Worst`]||0);if(b2===1)p2v+=5;if(b2===3)p2v-=5;if(w2===2)p2v+=5;if(w2===4)p2v-=5;max2v+=10;}
-        const p1p=max1v?Math.round(p1v/max1v*100):0;
-        const p2p=max2v?Math.max(0,Math.min(100,Math.round((p2v+max2v)/(max2v*2)*100))):0;
-        const hasGap=(p1p-p2p)>=20;
         const chipCls=score>=80?'high':score>=65?'mid':'low';
-        const desc=isADom?(hasGap?`⚠ A형(${pd.a}) ${aPct}% — 가치관↔행동 갭 감지. ${pd.textA}`:`A형(${pd.a}) ${aPct}% — ${pd.textA}`):`B형(${pd.b}) ${bPct}% — ${pd.textB}`;
+        const levelWord=score>=80?'매우 높음':score>=65?'높음':score>=45?'보통':'낮음';
+        const desc=isADom
+            ? `A형(${pd.a}) ${aPct}% — ${pd.textA} · 실제행동(PART2) 점수 ${levelWord}(${score}점)`
+            : `B형(${pd.b}) ${bPct}% — ${pd.textB} · 실제행동(PART2) 점수 ${levelWord}(${score}점)`;
         patHtml+=`<tr>
             <td class="cat-name">${cat}</td>
             <td><span class="score-chip ${chipCls}">${score}점</span></td>
@@ -823,7 +800,7 @@ function renderUI(u, allData) {
                 <div class="t-track"><div class="t-fill-a" style="width:${aPct}%"></div><div class="t-fill-b" style="width:${bPct}%"></div></div>
                 <div class="t-label-b">${pd.b}</div>
             </div></td>
-            <td class="p2-desc${hasGap?' warn':''}">${desc}</td>
+            <td class="p2-desc">${desc}</td>
         </tr>`;
     }
     document.getElementById('pattern-table-body').innerHTML=patHtml;
