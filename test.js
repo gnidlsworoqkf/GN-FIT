@@ -127,11 +127,12 @@ const allQuestions = [
 let currentSectionIdx = 0;
 let userAnswers = {};
 let timerInterval = null;
+let sectionTimerInterval = null;
+const SECTION_TIME_LIMIT = 60; // PART1 문항 페이지당 제한 시간(초)
 
 document.addEventListener('DOMContentLoaded', () => {
     startTimer();
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
-    document.getElementById('prev-btn').addEventListener('click', goPrevSection);
     document.getElementById('next-btn').addEventListener('click', goNextSection);
     const sBtn = document.getElementById('submit-btn');
     if (sBtn) { sBtn.addEventListener('click', submitTest); sBtn.classList.add('nav-btn', 'submit'); }
@@ -155,10 +156,54 @@ function renderSection(idx) {
     const c = document.getElementById('question-list');
     const cfg = SECTIONS[idx];
     if (cfg.themeVar) document.documentElement.style.setProperty('--theme-color', `var(${cfg.themeVar})`);
+    manageSectionTimer(idx);
     if (cfg.type === 'bridge') {
         renderBridge(cfg, c); updateNavButtons(idx, true); return;
     }
     renderQuestions(cfg, c); updateNavButtons(idx, false); checkSectionComplete();
+}
+
+// PART1 문항 페이지 전용 60초 카운트다운. 0초가 되면 완료 여부와 무관하게 강제로 다음 페이지로 이동.
+function isTimedSection(idx) {
+    const cfg = SECTIONS[idx];
+    return cfg.type === 'questions' && cfg.name === 'PART 1';
+}
+
+function manageSectionTimer(idx) {
+    clearInterval(sectionTimerInterval);
+    const el = document.getElementById('section-timer');
+    if (!isTimedSection(idx)) {
+        if (el) el.style.display = 'none';
+        return;
+    }
+    let remaining = SECTION_TIME_LIMIT;
+    const render = () => {
+        if (!el) return;
+        const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+        const sc = (remaining % 60).toString().padStart(2, '0');
+        el.style.display = 'inline';
+        el.textContent = `남은 시간 ${m}:${sc}`;
+        el.classList.toggle('warn', remaining <= 10);
+    };
+    render();
+    sectionTimerInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+            clearInterval(sectionTimerInterval);
+            remaining = 0;
+            render();
+            forceNextSection();
+            return;
+        }
+        render();
+    }, 1000);
+}
+
+function forceNextSection() {
+    if (currentSectionIdx < SECTIONS.length - 1) {
+        currentSectionIdx++;
+        renderSection(currentSectionIdx);
+    }
 }
 
 function renderBridge(cfg, c) {
@@ -256,10 +301,9 @@ function validateSectionSilently(idx) {
 
 // [FIXED] '제출하기' 버튼 디자인을 '이전/다음' 버튼과 100% 동일하게 수정
 function updateNavButtons(idx, isB) {
-    const p = document.getElementById('prev-btn'), n = document.getElementById('next-btn'), s = document.getElementById('submit-btn');
-    p.style.display = 'none'; n.style.display = 'none'; s.style.display = 'none';
+    const n = document.getElementById('next-btn'), s = document.getElementById('submit-btn');
+    n.style.display = 'none'; s.style.display = 'none';
     if (isB) return;
-    if (idx > 1) p.style.display = 'block';
     if (idx === 13) {
         s.style.display = 'block';
         // 이전/다음 버튼과 동일한 크기, 색상, 폰트 적용
@@ -281,7 +325,6 @@ function updateNavButtons(idx, isB) {
     else n.style.display = 'block';
 }
 
-function goPrevSection() { if (currentSectionIdx > 0) { currentSectionIdx--; renderSection(currentSectionIdx); } }
 function goNextSection() {
     if (SECTIONS[currentSectionIdx].type !== 'bridge' && !validateSectionSilently(currentSectionIdx)) { alert("모든 문항에 답변해주세요."); return; }
     if (currentSectionIdx < SECTIONS.length - 1) { currentSectionIdx++; renderSection(currentSectionIdx); }
@@ -292,6 +335,7 @@ function submitTest() {
     if (!confirm("제출하시겠습니까?")) return;
     const b = document.getElementById('submit-btn'); b.textContent = "전송 중..."; b.disabled = true;
     clearInterval(timerInterval);
+    clearInterval(sectionTimerInterval);
     const formData = {
         "성명": localStorage.getItem('applicantName'),
         "휴대폰번호": localStorage.getItem('applicantPhone'),
