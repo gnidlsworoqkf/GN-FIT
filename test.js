@@ -126,31 +126,16 @@ const allQuestions = [
 
 let currentSectionIdx = 0;
 let userAnswers = {};
-let timerInterval = null;
 let sectionTimerInterval = null;
 const SECTION_TIME_LIMIT = 60; // PART1 문항 페이지당 제한 시간(초)
 
 document.addEventListener('DOMContentLoaded', () => {
-    startTimer();
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
     document.getElementById('next-btn').addEventListener('click', goNextSection);
     const sBtn = document.getElementById('submit-btn');
     if (sBtn) { sBtn.addEventListener('click', submitTest); sBtn.classList.add('nav-btn', 'submit'); }
     renderSection(0);
 });
-
-function startTimer() {
-    const d = document.getElementById('timer-display');
-    const s = localStorage.getItem('gnFit_startTime');
-    let st = s ? parseInt(s) : Date.now();
-    if (!s) localStorage.setItem('gnFit_startTime', st.toString());
-    timerInterval = setInterval(() => {
-        const el = Math.floor((Date.now() - st) / 1000);
-        const m = Math.floor(el / 60).toString().padStart(2, '0');
-        const sc = (el % 60).toString().padStart(2, '0');
-        if (d) d.textContent = `소요 시간 ${m}:${sc}`;
-    }, 1000);
-}
 
 function renderSection(idx) {
     const c = document.getElementById('question-list');
@@ -334,15 +319,13 @@ function submitTest() {
     if (!validateSectionSilently(currentSectionIdx)) return;
     if (!confirm("제출하시겠습니까?")) return;
     const b = document.getElementById('submit-btn'); b.textContent = "전송 중..."; b.disabled = true;
-    clearInterval(timerInterval);
     clearInterval(sectionTimerInterval);
     const formData = {
         "성명": localStorage.getItem('applicantName'),
         "휴대폰번호": localStorage.getItem('applicantPhone'),
         "생년월일": localStorage.getItem('applicantBirthdate'),
         "정보동의여부": localStorage.getItem('applicantAgree'),
-        "응시일시": new Date().toISOString(),
-        "소요시간(초)": Math.floor((Date.now() - (parseInt(localStorage.getItem('gnFit_startTime')) || Date.now())) / 1000)
+        "응시일시": new Date().toISOString()
     };
     for (let i = 1; i <= 80; i++) formData[`Q${i}`] = userAnswers[i] || "";
     for (let i = 81; i <= 100; i++) {

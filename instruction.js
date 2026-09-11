@@ -25,9 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. 버튼 클릭 시 페이지 이동
     startBtn.addEventListener('click', () => {
-        // [New] 타이머 시작 (현재 시간 기록)
-        localStorage.setItem('gnFit_startTime', Date.now().toString());
-
         // 검사 페이지로 이동
         window.location.href = 'test.html';
     });
