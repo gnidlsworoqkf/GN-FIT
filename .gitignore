@@ -1,0 +1,36 @@
+# ─────────────────────────────────────────────
+# 대외비 / 원본 자료 : 절대 GitHub에 올리지 않는다
+# (정답키·배점 기준이 들어있어 공개 시 검사 무력화)
+# ─────────────────────────────────────────────
+# Apps Script 서버 코드 — 정답키(ANSWER_KEY)가 들어있다.
+# 실제로는 Apps Script 편집기 안에서 실행되므로 저장소에 없어도 사이트는 정상 동작한다.
+# (여기 올려두면 raw.githubusercontent.com으로 누구나 정답을 볼 수 있다)
+google_apps_script.js
+GNFit_배점표_대외비.html
+GN_역량검사_최신문항_전체정리.xlsx
+첨_부_사단법인_역량가이드북.pdf
+GNFit_논리구조_최신판.html
+*_대외비.*
+
+# ── 파이참(IDE) 개인 설정 ──
+.idea/
+
+# ── Claude Code 로컬 설정 ──
+.claude/
+CLAUDE.local.md
+
+# ── 파이썬 가상환경 / 캐시 ──
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# ── Node 관련 ──
+node_modules/
+package-lock.json
+
+# ── OneDrive / 윈도우 잡파일 ──
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
