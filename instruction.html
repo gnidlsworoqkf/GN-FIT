@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검사 안내 - 굿네이버스 GN-fit 역량검사</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <header class="header">
+                <div class="logo-container">
+                    <img src="logo.jpg" alt="굿네이버스 로고" class="logo">
+                </div>
+                <h1 class="title">굿네이버스 GN_fit 역량검사 안내</h1>
+                <p class="subtitle">사단법인 굿네이버스 인터내셔날</p>
+            </header>
+
+            <div class="content">
+                <p class="description-text">
+                    본 검사는 사단법인 굿네이버스 인터내셔날의 핵심 가치와 직무 역량에 대한 적합성을 확인하기 위한 검사입니다.<br><br>
+                    <strong>응시자님의 솔직하고 진솔한 답변이 굿네이버스의 미래를 만드는 소중한 자료가 됩니다.</strong>
+                </p>
+
+                <div class="guide-box">
+                    <span class="guide-title">응시 가이드</span>
+                    <div class="guide-item">
+                        <span class="guide-icon">💡</span>
+                        <span>정답은 없습니다. 평소 본인의 생각과 가장 일치하는 항목을 선택해 주세요.</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-icon">⏱️</span>
+                        <span>직관적으로 답변하세요. 한 문항에 너무 오래 고민하지 않는 것이 좋습니다.</span>
+                    </div>
+                    <span class="caution-text">⚠️ 주의사항: 검사 도중 브라우저를 종료하거나 새로고침하면 진행 데이터가 초기화될 수 있습니다.</span>
+                </div>
+
+                <div class="consent-section">
+                    <input type="checkbox" id="consent-check">
+                    <label for="consent-check" class="consent-label">본인은 상기 안내 사항을 숙지하였으며,<br>역량검사 응시 및 결과 활용에
+                        동의합니다.</label>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" id="start-btn" class="btn-primary" disabled>검사 시작하기</button>
+            </div>
+
+            <footer class="footer">
+                <p>Copyright &copy; Good Neighbors International. All rights reserved.</p>
+            </footer>
+        </div>
+    </div>
+    <script src="instruction.js"></script>
+</body>
+
+</html>

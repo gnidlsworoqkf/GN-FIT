@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GN-Fit 관리자 시스템</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #89a230;
+            --text: #343a40;
+            --bg: #f8f9fa;
+            --card: #fff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 40px;
+            color: var(--text);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .btn-refresh {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .s-icon {
+            width: 50px;
+            height: 50px;
+            background: #f1f3f5;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        .s-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 13px;
+            color: #868e96;
+        }
+
+        .s-info .val {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .table-container {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .btn-zip {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-csv {
+            background: #228be6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-bulk {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-bulk.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            font-size: 13px;
+            color: #adb5bd;
+            border-bottom: 2px solid #eee;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 15px;
+            font-size: 14px;
+            border-bottom: 1px solid #f8f9fa;
+            vertical-align: middle;
+        }
+
+        .btn-small {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-small:hover {
+            background: #f1f3f5;
+        }
+
+        .t-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            display: inline-block;
+            width: 60px;
+            text-align: center;
+        }
+
+        /* ── 비밀번호 잠금 화면 ── */
+        #lock-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(145deg, #1a2a0a 0%, #2d4a10 40%, #89a230 100%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+        }
+        .lock-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 24px;
+            padding: 50px 44px 44px;
+            width: 360px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+            text-align: center;
+            animation: lockIn 0.5s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes lockIn {
+            from { opacity:0; transform: translateY(32px) scale(0.96); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
+        }
+        .lock-logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #89a230, #5a7a10);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(137,162,48,0.4);
+        }
+        .lock-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .lock-subtitle {
+            font-size: 13px;
+            color: #868e96;
+            margin-bottom: 28px;
+        }
+        .lock-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 18px;
+            letter-spacing: 6px;
+            text-align: center;
+            font-family: 'Noto Sans KR', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .lock-input:focus {
+            border-color: #89a230;
+            box-shadow: 0 0 0 4px rgba(137,162,48,0.15);
+        }
+        .lock-input.error {
+            border-color: #e03131;
+            animation: shake 0.35s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%,60% { transform: translateX(-6px); }
+            40%,80% { transform: translateX(6px); }
+        }
+        .lock-err {
+            color: #e03131;
+            font-size: 13px;
+            min-height: 20px;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+        .btn-unlock {
+            width: 100%;
+            padding: 14px;
+            margin-top: 18px;
+            background: linear-gradient(135deg, #89a230, #6b8a22);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 6px 18px rgba(137,162,48,0.35);
+        }
+        .btn-unlock:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(137,162,48,0.45);
+        }
+        .btn-unlock:active { transform: translateY(0); }
+        .lock-footer {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            margin-top: 28px;
+        }
+
+        /* ── 정렬/필터 드롭다운 ── */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background: #f8f9fa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2389a230'/%3E%3C/svg%3E") no-repeat right 10px center;
+            border: 1.5px solid #dee2e6;
+            border-radius: 8px;
+            padding: 7px 30px 7px 12px;
+            font-size: 13px;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #495057;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .filter-select:focus {
+            border-color: #89a230;
+            box-shadow: 0 0 0 3px rgba(137,162,48,0.15);
+        }
+        .filter-label {
+            font-size: 12px;
+            color: #adb5bd;
+            margin-right: -4px;
+        }
+
+        /* Modal */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: white;
+            width: 300px;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .p-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .p-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 비밀번호 잠금 화면 -->
+    <div id="lock-screen">
+        <div class="lock-card">
+            <div class="lock-logo">🔒</div>
+            <div class="lock-title">관리자 인증</div>
+            <div class="lock-subtitle">GN-Fit 관리자 시스템에 접근하려면<br>관리자 토큰을 입력하세요.</div>
+            <input type="password" class="lock-input" id="lock-input"
+                placeholder="관리자 토큰"
+                maxlength="80"
+                onkeydown="if(event.key==='Enter') checkPassword()">
+            <div class="lock-err" id="lock-err"></div>
+            <button class="btn-unlock" onclick="checkPassword()">확인</button>
+        </div>
+        <div class="lock-footer">© Good Neighbors International · GN-Fit Admin</div>
+    </div>
+
+    <header>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <img src="gn_logo.jpg" alt="Logo" style="height: 40px;">
+            <h1>GN-Fit 관리자 시스템</h1>
+        </div>
+        <button class="btn-refresh" onclick="loadData()">🔄 데이터 새로고침</button>
+    </header>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="s-icon">👥</div>
+            <div class="s-info">
+                <h3>총 응시자</h3>
+                <div class="val" id="cnt-total">-</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="s-icon">📅</div>
+            <div class="s-info">
+                <h3>오늘 응시</h3>
+                <div class="val" id="cnt-today">-</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="s-icon">📊</div>
+            <div class="s-info">
+                <h3>평균 점수</h3>
+                <div class="val" id="avg-score">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="action-bar" style="flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <strong>지원자 목록</strong>
+                <div class="filter-bar">
+                    <span class="filter-label">정렬</span>
+                    <select class="filter-select" id="sel-sort" onchange="applyFilter()">
+                        <option value="score-desc">총점 높은순</option>
+                        <option value="score-asc">총점 낮은순</option>
+                        <option value="date-desc">응시일시 최신순</option>
+                        <option value="date-asc">응시일시 오래된순</option>
+                        <option value="name-asc">이름 가나다순</option>
+                    </select>
+                    <span class="filter-label">유형</span>
+                    <select class="filter-select" id="sel-type" onchange="applyFilter()">
+                        <option value="">전체</option>
+                        <option value="주도형">주도형만 보기</option>
+                        <option value="성장형">성장형만 보기</option>
+                        <option value="잠재형">잠재형만 보기</option>
+                        <option value="보완형">보완형만 보기</option>
+                    </select>
+                    <span class="filter-label">신뢰도</span>
+                    <select class="filter-select" id="sel-trust" onchange="applyFilter()">
+                        <option value="">전체</option>
+                        <option value="High">High만 보기</option>
+                        <option value="Mid">Mid만 보기</option>
+                        <option value="Low">Low만 보기</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-zip">
+                <button class="btn-csv" onclick="downloadCSV()">📊 명단 Excel 다운로드</button>
+                <button class="btn-bulk" id="btn-bulk" onclick="bulkDownload()">📄 선택 항목 PDF 일괄 저장</button>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="40"><input type="checkbox" onchange="toggleAll(this)"></th>
+                    <th>성명</th>
+                    <th>연락처</th>
+                    <th>총점</th>
+                    <th>종합 유형 (총점 기준)</th>
+                    <th>추천직무</th>
+                    <th>신뢰도</th>
+                    <th>응시일시</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <!-- Hidden Iframe for Bulk Print -->
+    <iframe id="report-frame" src="report_v4.html"
+        style="position:fixed; top:-9999px; width:794px; height:1123px; border:none;"></iframe>
+
+    <div id="modal">
+        <div class="modal-box">
+            <h4>PDF 보고서 생성 중...</h4>
+            <div id="p-status" style="font-size:12px; color:#888;">준비 중...</div>
+            <div class="p-bar">
+                <div class="p-fill" id="p-fill"></div>
+            </div>
+            <button class="btn-small" onclick="stopCalc()">중단</button>
+        </div>
+    </div>
+
+    <script>
+        /* ── 관리자 토큰 잠금 ──
+           이 페이지는 공개된 정적 파일이므로 여기서 토큰의 정오를 판정하지 않는다.
+           (예전에는 '1234'와 비교했는데, 비교 대상이 소스에 그대로 보여 잠금 역할을 못 했다.)
+           입력값은 서버로 보내고, 서버가 ADMIN_TOKEN과 대조해 데이터를 주거나 거부한다. */
+        const TOKEN_KEY = 'gnfitAdminToken';
+
+        function getAdminToken() {
+            return (sessionStorage.getItem(TOKEN_KEY) || '').trim();
+        }
+
+        function showLockError(msg) {
+            const input = document.getElementById('lock-input');
+            const errEl = document.getElementById('lock-err');
+            errEl.textContent = msg;
+            input.classList.add('error');
+            input.value = '';
+            setTimeout(() => input.classList.remove('error'), 400);
+            input.focus();
+        }
+
+        // 토큰을 저장한 뒤 실제 데이터 로딩을 시도한다. 통과 여부는 서버 응답으로 판가름난다.
+        async function checkPassword() {
+            const input = document.getElementById('lock-input');
+            const value = input.value.trim();
+            if (!value) { showLockError('토큰을 입력해주세요.'); return; }
+
+            sessionStorage.setItem(TOKEN_KEY, value);
+            const ok = await loadData();
+            if (ok) {
+                document.getElementById('lock-screen').style.display = 'none';
+            } else {
+                sessionStorage.removeItem(TOKEN_KEY);
+            }
+        }
+
+        // index.html에서 토큰을 들고 넘어온 경우 잠금 화면을 건너뛴다.
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!getAdminToken()) return;
+            const ok = await loadData();
+            if (ok) {
+                document.getElementById('lock-screen').style.display = 'none';
+            } else {
+                sessionStorage.removeItem(TOKEN_KEY);
+            }
+        });
+
+        // [FINAL API URL]
+        const API_URL = "https://script.google.com/macros/s/AKfycbxWYy_ROJSSNd6wWrOYuKMTuW1NrpVLP1tZQN5ohq0xuAEfTbbyPE4wmSc-zkLy6rY/exec";
+        let db = [], processedDB = [], stop = false;
+
+        // PART2(SJT) 채점은 구글 Apps Script(서버)에서 수행되어 u['PART2_채점결과_JSON']로 전달된다.
+        // 정답키는 서버 코드에만 존재하며 이 파일(클라이언트)에는 포함하지 않는다 — 페이지 소스로
+        // 정답이 노출되는 것을 막기 위함. (구 CATS/ANSWER_KEY 상수는 여기서 완전히 제거됨)
+
+        // 직무 적합도: report_v4.html의 JOB_FIT과 동일한 가중치 (역량가이드북 4개 핵심직무 기준).
+        const JOB_FIT_WEIGHTS = {
+            "국내사업": { "목표 달성 능력": 0.35, "문제 해결 능력": 0.30, "의사소통 능력": 0.35 },
+            "국제사업": { "목표 달성 능력": 0.35, "문제 해결 능력": 0.35, "소속 내 영향력": 0.30 },
+            "마케팅":   { "목표 달성 능력": 0.33, "주도적 능력": 0.34, "문제 해결 능력": 0.33 },
+            "회원관리": { "의사소통 능력": 0.35, "조직문화 형성 능력": 0.35, "문제 해결 능력": 0.30 }
+        };
+        function topJobFit(catScores) {
+            let best = null;
+            for (const [job, weights] of Object.entries(JOB_FIT_WEIGHTS)) {
+                let score = 0;
+                for (const [cat, w] of Object.entries(weights)) score += (catScores[cat] || 0) * w;
+                if (!best || score > best.score) best = { job, score };
+            }
+            best.score = Math.round(best.score);
+            return best;
+        }
+
+        // 거울 문항 19쌍. rev:true는 선택지가 서로 반대로 배치되어 있어
+        // 같은 글자가 아니라 반대 글자를 골라야 일관된 응답으로 인정됨(straight-lining 방지).
+        // report_v4.html의 MIRROR_PAIRS와 동일해야 함.
+        const MIRROR_PAIRS = [
+            { q: 1,  m: 61, rev: false }, { q: 3,  m: 62, rev: false }, { q: 4,  m: 74, rev: true },
+            { q: 12, m: 63, rev: false }, { q: 18, m: 64, rev: true },  { q: 13, m: 75, rev: true },
+            { q: 23, m: 65, rev: false }, { q: 25, m: 66, rev: true },  { q: 22, m: 76, rev: true },
+            { q: 31, m: 67, rev: false }, { q: 32, m: 68, rev: true },  { q: 33, m: 77, rev: true },
+            { q: 42, m: 69, rev: false }, { q: 41, m: 70, rev: false }, { q: 45, m: 78, rev: true },
+            { q: 51, m: 71, rev: false }, { q: 55, m: 72, rev: true },  { q: 60, m: 73, rev: false },
+            { q: 58, m: 79, rev: true }
+        ];
+
+        function calc(u) {
+            // PART1(Q1~60)은 채점하지 않고 성향(A/B 비율) 파악에만 사용.
+            // 총점·역량별 점수는 PART2(SJT)만으로 산출하되, 실제 채점은 서버(Apps Script)에서 이미 끝나
+            // u['PART2_채점결과_JSON']로 전달됨 — 정답키는 이 파일(클라이언트)에 없음.
+            let serverScore = {};
+            try { serverScore = JSON.parse(u['PART2_채점결과_JSON'] || '{}'); } catch (e) { serverScore = {}; }
+            const catScores = serverScore.stats || {};
+            const s = serverScore.total || 0;
+            let t = "주도형"; if (s <= 40) t = "보완형"; else if (s <= 60) t = "잠재형"; else if (s <= 80) t = "성장형";
+
+            let r = 0;
+            for (const p of MIRROR_PAIRS) {
+                const a = u['Q' + p.q], b = u['Q' + p.m];
+                if (!a || !b) continue;
+                if (p.rev ? (a !== b) : (a === b)) r++;
+            }
+            const job = topJobFit(catScores);
+            return { s, t, r: r >= 15 ? "High" : (r >= 10 ? "Mid" : "Low"), job: job.job, jobScore: job.score };
+        }
+
+        // [Strictly use "성명"]
+        function map(raw) {
+            return {
+                성명: raw['성명'] || '',
+                휴대폰번호: raw['휴대폰번호'] || '',
+                생년월일: raw['생년월일'] || '',
+                응시일시: raw['응시일시'] || ''
+            };
+        }
+
+        // 성공하면 true, 인증 실패/오류면 false를 돌려준다(잠금 화면 유지 여부 판단용).
+        async function loadData() {
+            try {
+                // 캐시 버스팅: Apps Script 실행 URL이 Google 쪽 엣지 캐시에 걸려 오래된/오류 응답을 계속 돌려주는 경우가 있어 매번 고유한 타임스탬프를 붙임
+                const url = `${API_URL}?type=admin&token=${encodeURIComponent(getAdminToken())}&_cb=${Date.now()}`;
+                const res = await fetch(url, { redirect: 'follow', cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+
+                // 서버가 거부한 경우 배열이 아니라 {error:...} 객체가 온다.
+                if (!Array.isArray(json)) {
+                    if (json.error === 'unauthorized') {
+                        showLockError('토큰이 올바르지 않습니다.');
+                    } else if (json.error === 'not_configured') {
+                        showLockError('서버에 ADMIN_TOKEN이 설정되지 않았습니다. 관리자에게 문의하세요.');
+                    } else {
+                        showLockError('데이터를 불러오지 못했습니다.');
+                    }
+                    return false;
+                }
+
+                db = json.reverse();
+                render();
+                return true;
+            } catch (e) {
+                console.error(e);
+                showLockError('데이터 로딩 실패: ' + e.message);
+                return false;
+            }
+        }
+
+        function render() {
+            processedDB = db.map(r => ({ ...map(r), stats: calc(r), raw: r }));
+
+            document.getElementById('cnt-total').innerText = processedDB.length;
+            document.getElementById('cnt-today').innerText = processedDB.filter(p => (p.응시일시 || '').includes(new Date().toISOString().split('T')[0])).length;
+            const avg = processedDB.length ? Math.round(processedDB.reduce((a, b) => a + b.stats.s, 0) / processedDB.length) : 0;
+            document.getElementById('avg-score').innerText = avg + "점";
+
+            applyFilter();
+        }
+
+        function applyFilter() {
+            if (!processedDB.length) return;
+            const sortVal  = (document.getElementById('sel-sort')  || {}).value || 'score-desc';
+            const typeVal  = (document.getElementById('sel-type')  || {}).value || '';
+            const trustVal = (document.getElementById('sel-trust') || {}).value || '';
+
+            // 필터링
+            let list = processedDB.filter(p => {
+                if (typeVal  && p.stats.t !== typeVal)  return false;
+                if (trustVal && p.stats.r !== trustVal) return false;
+                return true;
+            });
+
+            // 정렬
+            list.sort((a, b) => {
+                if (sortVal === 'score-desc') return b.stats.s - a.stats.s;
+                if (sortVal === 'score-asc')  return a.stats.s - b.stats.s;
+                if (sortVal === 'date-desc')  return (b.응시일시 || '').localeCompare(a.응시일시 || '');
+                if (sortVal === 'date-asc')   return (a.응시일시 || '').localeCompare(b.응시일시 || '');
+                if (sortVal === 'name-asc')   return (a.성명 || '').localeCompare(b.성명 || '', 'ko');
+                return 0;
+            });
+
+            const tb = document.getElementById('tbody'); tb.innerHTML = "";
+            list.forEach((p, i) => {
+                const tr = document.createElement('tr');
+                let tc = "#0ca678";
+                if (p.stats.t === "성장형") tc = "#89a230";
+                if (p.stats.t === "잠재형") tc = "#fab005";
+                if (p.stats.t === "보완형") tc = "#adb5bd";
+                let rc = "black"; if (p.stats.r === "Low") rc = "#e03131";
+
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="chk" value="${processedDB.indexOf(p)}" onchange="chk()"></td>
+                    <td><b>${p.성명}</b></td>
+                    <td>${p.휴대폰번호}</td>
+                    <td><strong style="color:var(--primary); font-size:16px;">${p.stats.s}</strong></td>
+                    <td><span class="t-badge" style="background:${tc}">${p.stats.t}</span></td>
+                    <td>${p.stats.job}</td>
+                    <td style="color:${rc}; font-weight:700;">${p.stats.r}</td>
+                    <td>${(p.응시일시 || '').split('T')[0]}</td>
+                    <td><button class="btn-small" onclick="goReport('${p.성명}','${p.휴대폰번호}')">상세보기</button></td>
+                `;
+                tb.appendChild(tr);
+            });
+        }
+
+        function goReport(n, p) { window.open(`report_v4.html?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}`, '_blank'); }
+        function chk() { const n = document.querySelectorAll('.chk:checked').length; const b = document.getElementById('btn-bulk'); n > 0 ? b.classList.add('active') : b.classList.remove('active'); }
+        function toggleAll(el) { document.querySelectorAll('.chk').forEach(c => c.checked = el.checked); chk(); }
+
+        function downloadCSV() {
+            if (!processedDB.length) return;
+            let csv = "\uFEFF성명,휴대폰번호,생년월일,총점,유형,추천직무,신뢰도,응시일시\n";
+            processedDB.forEach(p => csv += `${p.성명},${p.휴대폰번호},${p.생년월일},${p.stats.s},${p.stats.t},${p.stats.job},${p.stats.r},${p.응시일시}\n`);
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `GN_Fit_명단.csv`;
+            link.click();
+        }
+
+        async function bulkDownload() {
+            const list = document.querySelectorAll('.chk:checked');
+            if (!list.length) return;
+            if (!confirm(`${list.length}건을 다운로드하시겠습니까?`)) return;
+
+            stop = false; document.getElementById('modal').style.display = 'flex';
+            const frame = document.getElementById('report-frame').contentWindow;
+
+            for (let i = 0; i < list.length; i++) {
+                if (stop) break;
+                const idx = list[i].value;
+                document.getElementById('p-status').innerText = `저장 중: ${processedDB[idx].성명} (${i + 1}/${list.length})`;
+                document.getElementById('p-fill').style.width = `${((i + 1) / list.length) * 100}%`;
+
+                frame.loadForPrint(processedDB[idx].raw, db); // Direct inject
+                await new Promise(r => setTimeout(r, 800)); // Render wait
+
+                const opt = { margin: 0, filename: `${processedDB[idx].성명}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+                await html2pdf().set(opt).from(frame.document.getElementById('report-content')).save();
+                await new Promise(r => setTimeout(r, 500)); // Cool down
+            }
+            document.getElementById('modal').style.display = 'none';
+            if (!stop) alert("완료되었습니다.");
+        }
+        function stopCalc() { stop = true; document.getElementById('modal').style.display = 'none'; }
+
+        // 초기 로딩은 위쪽 DOMContentLoaded 핸들러가 담당한다(토큰이 있을 때만 시도).
+    </script>
+</body>
+
+</html>
