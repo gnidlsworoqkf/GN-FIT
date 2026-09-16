@@ -40,6 +40,19 @@ for (let p = 0; p < 6; p++) {
 // PART2 선택지도 응시자마다 화면 표시 순서를 무작위로 섞는다.
 // 정답(Best/Worst)이 특정 번호에 몰리는 통계적 패턴으로 찍기가 통하지 않도록 하기 위함.
 // 채점은 원본 선택지 인덱스(ANSWER_KEY 기준) 그대로 이루어지며, 화면 번호(1~4)는 매번 새로 매겨 표시만 됨.
+// 화면에 보이는 문항 번호는 원본 번호(q.id)가 아니라 "몇 번째로 푸는 문항인가"로 매긴다.
+// PART1 Q1~60을 섞으면 원본 번호가 Q2 다음에 Q19 처럼 튀어서 응시자가 불안해하기 때문.
+// 저장·채점·거울문항 판정은 전부 q.id 기준이므로 이 번호는 표시용일 뿐 결과에 영향이 없다.
+const displayNumber = {};
+(function assignDisplayNumbers() {
+    let n = 0;
+    for (const cfg of SECTIONS) {
+        if (cfg.type !== 'questions') continue;
+        const ids = cfg.ids || Array.from({ length: cfg.end - cfg.start + 1 }, (_, i) => cfg.start + 1 + i);
+        for (const id of ids) displayNumber[id] = ++n;
+    }
+})();
+
 const part2OptionOrder = {};
 for (let id = 81; id <= 100; id++) {
     part2OptionOrder[id] = shuffleArray([1, 2, 3, 4]);
@@ -174,7 +187,7 @@ function renderQuestions(cfg, c) {
 
 function renderTypeAB(q) {
     const s = userAnswers[q.id];
-    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${q.id}</span></div><div class="options-grid"><div class="option-card ${s === 'A' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'A')"><input type="radio" name="q${q.id}" value="A" class="option-input" ${s === 'A' ? 'checked' : ''}><span class="option-text">${q.optionA}</span></div><div class="option-card ${s === 'B' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'B')"><input type="radio" name="q${q.id}" value="B" class="option-input" ${s === 'B' ? 'checked' : ''}><span class="option-text">${q.optionB}</span></div></div></div>`;
+    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${displayNumber[q.id] || q.id}</span></div><div class="options-grid"><div class="option-card ${s === 'A' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'A')"><input type="radio" name="q${q.id}" value="A" class="option-input" ${s === 'A' ? 'checked' : ''}><span class="option-text">${q.optionA}</span></div><div class="option-card ${s === 'B' ? 'selected' : ''}" onclick="selectOption(${q.id}, 'B')"><input type="radio" name="q${q.id}" value="B" class="option-input" ${s === 'B' ? 'checked' : ''}><span class="option-text">${q.optionB}</span></div></div></div>`;
 }
 
 function renderTypeBW(q) {
@@ -187,7 +200,7 @@ function renderTypeBW(q) {
         const isB = s.best === i; const isW = s.worst === i;
         h += `<div class="scenario-card ${isB ? 'has-best' : ''} ${isW ? 'has-worst' : ''}" id="q${q.id}_opt${i}"><div class="scenario-content">${txt}</div><div class="selection-label label-best">Best</div><div class="selection-label label-worst">Worst</div><div class="scenario-actions"><button type="button" class="btn-select best ${isB ? 'active' : ''}" onclick="selectScenarioOption(event, ${q.id}, ${i}, 'best')">Best</button><button type="button" class="btn-select worst ${isW ? 'active' : ''}" onclick="selectScenarioOption(event, ${q.id}, ${i}, 'worst')">Worst</button></div></div>`;
     });
-    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${q.id}</span></div><div class="scenario-box"><div class="scenario-text">${q.scenario}</div></div><div class="scenario-options-grid">${h}</div></div>`;
+    return `<div class="question-item"><div class="question-header"><span class="q-number">Q${displayNumber[q.id] || q.id}</span></div><div class="scenario-box"><div class="scenario-text">${q.scenario}</div></div><div class="scenario-options-grid">${h}</div></div>`;
 }
 
 window.selectOption = function (qId, val) {
