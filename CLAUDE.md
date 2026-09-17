@@ -63,8 +63,10 @@ result.html 완료 안내
 
 ## 관리자 화면
 - `admin.html` — 응시자 목록 대시보드. Apps Script에 GET으로 시트 조회.
-  진입 경로는 `index.html` 우측 하단의 거의 투명한 "Admin" 링크 + 비밀번호 프롬프트.
-  ⚠️ 비밀번호가 `index.html`에 평문 하드코딩되어 있다(`'1234'`). 개발자도구로 누구나 볼 수 있는 수준의 잠금장치임을 인지할 것.
+  진입 경로는 `index.html` 우측 하단의 거의 투명한 "Admin" 링크 → 토큰 입력창.
+  입력한 토큰은 `sessionStorage`로 `admin.html`에 넘어가고, `admin.html`은 잠금 화면을 건너뛴다.
+  **암호를 두 번 묻지 않는다.** `admin.html`을 직접 열면 그 페이지의 잠금 화면에서 같은 토큰을 넣으면 된다.
+  (예전엔 `'1234'`를 클라이언트에서 비교했는데 공개 소스라 잠금 역할을 못 했다. 지금은 서버가 판정한다.)
 - `report_v4.html` — 개인별 A4 리포트. Chart.js로 그래프, html2pdf.js로 PDF 저장/인쇄.
 
 ## 문항 수정하기 (`question_tool.py`)
