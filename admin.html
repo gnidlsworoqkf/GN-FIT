@@ -454,6 +454,7 @@
                     <th>종합 유형 (총점 기준)</th>
                     <th>추천직무</th>
                     <th>신뢰도</th>
+                    <th>PART2 빈칸</th>
                     <th>응시일시</th>
                     <th>관리</th>
                 </tr>
@@ -580,7 +581,10 @@
                 if (p.rev ? (a !== b) : (a === b)) r++;
             }
             const job = topJobFit(catScores);
-            return { s, t, r: r >= 15 ? "High" : (r >= 10 ? "Mid" : "Low"), job: job.job, jobScore: job.score };
+            // PART2에서 Best/Worst를 고르지 않고 넘어간 칸의 개수(0~40). 서버가 채점할 때 함께 세어 보낸다.
+            // 이 항목이 생기기 전에 응시한 사람은 값이 없으므로 null로 두고 화면에는 '-'로 표시한다.
+            const blanks = (typeof serverScore.blanks === 'number') ? serverScore.blanks : null;
+            return { s, t, r: r >= 15 ? "High" : (r >= 10 ? "Mid" : "Low"), job: job.job, jobScore: job.score, blanks };
         }
 
         // [Strictly use "성명"]
@@ -666,6 +670,12 @@
                 if (p.stats.t === "잠재형") tc = "#fab005";
                 if (p.stats.t === "보완형") tc = "#adb5bd";
                 let rc = "black"; if (p.stats.r === "Low") rc = "#e03131";
+                // 빈칸이 있으면 눈에 띄게. 8칸(=4문항) 이상이면 성의 없는 응시로 보고 빨갛게 표시한다.
+                const bn = p.stats.blanks;
+                const bt = (bn === null || bn === undefined) ? "-" : (bn === 0 ? "0" : bn + "칸");
+                let bc = "#adb5bd";
+                if (bn > 0) bc = "#f08c00";
+                if (bn >= 8) bc = "#e03131";
 
                 tr.innerHTML = `
                     <td><input type="checkbox" class="chk" value="${processedDB.indexOf(p)}" onchange="chk()"></td>
@@ -675,6 +685,7 @@
                     <td><span class="t-badge" style="background:${tc}">${p.stats.t}</span></td>
                     <td>${p.stats.job}</td>
                     <td style="color:${rc}; font-weight:700;">${p.stats.r}</td>
+                    <td style="color:${bc}; font-weight:700;">${bt}</td>
                     <td>${(p.응시일시 || '').split('T')[0]}</td>
                     <td><button class="btn-small" onclick="goReport('${p.성명}','${p.휴대폰번호}')">상세보기</button></td>
                 `;
@@ -688,8 +699,8 @@
 
         function downloadCSV() {
             if (!processedDB.length) return;
-            let csv = "\uFEFF성명,휴대폰번호,생년월일,총점,유형,추천직무,신뢰도,응시일시\n";
-            processedDB.forEach(p => csv += `${p.성명},${p.휴대폰번호},${p.생년월일},${p.stats.s},${p.stats.t},${p.stats.job},${p.stats.r},${p.응시일시}\n`);
+            let csv = "\uFEFF성명,휴대폰번호,생년월일,총점,유형,추천직무,신뢰도,PART2빈칸,응시일시\n";
+            processedDB.forEach(p => csv += `${p.성명},${p.휴대폰번호},${p.생년월일},${p.stats.s},${p.stats.t},${p.stats.job},${p.stats.r},${p.stats.blanks === null ? '' : p.stats.blanks},${p.응시일시}\n`);
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `GN_Fit_명단.csv`;
