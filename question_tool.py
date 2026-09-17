@@ -661,6 +661,227 @@ def 명령_내보내기():
     알림("GNFit_배점표_대외비.html 에만 있습니다.")
 
 
+_맞추기_스크립트 = r'''
+param([string]$Src, [string]$Json, [string]$Report)
+$ErrorActionPreference = "Stop"
+$data = Get-Content -Path $Json -Raw -Encoding UTF8 | ConvertFrom-Json
+# 이 스크립트가 "새로 띄운" 엑셀만 나중에 정리하려고, 시작 전 프로세스 목록을 기억해 둔다.
+# 사용자가 직접 열어둔 엑셀 창은 목록에 이미 있으므로 절대 건드리지 않는다.
+$before = @(Get-Process EXCEL -ErrorAction SilentlyContinue | ForEach-Object { $_.Id })
+$x = New-Object -ComObject Excel.Application
+$x.Visible = $false
+$x.DisplayAlerts = $false
+$wb = $null
+$lines = New-Object System.Collections.ArrayList
+
+# 엑셀은 바쁠 때 호출을 거부한다(0x80010001 RPC_E_CALL_REJECTED).
+# 잠깐 쉬었다 다시 부르면 대개 성공하므로 몇 번 되풀이해 준다.
+function 다시시도 {
+    param([scriptblock]$Do)
+    for ($try = 1; $try -le 8; $try++) {
+        try { return & $Do } catch {
+            if ($try -eq 8) { throw }
+            Start-Sleep -Milliseconds (200 * $try)
+        }
+    }
+}
+
+try {
+    $wb = 다시시도 { $x.Workbooks.Open($Src) }
+    foreach ($sh in $wb.Worksheets) {
+        $sheetName = [string]$sh.Name
+        if ($sheetName -match "PART1") { $kind = 1 }
+        elseif ($sheetName -match "PART2") { $kind = 2 }
+        else { continue }
+
+        # 표 전체를 딱 한 번에 읽어온다. 칸마다 따로 읽으면 엑셀이 호출을 거부한다.
+        # 읽기는 다시시도()로 감싸면 2차원 배열 모양이 깨지므로 직접 부른다
+        $ur = $sh.UsedRange
+        # COM이 값을 배열로 돌려주는 경우가 있어 숫자로 못박는다
+        $row0 = [int]($ur.Row)
+        $col0 = [int]($ur.Column)
+        $nr = [int]($ur.Rows.Count)
+        $nc = [int]($ur.Columns.Count)
+        $vals = $ur.Value2
+
+        # 머리글(첫 줄)을 훑어 필요한 열이 몇 번째인지 찾는다. 열 순서가 달라도 동작한다.
+        $col = @{}
+        for ($c = 1; $c -le $nc; $c++) {
+            $h = $vals.GetValue(1, $c)
+            if ($null -eq $h) { continue }
+            $h = ([string]$h) -replace "\s", ""
+            if ($h -like "번호*")        { $col["no"] = $c }
+            elseif ($h -like "선택지A*") { $col["A"]  = $c }
+            elseif ($h -like "선택지B*") { $col["B"]  = $c }
+            elseif ($h -like "상황*")    { $col["sc"] = $c }
+            elseif ($h -like "선택지①*") { $col["o1"] = $c }
+            elseif ($h -like "선택지②*") { $col["o2"] = $c }
+            elseif ($h -like "선택지③*") { $col["o3"] = $c }
+            elseif ($h -like "선택지④*") { $col["o4"] = $c }
+        }
+        if (-not $col.ContainsKey("no")) { continue }
+
+        if ($kind -eq 1) { $bucket = $data.part1 } else { $bucket = $data.part2 }
+
+        # 먼저 "무엇을 고쳐야 하는지" 목록만 만든다 (아직 엑셀을 건드리지 않는다)
+        $todo = New-Object System.Collections.ArrayList
+        for ($r = 2; $r -le $nr; $r++) {
+            $raw = $vals.GetValue($r, $col["no"])
+            if ($null -eq $raw) { continue }
+            $txt = ([string]$raw).Trim()
+            if ($txt -eq "") { continue }
+            try { $num = [int][double]$txt } catch { continue }
+            $key = [string]$num
+            $prop = $bucket.PSObject.Properties[$key]
+            if ($null -eq $prop) { continue }
+            $want = $prop.Value
+
+            $pairs = New-Object System.Collections.ArrayList
+            if ($kind -eq 1) {
+                [void]$pairs.Add(@("A", $want.A))
+                [void]$pairs.Add(@("B", $want.B))
+            } else {
+                [void]$pairs.Add(@("sc", $want.scenario))
+                [void]$pairs.Add(@("o1", $want.options[0]))
+                [void]$pairs.Add(@("o2", $want.options[1]))
+                [void]$pairs.Add(@("o3", $want.options[2]))
+                [void]$pairs.Add(@("o4", $want.options[3]))
+            }
+            foreach ($pair in $pairs) {
+                $where = $pair[0]
+                $value = [string]$pair[1]
+                if (-not $col.ContainsKey($where)) { continue }
+                $c = $col[$where]
+                $now = $vals.GetValue($r, $c)
+                if ($null -eq $now) { $now = "" }
+                if (([string]$now) -ne $value) {
+                    [void]$todo.Add(@(($row0 + $r - 1), ($col0 + [int]$c - 1), $value, $key, $where))
+                }
+            }
+        }
+
+        # 실제로 달라진 칸만 고친다
+        foreach ($item in $todo) {
+            $rr = $item[0]; $cc = $item[1]; $vv = $item[2]
+            다시시도 { $sh.Cells.Item($rr, $cc).Value2 = $vv }
+            [void]$lines.Add("Q" + $item[3] + " " + $item[4])
+        }
+    }
+    다시시도 { $wb.Save() }
+    ($lines -join [Environment]::NewLine) | Out-File -FilePath $Report -Encoding utf8
+} catch {
+    ("ERROR " + $_.InvocationInfo.ScriptLineNumber + "행: " + $_.Exception.Message) | Out-File -FilePath $Report -Encoding utf8
+} finally {
+    if ($wb -ne $null) { try { $wb.Close($false) } catch {} }
+    try { $x.Quit() } catch {}
+    try { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($x) } catch {}
+    [GC]::Collect()
+    [GC]::WaitForPendingFinalizers()
+    Start-Sleep -Milliseconds 300
+    foreach ($p in @(Get-Process EXCEL -ErrorAction SilentlyContinue)) {
+        if (($before -notcontains $p.Id) -and [string]::IsNullOrEmpty($p.MainWindowTitle)) {
+            try { Stop-Process -Id $p.Id -Force } catch {}
+        }
+    }
+}
+'''
+
+
+def _맞추기_한번(대상, part1, part2):
+    """엑셀을 한 번 열어 문항 칸을 덮어쓴다. 고친 칸 목록을 돌려준다."""
+    임시 = tempfile.mkdtemp(prefix="gnfit_")
+    try:
+        자료파일 = os.path.join(임시, "want.json")
+        ps파일 = os.path.join(임시, "sync.ps1")
+        보고파일 = os.path.join(임시, "report.txt")
+        with open(자료파일, "w", encoding="utf-8") as f:
+            json.dump({"part1": part1, "part2": part2}, f, ensure_ascii=False)
+        with open(ps파일, "w", encoding="utf-8-sig") as f:
+            f.write(_맞추기_스크립트)
+
+        완료 = subprocess.run(
+            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+             "-File", ps파일, "-Src", 대상, "-Json", 자료파일, "-Report", 보고파일],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+        )
+        if not os.path.exists(보고파일):
+            raise 중단("엑셀이 응답하지 않았습니다.\n    %s"
+                       % (완료.stderr or 완료.stdout or "").strip()[:400])
+        보고 = open(보고파일, encoding="utf-8-sig").read().strip()
+        if 보고.startswith("ERROR"):
+            raise 중단("엑셀 작업 중 오류가 났습니다.\n    %s" % 보고[:400])
+        return [줄 for 줄 in 보고.splitlines() if 줄.strip()]
+    finally:
+        shutil.rmtree(임시, ignore_errors=True)
+
+
+def 명령_엑셀맞추기(대상엑셀=None):
+    """엑셀의 문항 글자칸을 지금 코드 내용으로 덮어쓴다.
+
+    엑셀 문항표가 실제 서비스 중인 문항과 어긋났을 때 엑셀을 코드에 맞추는 용도다.
+    비고·연계문항 같은 다른 열과, PART1/PART2 말고 다른 시트는 건드리지 않는다.
+
+    엑셀 자동화는 간헐적으로 조용히 일부만 처리하고 끝나는 일이 있다. 그래서
+    한 번 고친 뒤 반드시 다시 읽어 확인하고, 남은 차이가 있으면 다시 시도한다.
+    """
+    # 엑셀 프로그램은 상대 경로를 이해하지 못하므로 항상 전체 경로로 바꿔 넘긴다
+    대상 = os.path.abspath(대상엑셀) if 대상엑셀 else 엑셀파일
+    if not os.path.exists(대상):
+        raise 중단("엑셀 파일을 찾을 수 없습니다:\n    %s" % 대상)
+
+    원문 = open(코드파일, encoding="utf-8").read()
+    코드문항 = 코드에서_문항읽기(원문)
+
+    part1, part2 = {}, {}
+    for q in 코드문항:
+        if q["type"] == "AB":
+            part1[str(q["id"])] = {"A": q["optionA"], "B": q["optionB"]}
+        else:
+            보기 = [re.sub(r"^[①②③④\d]+[.)]?\s*", "", o) for o in q["options"]]
+            part2[str(q["id"])] = {"scenario": q["scenario"], "options": 보기}
+
+    # 덮어쓰기 전에 원본 엑셀을 백업해 둔다
+    os.makedirs(백업폴더, exist_ok=True)
+    백업 = os.path.join(백업폴더, "%s_%s%s" % (
+        os.path.splitext(os.path.basename(대상))[0],
+        datetime.now().strftime("%Y%m%d_%H%M%S"),
+        os.path.splitext(대상)[1]))
+    shutil.copy2(대상, 백업)
+
+    최대시도 = 4
+    총고친칸 = 0
+    for 시도 in range(1, 최대시도 + 1):
+        알림("엑셀을 열어 문항을 맞추는 중입니다... (%d번째 시도)" % 시도)
+        try:
+            고친칸 = _맞추기_한번(대상, part1, part2)
+        except 중단:
+            shutil.copy2(백업, 대상)
+            raise
+        총고친칸 += len(고친칸)
+
+        알림("고친 칸 %d개. 제대로 됐는지 엑셀을 다시 읽어 확인합니다..." % len(고친칸))
+        엑셀문항 = 엑셀표_정리(엑셀읽기(대상))
+        남은차이, _ = 비교하기(코드문항, 엑셀문항)
+        if not 남은차이:
+            제목("엑셀 맞추기 완료")
+            알림("엑셀의 문항이 지금 코드 내용과 완전히 같아졌습니다. (확인까지 마침)")
+            알림("고친 칸 : %d개" % 총고친칸)
+            알림("이전 엑셀은 여기 보관했습니다:")
+            알림("    %s" % 백업)
+            알림()
+            알림("비고·연계문항 열과 다른 시트는 건드리지 않았습니다.")
+            return
+        알림("아직 %d문항이 다릅니다. 엑셀이 일부만 처리한 것 같아 다시 시도합니다." % len(남은차이))
+
+    shutil.copy2(백업, 대상)
+    raise 중단(
+        "%d번 시도했는데도 엑셀이 끝까지 처리되지 않아 원래 파일로 되돌렸습니다.\n"
+        "  · 엑셀 창이 열려 있다면 모두 닫고 다시 실행해 보세요.\n"
+        "  · 그래도 안 되면 잠시 뒤 다시 실행해 보세요. (엑셀이 바쁠 때 생기는 문제입니다)"
+        % 최대시도
+    )
+
+
 # ─────────────────────────────────────────────────────────────
 def main():
     인자 = [a.strip() for a in sys.argv[1:]]
@@ -688,6 +909,8 @@ def main():
             명령_비교(적용할까=True)
     elif 명령 in ("내보내기", "추출"):
         명령_내보내기()
+    elif 명령 in ("엑셀맞추기", "엑셀동기화"):
+        명령_엑셀맞추기(인자[1] if len(인자) > 1 else None)
     else:
         알림()
         알림("알 수 없는 명령입니다: %r" % 명령)
@@ -696,6 +919,7 @@ def main():
         알림("    python question_tool.py                비교만 한다 (파일 안 바뀜)")
         알림("    python question_tool.py 적용            엑셀 내용으로 코드를 고친다")
         알림("    python question_tool.py 내보내기         지금 코드의 문항을 엑셀로 저장한다")
+        알림("    python question_tool.py 엑셀맞추기        엑셀의 문항을 지금 코드 내용으로 덮어쓴다")
 
 
 if __name__ == "__main__":
