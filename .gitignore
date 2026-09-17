@@ -8,6 +8,10 @@
 google_apps_script.js
 GNFit_배점표_대외비.html
 GN_역량검사_최신문항_전체정리.xlsx
+# question_tool.py 내보내기로 만들어지는 문항 엑셀 (문항 전문 포함)
+GN_역량검사_문항_코드기준_*.xlsx
+# question_tool.py 가 뜨는 google_apps_script.js 백업 (정답키 포함)
+_문항백업/
 첨_부_사단법인_역량가이드북.pdf
 GNFit_논리구조_최신판.html
 *_대외비.*
