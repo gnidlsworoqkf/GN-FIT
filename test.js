@@ -159,7 +159,11 @@ function forceNextSection() {
     if (currentSectionIdx < SECTIONS.length - 1) {
         currentSectionIdx++;
         renderSection(currentSectionIdx);
+        return;
     }
+    // 마지막 페이지에서 시간이 끝난 경우. 예전에는 아무 일도 일어나지 않아 그 화면에
+    // 그대로 머물렀다. 이제는 답한 데까지 그대로 자동 제출한다.
+    submitTest(null, true);
 }
 
 function renderBridge(cfg, c) {
@@ -243,10 +247,24 @@ function updateScenarioDOM(qId) {
 }
 
 function checkSectionComplete() {
+    // 예전에는 그 페이지의 모든 문항에 답해야 '다음'/'제출' 버튼이 열렸다.
+    // 지금은 답하지 않은 채로도 넘어갈 수 있게 한다. 성의 없이 응시한 사람을 가려내는 것이
+    // 목적인데, 강제로 채우게 하면 오히려 아무거나 찍고 넘어가 버려 구분이 안 되기 때문이다.
     const n = document.getElementById('next-btn'), s = document.getElementById('submit-btn');
     if (SECTIONS[currentSectionIdx].type === 'bridge') return;
-    const ok = validateSectionSilently(currentSectionIdx);
-    if (n) n.disabled = !ok; if (s) s.disabled = !ok;
+    if (n) n.disabled = false;
+    if (s) s.disabled = false;
+}
+
+// 아직 답하지 않은 문항이 몇 개인지 센다. (제출 전 확인 문구와 서버 기록에 쓴다)
+function countUnanswered() {
+    let part1 = 0, part2 = 0;
+    for (let i = 1; i <= 80; i++) if (!userAnswers[i]) part1++;
+    for (let i = 81; i <= 100; i++) {
+        const r = userAnswers[i];
+        if (!r || !r.best || !r.worst) part2++;
+    }
+    return { part1: part1, part2: part2, total: part1 + part2 };
 }
 
 function validateSectionSilently(idx) {
@@ -287,13 +305,25 @@ function updateNavButtons(idx, isB) {
 }
 
 function goNextSection() {
-    if (SECTIONS[currentSectionIdx].type !== 'bridge' && !validateSectionSilently(currentSectionIdx)) { alert("모든 문항에 답변해주세요."); return; }
+    // 답하지 않은 문항이 있어도 막지 않는다. (위 checkSectionComplete 설명 참고)
     if (currentSectionIdx < SECTIONS.length - 1) { currentSectionIdx++; renderSection(currentSectionIdx); }
 }
 
-function submitTest() {
-    if (!validateSectionSilently(currentSectionIdx)) return;
-    if (!confirm("제출하시겠습니까?")) return;
+let 제출진행중 = false;   // 자동제출과 버튼 클릭이 겹쳐 두 번 보내지는 것을 막는다
+
+// 자동제출(제한시간 종료)일 때는 확인 문구 없이 바로 보낸다.
+function submitTest(evt, 자동제출) {
+    if (제출진행중) return;
+
+    const 미응답 = countUnanswered();
+    if (!자동제출) {
+        const 문구 = 미응답.total > 0
+            ? "아직 답하지 않은 문항이 " + 미응답.total + "개 있습니다. 이대로 제출하시겠습니까?"
+            : "제출하시겠습니까?";
+        if (!confirm(문구)) return;
+    }
+
+    제출진행중 = true;
     const b = document.getElementById('submit-btn'); b.textContent = "전송 중..."; b.disabled = true;
     clearInterval(sectionTimerInterval);
     const formData = {
@@ -301,7 +331,11 @@ function submitTest() {
         "휴대폰번호": localStorage.getItem('applicantPhone'),
         "생년월일": localStorage.getItem('applicantBirthdate'),
         "정보동의여부": localStorage.getItem('applicantAgree'),
-        "응시일시": new Date().toISOString()
+        "응시일시": new Date().toISOString(),
+        // 성의 없는 응시를 가려내기 위해 빈칸 개수를 함께 남긴다
+        "PART1_미응답수": 미응답.part1,
+        "PART2_미응답수": 미응답.part2,
+        "자동제출여부": 자동제출 ? "시간종료 자동제출" : ""
     };
     for (let i = 1; i <= 80; i++) formData[`Q${i}`] = userAnswers[i] || "";
     for (let i = 81; i <= 100; i++) {
@@ -311,5 +345,10 @@ function submitTest() {
     }
     fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(formData) })
         .then(() => { alert("제출 완료!"); window.location.href = "result.html"; })
-        .catch(e => { console.error(e); alert("전송 에러!"); });
+        .catch(e => {
+            console.error(e);
+            제출진행중 = false;
+            b.textContent = "제출하기"; b.disabled = false;
+            alert("전송 에러! 잠시 뒤 다시 제출해 주세요.");
+        });
 }
