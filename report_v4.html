@@ -200,6 +200,7 @@ footer{font-size:10px;color:#adb5bd;text-align:center;margin-top:auto;padding-to
 .fake-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;}
 .fake-badge.ok{background:#e8f5d0;color:#2d6a0a;}
 .fake-badge.bad{background:#fde8e8;color:#a32d2d;}
+.fake-badge.warnish{background:#fff3bf;color:#8a6100;}
 
         /* 갭 인디케이터 CSS */
         .gap-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
@@ -447,6 +448,11 @@ footer{font-size:10px;color:#adb5bd;text-align:center;margin-top:auto;padding-to
           <span id="fake-badge"></span>
           <span id="fake-msg" style="color:#868e96;font-size:10px;"></span>
         </div>
+        <div class="fake-row">
+          <span style="font-weight:600;color:var(--deep);">PART2 무응답</span>
+          <span id="blank-badge"></span>
+          <span id="blank-msg" style="color:#868e96;font-size:10px;"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -630,6 +636,9 @@ function calcData(u) {
     let serverScore={};
     try { serverScore=JSON.parse(u['PART2_채점결과_JSON']||'{}'); } catch(e) { serverScore={}; }
     const stats=serverScore.stats||{}, p2Scores=stats, total=serverScore.total||0;
+    // PART2에서 Best/Worst를 고르지 않고 넘어간 칸의 개수(0~40). 서버가 채점할 때 함께 세어 보낸다.
+    // 이 항목이 생기기 전(2026-09-17 이전)에 응시한 사람은 값이 없으므로 null로 둔다.
+    const blanks=(typeof serverScore.blanks==='number')?serverScore.blanks:null;
 
     let p1Profile={};
     for (let [k,cfg] of Object.entries(MAP)) {
@@ -671,14 +680,14 @@ function calcData(u) {
     }
 
     const jobFit = calcJobFit(stats);
-    return {scores:stats,total,p1Profile,deepDive,profile,relScore,fakingGood,p2Scores,jobFit};
+    return {scores:stats,total,p1Profile,deepDive,profile,relScore,fakingGood,p2Scores,jobFit,blanks};
 }
 
 // ── 렌더링 ────────────────────────────────
 function renderUI(u, allData) {
     const ov=document.getElementById('loading-overlay');
     ov.style.opacity=0; setTimeout(()=>ov.style.display='none',500);
-    const {scores,total,p1Profile,deepDive,profile,relScore,fakingGood,p2Scores,jobFit}=calcData(u);
+    const {scores,total,p1Profile,deepDive,profile,relScore,fakingGood,p2Scores,jobFit,blanks}=calcData(u);
 
     // 공통
     const userName=u['성명']||u['이름']||'---';
@@ -953,6 +962,14 @@ function renderUI(u, allData) {
     const fb=document.getElementById('fake-badge'), fm=document.getElementById('fake-msg');
     if(fakingGood){fb.innerHTML='<span class="fake-badge bad">⚠ 탐지됨</span>';fm.innerText='Q80 B선택 — 면접 시 솔직한 응답 집중 검증 필요';}
     else{fb.innerHTML='<span class="fake-badge ok">✔ 탐지되지 않음</span>';fm.innerText='Q80 정상 응답 확인';}
+
+    // PART2 무응답 칸(0~40). 8칸(=4문항) 이상이면 성의 없는 응시로 보고 경고로 표시한다.
+    // admin.html 목록의 'PART2 빈칸' 열과 같은 기준을 쓴다.
+    const bb=document.getElementById('blank-badge'), bm=document.getElementById('blank-msg');
+    if(blanks===null){bb.innerHTML='<span class="fake-badge ok">— 기록 없음</span>';bm.innerText='이 항목이 도입되기 전에 응시한 기록입니다';}
+    else if(blanks===0){bb.innerHTML='<span class="fake-badge ok">✔ 없음</span>';bm.innerText='20문항 40칸을 모두 응답했습니다';}
+    else if(blanks<8){bb.innerHTML='<span class="fake-badge warnish">'+blanks+'칸 비움</span>';bm.innerText='일부 문항에서 Best/Worst를 고르지 않았습니다 (총 40칸 중)';}
+    else{bb.innerHTML='<span class="fake-badge bad">⚠ '+blanks+'칸 비움</span>';bm.innerText='무응답이 많아 성의 있게 응시했는지 확인이 필요합니다 (총 40칸 중)';}
 }
 
 function savePdf(){
