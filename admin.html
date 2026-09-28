@@ -721,11 +721,11 @@
                 document.getElementById('p-status').innerText = `저장 중: ${processedDB[idx].성명} (${i + 1}/${list.length})`;
                 document.getElementById('p-fill').style.width = `${((i + 1) / list.length) * 100}%`;
 
-                frame.loadForPrint(processedDB[idx].raw, db); // Direct inject
-                await new Promise(r => setTimeout(r, 800)); // Render wait
+                frame.loadForPrint(processedDB[idx].raw, db); // 숨은 리포트 틀에 응시자 데이터를 넣어 그린다
+                await new Promise(r => setTimeout(r, 1800)); // 그래프·점수 애니메이션(약 1.5초)이 끝날 때까지 대기
 
-                const opt = { margin: 0, filename: `${processedDB[idx].성명}_GNFit_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
-                await html2pdf().set(opt).from(frame.document.getElementById('report-content')).save();
+                // 저장도 리포트 페이지 안에서 한다. 여기서 요소만 가져다 저장하면 리포트의 디자인(CSS)이 빠진다.
+                await frame.savePdfAs(`${processedDB[idx].성명}_GNFit_Report.pdf`);
                 await new Promise(r => setTimeout(r, 500)); // Cool down
             }
             document.getElementById('modal').style.display = 'none';
