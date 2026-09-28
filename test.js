@@ -256,7 +256,7 @@ function checkSectionComplete() {
     if (s) s.disabled = false;
 }
 
-// 아직 답하지 않은 문항이 몇 개인지 센다. (제출 전 확인 문구와 서버 기록에 쓴다)
+// 아직 답하지 않은 문항이 몇 개인지 센다. (서버 기록에 쓴다)
 function countUnanswered() {
     let part1 = 0, part2 = 0;
     for (let i = 1; i <= 80; i++) if (!userAnswers[i]) part1++;
@@ -316,12 +316,8 @@ function submitTest(evt, 자동제출) {
     if (제출진행중) return;
 
     const 미응답 = countUnanswered();
-    if (!자동제출) {
-        const 문구 = 미응답.total > 0
-            ? "아직 답하지 않은 문항이 " + 미응답.total + "개 있습니다. 이대로 제출하시겠습니까?"
-            : "제출하시겠습니까?";
-        if (!confirm(문구)) return;
-    }
+    // 이전 페이지로 돌아갈 수 없으므로 미응답 개수는 알려주지 않고 제출 의사만 묻는다.
+    if (!자동제출 && !confirm("제출하시겠습니까?")) return;
 
     제출진행중 = true;
     const b = document.getElementById('submit-btn'); b.textContent = "전송 중..."; b.disabled = true;
