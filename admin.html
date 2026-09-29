@@ -693,7 +693,12 @@
             });
         }
 
-        function goReport(n, p) { window.open(`report_v4.html?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}`, '_blank'); }
+        // 이름·번호를 주소(?name=...)에 싣지 않는다 — 방문 기록·링크 공유·화면 캡처에 개인정보가 남기 때문.
+        // 대신 sessionStorage에 담아 두면 새 탭이 열릴 때 그 복사본을 이어받는다(관리자 토큰과 같은 방식).
+        function goReport(n, p) {
+            sessionStorage.setItem('gnfitReportTarget', JSON.stringify({ name: n, phone: p }));
+            window.open('report_v4.html', '_blank');
+        }
         function chk() { const n = document.querySelectorAll('.chk:checked').length; const b = document.getElementById('btn-bulk'); n > 0 ? b.classList.add('active') : b.classList.remove('active'); }
         function toggleAll(el) { document.querySelectorAll('.chk').forEach(c => c.checked = el.checked); chk(); }
 
