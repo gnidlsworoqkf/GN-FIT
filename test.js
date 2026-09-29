@@ -309,6 +309,11 @@ function goNextSection() {
     if (currentSectionIdx < SECTIONS.length - 1) { currentSectionIdx++; renderSection(currentSectionIdx); }
 }
 
+function clearApplicantInfo() {
+    ['applicantName', 'applicantPhone', 'applicantBirthdate', 'applicantAgree']
+        .forEach(k => localStorage.removeItem(k));
+}
+
 let 제출진행중 = false;   // 자동제출과 버튼 클릭이 겹쳐 두 번 보내지는 것을 막는다
 
 // 자동제출(제한시간 종료)일 때는 확인 문구 없이 바로 보낸다.
@@ -340,7 +345,12 @@ function submitTest(evt, 자동제출) {
         formData[`Q${i}_Worst`] = r.worst || "";
     }
     fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(formData) })
-        .then(() => { alert("제출 완료!"); window.location.href = "result.html"; })
+        .then(() => {
+            // 공용 PC에서 다음 사람이 보지 못하도록 브라우저에 남은 응시자 개인정보를 지운다.
+            // (전송 실패 시에는 다시 제출해야 하므로 아래 catch에서는 지우지 않는다)
+            clearApplicantInfo();
+            alert("제출 완료!"); window.location.href = "result.html";
+        })
         .catch(e => {
             console.error(e);
             제출진행중 = false;
