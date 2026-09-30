@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
 
     // 1. 로그인 정보 확인 (Console Log)
-    const storedName = localStorage.getItem('applicantName');
-    const storedBirthdate = localStorage.getItem('applicantBirthdate');
+    const storedName = sessionStorage.getItem('applicantName');
+    const storedBirthdate = sessionStorage.getItem('applicantBirthdate');
 
     if (storedName && storedBirthdate) {
         console.log(`[로그인 정보 확인] 성명: ${storedName}, 생년월일: ${storedBirthdate}`);

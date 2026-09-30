@@ -12,13 +12,15 @@
 파이참 우측 상단 실행 설정에서 **"로컬 미리보기 서버 (8123)"** 선택 후 ▶ 실행.
 → `serve.py` 가 `http://localhost:8123` 에 캐시 없는 정적 서버를 띄우고 브라우저를 연다.
 
-HTML 파일을 더블클릭(`file:///...`)해서 열면 **안 된다.** localStorage 공유와 fetch가 정상 동작하지 않는다.
+HTML 파일을 더블클릭(`file:///...`)해서 열면 **안 된다.** 브라우저 저장소 공유와 fetch가 정상 동작하지 않는다.
 
 ## 응시자 화면 흐름
 ```
 index.html  로그인(성명/생년월일/휴대폰11자리) + 개인정보 동의
    │        script.js 가 Apps Script에 GET → 휴대폰번호로 중복 응시 차단
-   │        통과 시 localStorage에 applicantName/Phone/Birthdate/Agree 저장
+   │        통과 시 sessionStorage에 applicantName/Phone/Birthdate/Agree 저장
+   │        (탭을 닫으면 자동 삭제 — 공용 PC 대비. 2026-09-30에 localStorage에서 변경.
+   │         제출 완료 시에도 test.js·result.html이 지운다)
    ▼
 instruction.html  검사 안내 + 동의 체크 (instruction.js)
    ▼

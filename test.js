@@ -309,9 +309,15 @@ function goNextSection() {
     if (currentSectionIdx < SECTIONS.length - 1) { currentSectionIdx++; renderSection(currentSectionIdx); }
 }
 
+// 응시자 정보는 sessionStorage(탭을 닫으면 자동으로 지워지는 저장소)에 있다. (2026-09-30 변경)
+// 이 변경이 배포되는 순간 이미 검사 중이던 사람은 예전 저장소(localStorage)에 정보가 있으므로 그쪽도 읽는다.
+function getApplicantInfo(k) {
+    return sessionStorage.getItem(k) || localStorage.getItem(k);
+}
+
 function clearApplicantInfo() {
     ['applicantName', 'applicantPhone', 'applicantBirthdate', 'applicantAgree']
-        .forEach(k => localStorage.removeItem(k));
+        .forEach(k => { sessionStorage.removeItem(k); localStorage.removeItem(k); });
 }
 
 let 제출진행중 = false;   // 자동제출과 버튼 클릭이 겹쳐 두 번 보내지는 것을 막는다
@@ -328,10 +334,10 @@ function submitTest(evt, 자동제출) {
     const b = document.getElementById('submit-btn'); b.textContent = "전송 중..."; b.disabled = true;
     clearInterval(sectionTimerInterval);
     const formData = {
-        "성명": localStorage.getItem('applicantName'),
-        "휴대폰번호": localStorage.getItem('applicantPhone'),
-        "생년월일": localStorage.getItem('applicantBirthdate'),
-        "정보동의여부": localStorage.getItem('applicantAgree'),
+        "성명": getApplicantInfo('applicantName'),
+        "휴대폰번호": getApplicantInfo('applicantPhone'),
+        "생년월일": getApplicantInfo('applicantBirthdate'),
+        "정보동의여부": getApplicantInfo('applicantAgree'),
         "응시일시": new Date().toISOString(),
         // 성의 없는 응시를 가려내기 위해 빈칸 개수를 함께 남긴다
         "PART1_미응답수": 미응답.part1,

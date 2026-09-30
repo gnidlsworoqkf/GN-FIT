@@ -1,7 +1,23 @@
 // script.js - 중복 응시 방지 버전
 const scriptURL = "https://script.google.com/macros/s/AKfycbxWYy_ROJSSNd6wWrOYuKMTuW1NrpVLP1tZQN5ohq0xuAEfTbbyPE4wmSc-zkLy6rY/exec";
 
+// 응시자 정보는 sessionStorage(탭을 닫으면 자동으로 지워지는 저장소)에 담는다.
+// 예전엔 localStorage(브라우저를 껐다 켜도 남는 저장소)를 써서, 검사 도중 창을 닫으면
+// 공용 PC에 이름·휴대폰번호·생년월일이 그대로 남았다. (2026-09-30 변경)
+const APPLICANT_KEYS = ['applicantName', 'applicantPhone', 'applicantBirthdate', 'applicantAgree'];
+
+function saveApplicantInfo(name, phone, birth, agree) {
+    APPLICANT_KEYS.forEach(k => sessionStorage.removeItem(k));
+    sessionStorage.setItem('applicantName', name);
+    sessionStorage.setItem('applicantPhone', phone);
+    sessionStorage.setItem('applicantBirthdate', birth);
+    sessionStorage.setItem('applicantAgree', agree ? 'Y' : 'N');
+}
+
 window.onload = function () {
+    // 예전 방식(localStorage)으로 이 PC에 남아 있던 이전 응시자 정보를 지운다.
+    APPLICANT_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+
     const loginForm = document.getElementById('loginForm');
 
     if (loginForm) {
@@ -74,12 +90,8 @@ window.onload = function () {
                     return;
                 }
 
-                // 중복 없으면 localStorage 저장 후 이동
-                localStorage.clear();
-                localStorage.setItem('applicantName', name);
-                localStorage.setItem('applicantPhone', phone);
-                localStorage.setItem('applicantBirthdate', birth);
-                localStorage.setItem('applicantAgree', agree ? 'Y' : 'N');
+                // 중복 없으면 응시자 정보 저장 후 이동
+                saveApplicantInfo(name, phone, birth, agree);
                 window.location.href = 'instruction.html';
 
             } catch (error) {
@@ -87,11 +99,7 @@ window.onload = function () {
                 // 네트워크 오류 등 예외 상황: 사용자에게 안내 후 진행 여부 확인
                 const proceed = confirm("응시 이력 확인에 실패했습니다.\n그래도 계속 진행하시겠습니까?");
                 if (proceed) {
-                    localStorage.clear();
-                    localStorage.setItem('applicantName', name);
-                    localStorage.setItem('applicantPhone', phone);
-                    localStorage.setItem('applicantBirthdate', birth);
-                    localStorage.setItem('applicantAgree', agree ? 'Y' : 'N');
+                    saveApplicantInfo(name, phone, birth, agree);
                     window.location.href = 'instruction.html';
                 } else {
                     submitBtn.disabled = false;

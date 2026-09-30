@@ -58,7 +58,10 @@
     <script>
         // test.js가 제출 직후 이미 지우지만, 혹시 남았을 경우를 대비해 한 번 더 지운다(공용 PC 개인정보 보호).
         ['applicantName', 'applicantPhone', 'applicantBirthdate', 'applicantAgree']
-            .forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+            .forEach(function (k) {
+                try { sessionStorage.removeItem(k); } catch (e) {}
+                try { localStorage.removeItem(k); } catch (e) {}
+            });
     </script>
 </body>
 
