@@ -13,7 +13,7 @@ const SECTIONS = [
     { type: 'questions', start: 50, end: 59, themeVar: '--section-3-color', name: 'PART 1' },
     { type: 'questions', start: 60, end: 69, themeVar: '--section-1-color', name: 'PART 1' },
     { type: 'questions', start: 70, end: 79, themeVar: '--section-2-color', name: 'PART 1' },
-    { type: 'bridge', title: 'PART 2: 상황 판단 검사 안내', subtitle: 'PART 2 / 2', content: `실무 시나리오를 읽고 본인이 생각하기에<br><strong style="color:var(--color-best)">'가장 할 법한 행동(Best)'</strong>과 <strong style="color:var(--color-worst)">'가장 안 할 법한 행동(Worst)'</strong>을<br>하나씩 필수 선택해 주세요.<br>(총 20문항)`, buttonText: '이어서 시작하기', themeVar: '--section-3-color' },
+    { type: 'bridge', title: 'PART 2: 상황 판단 검사 안내', subtitle: 'PART 2 / 2', content: `실무 시나리오를 읽고 본인이 생각하기에<br><strong style="color:var(--color-best)">'가장 할 법한 행동(Best)'</strong>과 <strong style="color:var(--color-worst)">'가장 안 할 법한 행동(Worst)'</strong>을<br>각각 하나씩 골라 주세요.<br>(총 20문항)`, buttonText: '이어서 시작하기', themeVar: '--section-3-color' },
     { type: 'questions', start: 80, end: 84, themeVar: '--section-3-color', name: 'PART 2' },
     { type: 'questions', start: 85, end: 89, themeVar: '--section-1-color', name: 'PART 2' },
     { type: 'questions', start: 90, end: 94, themeVar: '--section-2-color', name: 'PART 2' },
