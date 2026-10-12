@@ -70,7 +70,7 @@ let currentSectionIdx = 0;
 let userAnswers = {};
 let sectionTimerInterval = null;
 const PART1_TIME_LIMIT = 60;  // PART1 문항 페이지당 제한 시간(초)
-const PART2_TIME_LIMIT = 120; // PART2 문항 페이지당 제한 시간(초)
+const PART2_TIME_LIMIT = 180; // PART2 문항 페이지당 제한 시간(초) — 2026-10-12 120→180 (파일럿 '시간이 짧다' 피드백)
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('test-form')?.addEventListener('submit', (e) => e.preventDefault());
